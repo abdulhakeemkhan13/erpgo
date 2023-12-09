@@ -13,8 +13,8 @@
         <a href="{{ route('contract.grid') }}"  data-bs-toggle="tooltip" title="{{__('Grid View')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-layout-grid"></i>
         </a>
-        @if(\Auth::user()->type == 'company')
-            <a href="#" data-size="md" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
+        @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'branch')
+            <a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
         @endif
@@ -35,7 +35,7 @@
                                 @if(\Auth::user()->type!='client')
                                     <th scope="col">{{__('Client')}}</th>
                                 @endif
-                                <th scope="col">{{__('Project')}}</th>
+                                <th scope="col">{{__('Company')}}</th>
 
                                 <th scope="col">{{__('Contract Type')}}</th>
                                 <th scope="col">{{__('Contract Value')}}</th>
@@ -56,7 +56,7 @@
                                     @if(\Auth::user()->type!='client')
                                         <td>{{ !empty($contract->clients)?$contract->clients->name:'-' }}</td>
                                     @endif
-                                    <td>{{ !empty($contract->projects)?$contract->projects->project_name:'-' }}</td>
+                                    <td>{{ !empty($contract->company)?$contract->company->name:'-' }}</td>
                                     <td>{{ !empty($contract->types)?$contract->types->name:'' }}</td>
                                     <td>{{ \Auth::user()->priceFormat($contract->value) }}</td>
                                     <td>{{  \Auth::user()->dateFormat($contract->start_date )}}</td>
@@ -91,7 +91,7 @@
                                         @endcan
                                         @can('edit contract')
                                             <div class="action-btn bg-info ms-2">
-                                                <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ route('contract.edit',$contract->id) }}" data-ajax-popup="true" data-size="md" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-title="{{__('Edit Contract')}}">
+                                                <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ route('contract.edit',$contract->id) }}" data-ajax-popup="true" data-size="lg" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-title="{{__('Edit Contract')}}">
                                                     <i class="ti ti-pencil text-white"></i>
                                                 </a></div>
                                         @endcan

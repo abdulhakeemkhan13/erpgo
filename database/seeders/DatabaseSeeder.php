@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         {
             $this->call(PlansTableSeeder::class);
             $this->call(UsersTableSeeder::class);
+            $this->call(BranchSeeder::class);
             $this->call(AiTemplateSeeder::class);
 
         }else{

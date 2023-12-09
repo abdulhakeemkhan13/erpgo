@@ -14,6 +14,7 @@ class Bill extends Model
         'bill_id',
         'order_number',
         'category_id',
+        'owned_by',
         'created_by',
     ];
 

@@ -42,9 +42,9 @@ class ContractTypeController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required',
-                               ]
-            );
+                                'name' => 'required',
+                            ]
+        );
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
@@ -84,8 +84,8 @@ class ContractTypeController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required',
-                               ]
+                                'name' => 'required',
+                            ]
             );
             if($validator->fails())
             {

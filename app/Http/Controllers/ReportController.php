@@ -54,12 +54,24 @@ class ReportController extends Controller
     public function incomeSummary(Request $request)
     {
         if (\Auth::user()->can('income report')) {
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+            if(\Auth::user()->type == 'branch' )
+            {
+            $account = BankAccount::where('owned_by', '=', \Auth::user()->id)->get()->pluck('holder_name', 'id');
             $account->prepend('select Account', '');
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customer = Customer::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $customer->prepend('Select Customer', '');
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'income')->get()->pluck('name', 'id');
+            $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)->where('type', '=', 'income')->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
+            }
+            else
+            {
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('select Account', '');
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'income')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+            }
 
             $data['monthList'] = $month = $this->yearMonth();
             $data['yearList'] = $this->yearList();
@@ -76,7 +88,14 @@ class ReportController extends Controller
             // ------------------------------REVENUE INCOME-----------------------------------
             $incomes = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year,category_id')
                 ->leftjoin('product_service_categories', 'revenues.category_id', '=', 'product_service_categories.id')->where('product_service_categories.type', '=', 1);
-            $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());
+                if(\Auth::user()->type == 'branch' )
+                {
+                    $incomes->where('revenues.owned_by', '=', \Auth::user()->id);
+                }
+                else
+                {
+                    $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());
+                }
             $incomes->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -109,7 +128,14 @@ class ReportController extends Controller
             }
 
             $incomesData = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year');
-            $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $incomesData->where('revenues.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            }
             $incomesData->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -130,9 +156,18 @@ class ReportController extends Controller
 
             //---------------------------INVOICE INCOME-----------------------------------------------
 
-            $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+            if(\Auth::user()->type == 'branch' )
+            {
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+                ->where('owned_by', \Auth::user()->id)
+                ->where('status', '!=', 0);
+            }
+            else
+            {
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
                 ->where('created_by', \Auth::user()->creatorId())
                 ->where('status', '!=', 0);
+            }
 
             $invoices->whereRAW('YEAR(send_date) =?', [$year]);
 
@@ -197,12 +232,24 @@ class ReportController extends Controller
     public function expenseSummary(Request $request)
     {
         if (\Auth::user()->can('expense report')) {
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-            $account->prepend('Select Account', '');
-            $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $vender->prepend('Select Vendor', '');
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'expense')->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
+            if(\Auth::user()->type == 'branch' )
+            {
+                $account = BankAccount::where('owned_by', '=', \Auth::user()->id)->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $vender = Vender::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+                $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)->where('type', '=', 'expense')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+            }
+            else
+            {
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'expense')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+            }
 
             $data['monthList'] = $month = $this->yearMonth();
             $data['yearList'] = $this->yearList();
@@ -218,7 +265,14 @@ class ReportController extends Controller
 
             //   -----------------------------------------PAYMENT EXPENSE ------------------------------------------------------------
             $expenses = Payment::selectRaw('sum(payments.amount) as amount,MONTH(date) as month,YEAR(date) as year,category_id')->leftjoin('product_service_categories', 'payments.category_id', '=', 'product_service_categories.id')->where('product_service_categories.type', '=', 2);
-            $expenses->where('payments.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $expenses->where('payments.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $expenses->where('payments.created_by', '=', \Auth::user()->creatorId());
+            }
             $expenses->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -250,7 +304,14 @@ class ReportController extends Controller
                 $array[] = $tmp;
             }
             $expensesData = Payment::selectRaw('sum(payments.amount) as amount,MONTH(date) as month,YEAR(date) as year');
-            $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $expensesData->where('payments.owned_by', '=', \Auth::user()->creatorId());
+            }
+            else
+            {
+                $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+            }
             $expensesData->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -272,8 +333,16 @@ class ReportController extends Controller
 
             //     ------------------------------------BILL EXPENSE----------------------------------------------------
 
-            $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
-            $bills->whereRAW('YEAR(send_date) =?', [$year]);
+                if(\Auth::user()->type == 'branch' )
+                {
+                    $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('owned_by', \Auth::user()->id)->where('status', '!=', 0);
+                    $bills->whereRAW('YEAR(send_date) =?', [$year]);
+                }
+                else
+                {
+                    $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
+                    $bills->whereRAW('YEAR(send_date) =?', [$year]);
+                }
 
             if (!empty($request->vender)) {
                 $bills->where('vender_id', '=', $request->vender);
@@ -335,20 +404,40 @@ class ReportController extends Controller
     public function incomeVsExpenseSummary(Request $request)
     {
         if (\Auth::user()->can('income vs expense report')) {
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+            if(\Auth::user()->type == 'branch' )
+            {
+            $account = BankAccount::where('owned_by', '=', \Auth::user()->id)->get()->pluck('holder_name', 'id');
             $account->prepend('Select Account', '');
-            $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $vender = Vender::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $vender->prepend('Select Vendor', '');
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customer = Customer::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $customer->prepend('Select Customer', '');
 
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
+            $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)->whereIn(
                 'type', [
                     1,
                     2,
                 ]
             )->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
+            }
+            else
+            {
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
+                    'type', [
+                        1,
+                        2,
+                    ]
+                )->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+            }
 
             $data['monthList'] = $month = $this->yearMonth();
             $data['yearList'] = $this->yearList();
@@ -366,7 +455,14 @@ class ReportController extends Controller
 
             // ------------------------------TOTAL PAYMENT EXPENSE-----------------------------------------------------------
             $expensesData = Payment::selectRaw('sum(payments.amount) as amount,MONTH(date) as month,YEAR(date) as year');
-            $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $expensesData->where('payments.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+            }
             $expensesData->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -391,8 +487,16 @@ class ReportController extends Controller
 
             // ------------------------------TOTAL BILL EXPENSE-----------------------------------------------------------
 
-            $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
-            $bills->whereRAW('YEAR(send_date) =?', [$year]);
+            if(\Auth::user()->type == 'branch' )
+            {
+                $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('owned_by', \Auth::user()->id)->where('status', '!=', 0);
+                $bills->whereRAW('YEAR(send_date) =?', [$year]);
+            }
+            else
+            {
+                $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
+                $bills->whereRAW('YEAR(send_date) =?', [$year]);
+            }
 
             if (!empty($request->vender)) {
                 $bills->where('vender_id', '=', $request->vender);
@@ -428,7 +532,14 @@ class ReportController extends Controller
             // ------------------------------TOTAL REVENUE INCOME-----------------------------------------------------------
 
             $incomesData = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year');
-            $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $incomesData->where('revenues.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            }
             $incomesData->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -447,9 +558,18 @@ class ReportController extends Controller
             }
 
             // ------------------------------TOTAL INVOICE INCOME-----------------------------------------------------------
-            $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+            if(\Auth::user()->type == 'branch' )
+            {
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+                ->where('owned_by', \Auth::user()->id)->where('status', '!=', 0);
+            $invoices->whereRAW('YEAR(send_date) =?', [$year]);
+            }
+            else
+            {
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
                 ->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
             $invoices->whereRAW('YEAR(send_date) =?', [$year]);
+            }
             if (!empty($request->customer)) {
                 $invoices->where('customer_id', '=', $request->customer);
             }
@@ -533,7 +653,14 @@ class ReportController extends Controller
         if (\Auth::user()->can('tax report')) {
             $data['monthList'] = $month = $this->yearMonth();
             $data['yearList'] = $this->yearList();
-            $data['taxList'] = $taxList = Tax::where('created_by', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'branch' )
+            {
+                $data['taxList'] = $taxList = Tax::where('owned_by', \Auth::user()->id)->get();
+            }
+            else
+            {
+                $data['taxList'] = $taxList = Tax::where('created_by', \Auth::user()->creatorId())->get();
+            }
 
             if (isset($request->year)) {
                 $year = $request->year;
@@ -543,8 +670,16 @@ class ReportController extends Controller
 
             $data['currentYear'] = $year;
 
-            $invoiceProducts = InvoiceProduct::selectRaw('invoice_products.* ,MONTH(invoice_products.created_at) as month,YEAR(invoice_products.created_at) as year')->leftjoin('product_services', 'invoice_products.product_id', '=', 'product_services.id')->whereRaw('YEAR(invoice_products.created_at) =?', [$year])->where('product_services.created_by', '=', \Auth::user()->creatorId())->get();
+            // if(\Auth::user()->type == 'branch' )
+            // {
+            //     $invoiceProducts = InvoiceProduct::selectRaw('invoice_products.* ,MONTH(invoice_products.created_at) as month,YEAR(invoice_products.created_at) as year')->leftjoin('product_services', 'invoice_products.product_id', '=', 'product_services.id')->whereRaw('YEAR(invoice_products.created_at) =?', [$year])->where('product_services.owned_by', '=', \Auth::user()->id)->get();
 
+            // }
+            // else
+            // {
+                $invoiceProducts = InvoiceProduct::selectRaw('invoice_products.* ,MONTH(invoice_products.created_at) as month,YEAR(invoice_products.created_at) as year')->leftjoin('product_services', 'invoice_products.product_id', '=', 'product_services.id')->whereRaw('YEAR(invoice_products.created_at) =?', [$year])->where('product_services.created_by', '=', \Auth::user()->creatorId())->get();
+
+            // }
             $incomeTaxesData = [];
             foreach ($invoiceProducts as $invoiceProduct) {
                 $incomeTax = [];
@@ -597,8 +732,14 @@ class ReportController extends Controller
                 }
             }
 
-            $billProducts = BillProduct::selectRaw('bill_products.* ,MONTH(bill_products.created_at) as month,YEAR(bill_products.created_at) as year')->leftjoin('product_services', 'bill_products.product_id', '=', 'product_services.id')->whereRaw('YEAR(bill_products.created_at) =?', [$year])->where('product_services.created_by', '=', \Auth::user()->creatorId())->get();
-
+            // if(\Auth::user()->type == 'branch' )
+            // {
+            //     $billProducts = BillProduct::selectRaw('bill_products.* ,MONTH(bill_products.created_at) as month,YEAR(bill_products.created_at) as year')->leftjoin('product_services', 'bill_products.product_id', '=', 'product_services.id')->whereRaw('YEAR(bill_products.created_at) =?', [$year])->where('product_services.owned_by', '=', \Auth::user()->id)->get();
+            // }
+            // else
+            // {
+                $billProducts = BillProduct::selectRaw('bill_products.* ,MONTH(bill_products.created_at) as month,YEAR(bill_products.created_at) as year')->leftjoin('product_services', 'bill_products.product_id', '=', 'product_services.id')->whereRaw('YEAR(bill_products.created_at) =?', [$year])->where('product_services.created_by', '=', \Auth::user()->creatorId())->get();
+            // }
             $expenseTaxesData = [];
             foreach ($billProducts as $billProduct) {
                 $billTax = [];
@@ -703,8 +844,14 @@ class ReportController extends Controller
         if (\Auth::user()->can('invoice report')) {
             $filter['customer'] = __('All');
             $filter['status'] = __('All');
-
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'branch' )
+            {
+                $customer = Customer::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
             $customer->prepend('Select Customer', '');
             $status = Invoice::$statues;
 
@@ -717,8 +864,16 @@ class ReportController extends Controller
             } else {
                 $invoices->where('status', '!=', 0);
             }
+            if(\Auth::user()->type == 'branch' )
+            {
+                $invoices->where('owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $invoices->where('created_by', '=', \Auth::user()->creatorId());
 
-            $invoices->where('created_by', '=', \Auth::user()->creatorId());
+            }
+
 
             if (!empty($request->start_month) && !empty($request->end_month)) {
                 $start = strtotime($request->start_month);
@@ -2514,7 +2669,14 @@ class ReportController extends Controller
             // ------------------------------REVENUE INCOME-----------------------------------
             $incomes = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year,category_id')
                 ->leftjoin('product_service_categories', 'revenues.category_id', '=', 'product_service_categories.id')->where('product_service_categories.type', '=', 1);
-            $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());
+                if(\Auth::user()->type == 'branch' )
+                {
+                    $incomes->where('revenues.owned_by', '=', \Auth::user()->id);
+                }
+                else
+                {
+                    $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());    
+                }
             $incomes->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -2547,7 +2709,14 @@ class ReportController extends Controller
             }
 
             $incomesData = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year');
-            $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $incomesData->where('revenues.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            }
             $incomesData->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -2568,9 +2737,18 @@ class ReportController extends Controller
 
             //---------------------------INVOICE INCOME-----------------------------------------------
 
-            $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+            if(\Auth::user()->type == 'branch' )
+            {
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+                ->where('owned_by', \Auth::user()->id)
+                ->where('status', '!=', 0);
+            }
+            else
+            {
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
                 ->where('created_by', \Auth::user()->creatorId())
                 ->where('status', '!=', 0);
+            }
 
             $invoices->whereRAW('YEAR(send_date) =?', [$year]);
 
@@ -2621,7 +2799,14 @@ class ReportController extends Controller
 
             //   -----------------------------------------PAYMENT EXPENSE ------------------------------------------------------------
             $expenses = Payment::selectRaw('sum(payments.amount) as amount,MONTH(date) as month,YEAR(date) as year,category_id')->leftjoin('product_service_categories', 'payments.category_id', '=', 'product_service_categories.id')->where('product_service_categories.type', '=', 2);
-            $expenses->where('payments.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $expenses->where('payments.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $expenses->where('payments.created_by', '=', \Auth::user()->creatorId());
+            }
             $expenses->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -2653,7 +2838,14 @@ class ReportController extends Controller
                 $array[] = $tmp;
             }
             $expensesData = Payment::selectRaw('sum(payments.amount) as amount,MONTH(date) as month,YEAR(date) as year');
-            $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $expensesData->where('payments.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+            }
             $expensesData->whereRAW('YEAR(date) =?', [$year]);
 
             if (!empty($request->category)) {
@@ -2675,8 +2867,16 @@ class ReportController extends Controller
 
             //     ------------------------------------BILL EXPENSE----------------------------------------------------
 
-            $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
-            $bills->whereRAW('YEAR(send_date) =?', [$year]);
+            if(\Auth::user()->type == 'branch' )
+            {
+                $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('owned_by', \Auth::user()->id)->where('status', '!=', 0);
+                $bills->whereRAW('YEAR(send_date) =?', [$year]);
+            }
+            else
+            {
+                $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
+                $bills->whereRAW('YEAR(send_date) =?', [$year]);
+            }           
 
             if (!empty($request->vender)) {
                 $bills->where('vender_id', '=', $request->vender);
@@ -3626,7 +3826,14 @@ class ReportController extends Controller
         $invoiceCustomers->leftJoin('invoice_payments', 'invoice_payments.invoice_id', 'invoices.invoice_id');
         $invoiceCustomers->leftJoin('credit_notes', 'credit_notes.invoice', 'invoices.invoice_id');
         $invoiceCustomers->leftJoin('taxes', \DB::raw('FIND_IN_SET(taxes.id, invoice_products.tax)'), '>', \DB::raw('0'));
-        $invoiceCustomers->where('invoices.created_by', \Auth::user()->creatorId());
+        if(\Auth::user()->type == 'branch' )
+        {
+            $invoiceCustomers->where('invoices.owned_by', \Auth::user()->id);
+        }
+        else
+        {
+            $invoiceCustomers->where('invoices.created_by', \Auth::user()->creatorId());
+        }
         $invoiceCustomers->where('invoices.created_at', '>=', $start);
         $invoiceCustomers->where('invoices.created_at', '<=', $end);
         $invoiceCustomers->groupBy('invoices.customer_id');

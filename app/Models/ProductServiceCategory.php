@@ -10,6 +10,7 @@ class ProductServiceCategory extends Model
     protected $fillable = [
         'name',
         'type',
+        'owned_by',
         'created_by',
     ];
 

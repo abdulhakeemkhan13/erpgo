@@ -89,4 +89,19 @@ class Contract extends Model
         return $this->belongsTo('App\Models\ContractNotes', 'id', 'contract_id');
     }
 
+    public function company()
+    {
+        return $this->hasOne('App\Models\Company', 'id', 'company_id');
+    }
+
+    public function contractSpace()
+    {
+        return $this->hasMany('App\Models\ContractSpaceHoure', 'contract_id', 'id');
+    }
+
+    public static function spaceContract($contract , $space)
+    {
+        return ContractSpaceHoure::where('contract_id', $contract)->where('space_id',$space)->first();
+    }
+
 }

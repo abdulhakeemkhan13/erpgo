@@ -16,6 +16,7 @@ class Payment extends Model
         'category_id',
         'payment_method',
         'reference',
+        'owned_by',
         'created_by',
     ];
 

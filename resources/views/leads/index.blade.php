@@ -94,7 +94,7 @@
         <div class="col-sm-12">
             @php
                 $lead_stages = $pipeline->leadStages;
-                $json = [];
+                $json = [];  
                 foreach ($lead_stages as $lead_stage){
                     $json[] = 'task-list-'.$lead_stage->id;
                 }
