@@ -382,6 +382,7 @@
                 success: function (data) {
                     console.log(data);
                     if (data != '') {
+
                         // $('#company_detail').removeClass('d-block');
                         $('#contract').empty().append(`<option selected disabled value="">Select a Contract</option>`);
                         for(var i=0; i<data.data.length; i++){
@@ -408,7 +409,7 @@
                 },
                 cache: false,
                 success: function (data) {
-                    // console.log(data);
+
                     if (data.html !== undefined) {
                         $('#sortable-table tbody:gt(0)').remove();
                         $('.ui-sortable').empty().html(data.html);
@@ -422,7 +423,7 @@
             });
         
         });
-        
+
     </script>
 @endpush
 @section('content')
@@ -561,6 +562,7 @@
 
                                 <td width="25%" class="form-group pt-0">
                                     {{-- {{ Form::text('item', '', array('class' => 'form-control item', 'required' => 'required')) }} --}}
+
                                     {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','required'=>'required')) }}
                                 </td>
                                 <td>

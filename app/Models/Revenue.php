@@ -16,6 +16,7 @@ class Revenue extends Model
         'payment_method',
         'reference',
         'description',
+        'owned_by',
         'created_by',
     ];
 

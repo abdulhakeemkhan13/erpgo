@@ -165,6 +165,7 @@ class ContractController extends Controller
                     }
                     if (!$latest) {
                         $customer_id = 1;
+
                     }else{
                         $customer_id = $latest->customer_id + 1;
                     }
@@ -249,6 +250,7 @@ class ContractController extends Controller
                 // }
 
                 //webhook
+
                 // $module = 'New Contract';
                 // $webhook =  Utility::webhookSetting($module);
                 // if ($webhook) {
@@ -261,6 +263,7 @@ class ContractController extends Controller
                 //         return redirect()->back()->with('error', __('Webhook call failed.'));
                 //     }
                 // }
+
                 DB::commit();
 
                 return redirect()->back()->with('success', __('Contract successfully created!') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
@@ -296,6 +299,7 @@ class ContractController extends Controller
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
         if (\Auth::user()->type == 'branch') {
+
             $company = Company::where('owned_by', '=', \Auth::user()->id)->get();
             $spaces       = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
             $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
@@ -339,40 +343,71 @@ class ContractController extends Controller
 
                 return redirect()->route('contract.index')->with('error', $messages->first());
             }
-            $contract              = new Contract();
-            $contract->company_id      = $request->company_id;
-            $contract->subject     = $request->subject;
-            // $contract->project_id  =$request->project_id;
-            $contract->type        = $request->type;
-            $contract->value       = $request->value;
-            $contract->start_date  = $request->start_date;
-            $contract->end_date    = $request->end_date;
-            $contract->description = $request->description;
-            // $contract->owned_by  = \Auth::user()->id;
-            // $contract->created_by  = \Auth::user()->creatorId();
-            $contract->save();
-
+            DB::beginTransaction();
+            try {
+                    // $contract              = new Contract();
+                    // $contract = Contract::findOrFail($contract->id);
+                    $contract->company_id      = $request->company_id;
+                    $contract->subject     = $request->subject;
+                    // $contract->project_id  =$request->project_id;
+                    $contract->type        = $request->type;
+                    $contract->value       = $request->value;
+                    $contract->start_date  = $request->start_date;
+                    $contract->end_date    = $request->end_date;
+                    $contract->description = $request->description;
+                    // $contract->owned_by  = \Auth::user()->id;
+                    // $contract->created_by  = \Auth::user()->creatorId();
+                    $contract->save();
             
-            for ($i = 0; $i < count($request->chair); $i++) {
-                $assign_room   = new Roomassign();
-                $assign_room->company_id     = $company->id;
-                $assign_room->contract_id     = $contract->id;
-                $assign_room->space_id        = $request->space;
-                $assign_room->chair_id        = $request->chair[$i];
-                $assign_room->save();
-            }
-            for ($j = 0; $j < count($request->room_hours_ids); $j++) {
+                    for ($i = 0; $i < count($request->chair); $i++) {
+                        dd($request->chair);
+                        $existingRoomAssign = Roomassign::where('contract_id', $contract->id)
+                            ->where('chair_id', $request->chair[$i])
+                            ->first();                    
+                        if ($existingRoomAssign) {
+                            dd($existingRoomAssign);
+                            // dd('Updating existing record', $existingRoomAssign);                    
+                            $existingRoomAssign->space_id = $request->space;
+                            $existingRoomAssign->save();
+                        } else {
+                            // dd('Creating new record', $request->chair[$i]);                    
+                            // $assign_room = new Roomassign();
+                            // $assign_room->company_id = $request->company_id;
+                            // $assign_room->contract_id = $contract->id;
+                            // $assign_room->space_id = $request->space;
+                            // $assign_room->chair_id = $request->chair[$i];
+                            // $assign_room->save();
+                        }
+                    }                    
 
-                $contract_space_hour = new ContractSpaceHoure;
-                $contract_space_hour->contract_id   = $contract->id;
-                $contract_space_hour->space_id      = $request->room_hours_ids[$j];
-                $contract_space_hour->company_id    = $company->id;
-                $contract_space_hour->assign_hour   = $request->room_hours[$j];
-                $contract_space_hour->hourly_rate   = $request->hourly_rate[$j];
-                $contract_space_hour->save();
-            }
+                    for ($j = 0; $j < count($request->room_hours_ids); $j++) {
+                        $existingContractSpaceHour = ContractSpaceHoure::where('contract_id', $contract->id)
+                            ->where('space_id', $request->room_hours_ids[$j])
+                            ->first();
+                        if ($existingContractSpaceHour) {
+                            // dd($existingContractSpaceHour);
+                            $existingContractSpaceHour->assign_hour   = $request->room_hours[$j];
+                            $existingContractSpaceHour->hourly_rate   = $request->hourly_rate[$j];
+                            $existingContractSpaceHour->save();
+                        } else {
+                            // $contract_space_hour = new ContractSpaceHoure;
+                            // $contract_space_hour->contract_id = $contract->id;
+                            // $contract_space_hour->space_id = $request->room_hours_ids[$j];
+                            // $contract_space_hour->company_id = $request->company_id;
+                            // $contract_space_hour->assign_hour   = $request->room_hours[$j];
+                            // $contract_space_hour->hourly_rate   = $request->hourly_rate[$j];
+                            // $contract_space_hour->save();
+                        }
+                    }
 
-            return redirect()->route('contract.index')->with('success', __('Contract successfully updated.'));
+                    DB::commit();
+
+                    return redirect()->route('contract.index')->with('success', __('Contract successfully updated.'));
+                } catch (\Exception $e) {
+                    DB::rollback();
+                    return redirect()->back()->with('error', $e);
+                }
+
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }

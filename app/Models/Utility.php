@@ -690,6 +690,7 @@ class Utility extends Model
 
     public static function updateUserBalance($users, $id, $amount, $type)
     {
+        
         if($users == 'customer')
         {
             $user = Customer::find($id);

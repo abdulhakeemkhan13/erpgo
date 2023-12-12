@@ -14,8 +14,8 @@ class Invoice extends Model
         'ref_number',
         'status',
         'category_id',
+        'owned_by',
         'contract_id',
-        'created_by',
         'created_by',
     ];
 

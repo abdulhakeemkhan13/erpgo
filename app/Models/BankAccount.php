@@ -14,6 +14,7 @@ class BankAccount extends Model
         'opening_balance',
         'contact_number',
         'bank_address',
+        'owned_by',
         'created_by',
     ];
 

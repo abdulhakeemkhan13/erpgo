@@ -13,6 +13,7 @@ class Goal extends Model
         'to',
         'amount',
         'is_display',
+        'owned_by',
         'created_by',
     ];
 

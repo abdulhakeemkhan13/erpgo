@@ -254,14 +254,16 @@ class ChairController extends Controller
         }
     }
 
+
     public function space_chair($id,$con=null)
     {
-        // dd($con);
+
         $user = \Auth::user();
         if(\Auth::user()->type == 'branch'){
             $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->id)->get();
             $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
         }else{
+
             $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
             $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
         }
@@ -270,6 +272,7 @@ class ChairController extends Controller
             return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ,'conchair'=>$conchair ], 201);
         }
         // $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
+
         return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ], 201);
     }
 
