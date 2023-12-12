@@ -20,7 +20,11 @@ return new class extends Migration
             $table->integer('owned_by')->after('company_id');           
         });
         Schema::table('invoices', function (Blueprint $table) {
-            $table->integer('owned_by')->after('discount_apply');           
+
+            $table->unsignedBigInteger('contract_id')->nullable()->after('discount_apply');           
+            $table->foreign('contract_id')->references('id')->on('contracts')->onDelete('set null'); 
+            $table->integer('owned_by')->after('contract_id');      
+
         });
     }
 
@@ -39,6 +43,8 @@ return new class extends Migration
         });
 
         Schema::table('invoices', function (Blueprint $table) {
+
+            $table->dropColumn('contract_id');
             $table->dropColumn('owned_by');
         });
     }

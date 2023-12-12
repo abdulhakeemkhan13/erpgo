@@ -32,9 +32,9 @@
                             max_size: 2048
                         });
                     }
-                    if($('.select2').length) {
-                        $('.select2').select2();
-                    }
+                    // if($('.select2').length) {
+                    //     $('.select2').select2();
+                    // }
 
                 },
                 hide: function (deleteElement) {
@@ -382,7 +382,7 @@
                 success: function (data) {
                     console.log(data);
                     if (data != '') {
-                        console.log(data.data.length);
+
                         // $('#company_detail').removeClass('d-block');
                         $('#contract').empty().append(`<option selected disabled value="">Select a Contract</option>`);
                         for(var i=0; i<data.data.length; i++){
@@ -409,7 +409,7 @@
                 },
                 cache: false,
                 success: function (data) {
-                    console.log(data);
+
                     if (data.html !== undefined) {
                         $('#sortable-table tbody:gt(0)').remove();
                         $('.ui-sortable').empty().html(data.html);
@@ -423,6 +423,7 @@
             });
         
         });
+
     </script>
 @endpush
 @section('content')
@@ -561,7 +562,8 @@
 
                                 <td width="25%" class="form-group pt-0">
                                     {{-- {{ Form::text('item', '', array('class' => 'form-control item', 'required' => 'required')) }} --}}
-                                    {{ Form::select('item', $product_services,'', array('class' => 'form-control select item','data-url'=>route('invoice.product'),'required'=>'required')) }}
+
+                                    {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','required'=>'required')) }}
                                 </td>
                                 <td>
                                     <div class="form-group price-input input-group search-form">

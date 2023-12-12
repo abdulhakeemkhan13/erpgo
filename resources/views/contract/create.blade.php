@@ -5,7 +5,7 @@
             {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}
             {{ Form::text('subject', '', ['class' => 'form-control', 'required' => 'required']) }}
         </div>
-        
+
         <div class="form-group col-md-6 row">
             <div class="col-md-9">
                 {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}
@@ -24,7 +24,9 @@
         </div>
         <div class="form-group col-md-6 d-none companyText">
             {{ Form::label('ntn', __('NTN'), ['class' => 'form-label']) }}
-            {{ Form::text('ntn', '', ['class' => 'form-control req']) }}
+
+            {{ Form::text('ntn', '', ['class' => 'form-control']) }}
+
         </div>
 
         <div class="form-group col-md-12 d-none companyText">
@@ -76,7 +78,9 @@
         {{ Form::label('meeting_hours', 'Meeting Room & Board Room Hours', ['class' => 'form-label']) }}
         @foreach ($ismeeting as $meeting)
             <div class="d-flex col-md-12">
-                <label class="form-label m-1" for="{{ $meeting->id }}" style="width:25%;">{{ ucfirst($meeting->name) }} : </label>
+
+                <label class="form-label m-1" style="width: 25%" for="{{ $meeting->id }}">{{ ucfirst($meeting->name) }} : </label>
+
                 <input type="hidden" name="room_hours_ids[]" value="{{ $meeting->id }}" class="form-label m-1"
                     style="width: 25%">
                 <input type="number" name="room_hours[]" id="{{ $meeting->id }}" class="form-label m-1"
@@ -188,7 +192,7 @@
                     $("#ch").empty();
 
                     for (var i = 0; i < data.data.length; i++) {
-                        console.log(data);
+
                         s += `<option value="` + data.data[i]['id'] +
                             `" ${data.assignchair.indexOf(data.data[i]['id']) !== -1 ? 'disabled' : ''}>` +
                             data.data[i]['name'] + `</option>`;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chair;
 use App\Models\CustomField;
+use App\Models\IsMail;
 use App\Models\Plan;
 use App\Models\Roomassign;
 use App\Models\SpaceType;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 
-class ChairController extends Controller
+class IsMailController extends Controller
 {
 
     public function __construct()
@@ -40,13 +41,12 @@ class ChairController extends Controller
         {
             if(\Auth::user()->type == 'company'){
                 $user    = \Auth::user();
-                $chair = Chair::where('created_by', '=', $user->creatorId())->get();
-
+                $chair = IsMail::where('created_by', '=', $user->creatorId())->get();
             }else{
                 $user    = \Auth::user();
-                $chair = Chair::where('owned_by', '=', $user->id)->get();
+                $chair = IsMail::where('owned_by', '=', $user->id)->get();
             }
-            return view('chair.index', compact('chair'));
+            return view('ismail.index', compact('chair'));
         }
         else
         {
@@ -65,13 +65,13 @@ class ChairController extends Controller
         {
             if($request->ajax)
             {
-                return view('chair.createAjax');
+                return view('ismail.createAjax');
             }
             else
             {
-                $customFields = CustomField::where('module', '=', 'chair')->get();
+                $customFields = CustomField::where('module', '=', 'ismail')->get();
 
-                return view('chair.create', compact('customFields'));
+                return view('ismail.create', compact('customFields'));
             }
         }
         else
@@ -94,9 +94,9 @@ class ChairController extends Controller
             $user      = \Auth::user();
             $validator = \Validator::make(
                 $request->all(), [
-                    'name' => 'required',
-                    'price' => 'required',
-                    'type' => 'required',
+                    'date' => 'required',
+                    // 'price' => 'required',
+                    // 'type' => 'required',
                 ]
             );
             if($validator->fails())
@@ -112,17 +112,18 @@ class ChairController extends Controller
                 }
             }
            
-                $chair = Chair::create(
+                $chair = IsMail::create(
                     [
-                        'name' => $request->name,
-                        'price' => $request->price,
+                        'company_id' => $user->company_id,
+                        'date' => $request->date,
+                        'user_id' => $user->id,
                         'type' => $request->type,
-                        'owned_by' => $user->id,
+                        'owned_by' => $user->owned_by,
                         'created_by' => $user->creatorId(),
                     ]
                 );
 
-                return redirect()->route('chair.index')->with('success', __('Chair successfully created.'));
+                return redirect()->route('ismail.index')->with('success', __('IsMail successfully created.'));
 
         }
         else
@@ -156,18 +157,18 @@ class ChairController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Chair $chair)
+    public function edit(IsMail $mail)
     {
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->id)
+            if($mail->created_by == $user->creatorId() || $mail->owned_by == $user->id)
             {
 
-                $chair->customField = CustomField::getData($chair, 'chair');
+                $mail->customField = CustomField::getData($chair, 'chair');
                 $customFields        = CustomField::where('module', '=', 'chair')->get();
 
-                return view('chair.edit', compact('chair', 'customFields'));
+                return view('ismail.edit', compact('mail', 'customFields'));
             }
             else
             {
@@ -254,16 +255,14 @@ class ChairController extends Controller
         }
     }
 
-
     public function space_chair($id,$con=null)
     {
-
+        // dd($con);
         $user = \Auth::user();
         if(\Auth::user()->type == 'branch'){
             $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->id)->get();
             $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
         }else{
-
             $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
             $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
         }
@@ -272,7 +271,6 @@ class ChairController extends Controller
             return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ,'conchair'=>$conchair ], 201);
         }
         // $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
-
         return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ], 201);
     }
 

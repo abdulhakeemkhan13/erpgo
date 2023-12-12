@@ -90,12 +90,14 @@ class InvoiceController extends Controller
             // $product_services->prepend('--', '');
             $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('meeting','yes')->get()->pluck('name', 'id');
             $product_services->prepend('--', '');
+
             if(\Auth::user()->type == 'company'){
                 $company = Company::where('created_by', \Auth::user()->creatorId())->pluck('name', 'id');
             }else{
                 $company = Company::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             }
             $company->prepend('Select Company', '');
+
 
             return view('invoice.create', compact('customers','company', 'invoice_number', 'product_services', 'category', 'customFields', 'customerId'));
         }
@@ -154,8 +156,11 @@ class InvoiceController extends Controller
             $invoice->due_date       = $request->due_date;
             $invoice->category_id    = $request->category_id;
             $invoice->ref_number     = $request->ref_number;
+            $invoice->contract_id     = $request->contract_id;
 //            $invoice->discount_apply = isset($request->discount_apply) ? 1 : 0;
-            $invoice->owend_by     = \Auth::user()->id;
+
+            $invoice->owned_by     = \Auth::user()->id;
+
             $invoice->created_by     = \Auth::user()->creatorId();
             $invoice->save();
             CustomField::saveData($invoice, $request->customField);
@@ -249,16 +254,22 @@ class InvoiceController extends Controller
             $id      = Crypt::decrypt($ids);
             $invoice = Invoice::find($id);
             $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-            $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get();
             $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 'income')->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
             // $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('meeting','yes')->get()->pluck('name', 'id');  
-            // dd($product_services);          
+
+            $product_services = Space::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');        
+
             $invoice->customField = CustomField::getData($invoice, 'invoice');
             // dd($invoice);
             $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-            return view('invoice.edit', compact('customers', 'product_services', 'invoice', 'invoice_number', 'category', 'customFields'));
+
+            $cust      = Customer::find($invoice->customer_id);
+            $cont = Contract::where('company_id', $cust->company_id)->get();
+            
+            return view('invoice.edit', compact('customers', 'product_services','cont', 'invoice', 'invoice_number', 'category', 'customFields'));
+
         }
         else
         {
@@ -286,6 +297,7 @@ class InvoiceController extends Controller
 
                     return redirect()->route('invoice.index')->with('error', $messages->first());
                 }
+                
                 $invoice->customer_id    = $request->customer_id;
                 $invoice->issue_date     = $request->issue_date;
                 $invoice->due_date       = $request->due_date;
@@ -1281,9 +1293,12 @@ class InvoiceController extends Controller
         
         $contract_data = Contract::where('id', $request->id)->first();
         $assign_room = Roomassign::with('space')->where('contract_id', $request->id)->get();
+
+        $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('id',@$assign_room[0]->space->id)->pluck('name', 'id');
+        // $product_services->prepend('--', '');
         // dd($assign_room);
 
-        $report = view('invoice.invoice_details', compact('contract_data','assign_room'))->render();
+        $report = view('invoice.invoice_details', compact('contract_data','assign_room','product_services'))->render();
         return response(['html' => $report]);
 
     }

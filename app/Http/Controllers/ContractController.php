@@ -165,9 +165,11 @@ class ContractController extends Controller
                     }
                     if (!$latest) {
                         $customer_id = 1;
-                    } else{
-                    $customer_id = $latest->customer_id + 1;
+
+                    }else{
+                        $customer_id = $latest->customer_id + 1;
                     }
+
                     $default_language          = DB::table('settings')->select('value')->where('name', 'default_language')->first();
                     
                     $customers                  = new Customer();
@@ -248,18 +250,20 @@ class ContractController extends Controller
                 // }
 
                 //webhook
-                $module = 'New Contract';
-                $webhook =  Utility::webhookSetting($module);
-                if ($webhook) {
-                    $parameter = json_encode($contract);
-                    $status = Utility::WebhookCall($webhook['url'], $parameter, $webhook['method']);
 
-                    if ($status == true) {
-                        return redirect()->back()->with('success', __('Contract successfully created!') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
-                    } else {
-                        return redirect()->back()->with('error', __('Webhook call failed.'));
-                    }
-                }
+                // $module = 'New Contract';
+                // $webhook =  Utility::webhookSetting($module);
+                // if ($webhook) {
+                //     $parameter = json_encode($contract);
+                //     $status = Utility::WebhookCall($webhook['url'], $parameter, $webhook['method']);
+
+                //     if ($status == true) {
+                //         return redirect()->back()->with('success', __('Contract successfully created!') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+                //     } else {
+                //         return redirect()->back()->with('error', __('Webhook call failed.'));
+                //     }
+                // }
+
                 DB::commit();
 
                 return redirect()->back()->with('success', __('Contract successfully created!') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
@@ -295,40 +299,41 @@ class ContractController extends Controller
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
         if (\Auth::user()->type == 'branch') {
-            $company = Company::where('owned_by', '=', \Auth::user()->id)->pluck('name', 'id');
+
+            $company = Company::where('owned_by', '=', \Auth::user()->id)->get();
             $spaces       = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
             $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
             // $space->prepend(__('Select Space'),0);
-            $roomassign = Roomassign::where('contract_id',$contract->id)->get();
-
         } else {
-            $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
+            $company = Company::where('created_by', '=', \Auth::user()->creatorId())->get();
             $spaces       = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->get();
             // $space->prepend(__('Select Space'),0);
             $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
-            $roomassign = Roomassign::where('contract_id',$contract->id)->get();
         }
-        $chairs = Chair::where('space_id',@$roomassign[0]->space_id)->get();
-        $chairget =$roomassign->pluck('chair_id')->toArray();
-        return view('contract.edit', compact('contractTypes','chairs', 'chairget','spaces', 'contract', 'ismeeting','company','roomassign'));
+            $roomassign = Roomassign::where('contract_id',$contract->id)->get();
+            $chairs = Chair::where('space_id',@$roomassign[0]->space_id)->get();
+            $chairget =$roomassign->pluck('chair_id')->toArray();
+            $chairused =Roomassign::where('space_id',@$roomassign[0]->space_id)->pluck('chair_id')->toArray();
+        return view('contract.edit', compact('contractTypes','chairs', 'chairused','chairget','spaces', 'contract', 'ismeeting','company','roomassign'));
     }
+
     public function update(Request $request, Contract $contract)
     {
         if (\Auth::user()->can('edit contract')) {
             $rules = [
-                'company_id' => 'required',
-                'subject' => 'required',
-                // 'ntn' => 'required',
-                // 'email' => 'required',
-                // 'phone_no' => 'required',
-                'type' => 'required',
-                'value' => 'required',
-                'start_date' => 'required',
-                'end_date' => 'required',
-                'space' => 'required',
-                'chair' => 'required',
-                'room_hours' => 'required',
-                'hourly_rate' => 'required',
+               'company' => 'required',
+               'subject' => 'required',
+               // 'ntn' => 'required',
+               // 'email' => 'required',
+               // 'phone_no' => 'required',
+               'type' => 'required',
+               'value' => 'required',
+               'start_date' => 'required',
+               'end_date' => 'required',
+               'space' => 'required',
+               'chair' => 'required',
+               'room_hours' => 'required',
+               'hourly_rate' => 'required',
             ];
 
             $validator = \Validator::make($request->all(), $rules);
@@ -402,6 +407,7 @@ class ContractController extends Controller
                     DB::rollback();
                     return redirect()->back()->with('error', $e);
                 }
+
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }

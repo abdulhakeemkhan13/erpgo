@@ -225,7 +225,9 @@ class DashboardController extends Controller
             if (!file_exists(storage_path() . "/installed")) {
                 header('location:install');
                 die;
+
             } else {
+
                 return redirect('login');
 
                 $settings = Utility::settings();

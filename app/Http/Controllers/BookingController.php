@@ -1056,9 +1056,9 @@ class BookingController extends Controller
                     'url' => route('booking.calendar.show', $val->id),
                     'resize_url' => route('booking.calendar.drag', $val->id),
                 ];
+
             }
-        // }
-// dd($arrayJson);
+
         return $arrayJson;
     }
 

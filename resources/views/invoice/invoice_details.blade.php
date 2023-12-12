@@ -2,9 +2,10 @@
     <tr>
         <td width="25%" class="form-group pt-0">
             {{-- {{ Form::text('item',$assign_room[0]->space->name, array('class' => 'form-control item','required'=>'required')) }} --}}
-            {{ Form::text('item', @$assign_room[0]->space->name, array('class' => 'form-control item', 'required' => 'required')) }}
 
-            {{-- {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','data-url'=>route('invoice.product'),'required'=>'required')) }} --}}
+            {{-- {{ Form::text('item', @$assign_room[0]->space->name, array('class' => 'form-control item', 'required' => 'required')) }} --}}
+            {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','required'=>'required')) }}
+
         </td>
         <td>
             <div class="form-group price-input input-group search-form">
