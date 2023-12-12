@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Exports\InvoiceExport;
 use App\Models\BankAccount;
 use App\Models\ChartOfAccount;
+use App\Models\Company;
+use App\Models\Contract;
 use App\Models\CreditNote;
 use App\Models\Customer;
 use App\Models\CustomField;
@@ -17,6 +19,7 @@ use App\Models\Plan;
 use App\Models\Products;
 use App\Models\ProductService;
 use App\Models\ProductServiceCategory;
+use App\Models\Roomassign;
 use App\Models\StockReport;
 use App\Models\Transaction;
 use App\Models\User;
@@ -28,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Space;
 
 class InvoiceController extends Controller
 {
@@ -82,8 +86,16 @@ class InvoiceController extends Controller
             $customers->prepend('Select Customer', '');
             $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type','income')->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            // $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            // $product_services->prepend('--', '');
+            $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('meeting','yes')->get()->pluck('name', 'id');
             $product_services->prepend('--', '');
+            // if(\Auth::user()->type == 'company'){
+            //     $company = Company::where('created_by', \Auth::user()->creatorId())->pluck('name', 'id');
+            // }else{
+            //     $company = Company::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+            // }
+            // $company->prepend('Select Company', '');
 
             return view('invoice.create', compact('customers', 'invoice_number', 'product_services', 'category', 'customFields', 'customerId'));
         }
@@ -102,7 +114,7 @@ class InvoiceController extends Controller
     public function product(Request $request)
     {
 
-        $data['product']     = $product = ProductService::find($request->product_id);
+        $data['product']     = $product = Space::find($request->product_id);
         $data['unit']        = (!empty($product->unit())) ? $product->unit()->name : '';
         $data['taxRate']     = $taxRate = !empty($product->tax_id) ? $product->taxRate($product->tax_id) : 0;
         $data['taxes']       = !empty($product->tax_id) ? $product->tax($product->tax_id) : 0;
@@ -116,17 +128,17 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
-//        dd($request->all());
+    //    dd($request->all());
         if(\Auth::user()->can('create invoice'))
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'customer_id' => 'required',
-                                   'issue_date' => 'required',
-                                   'due_date' => 'required',
-                                   'category_id' => 'required',
-                                   'items' => 'required',
-                               ]
+                                'customer_id' => 'required',
+                                'issue_date' => 'required',
+                                'due_date' => 'required',
+                                'category_id' => 'required',
+                                'items' => 'required',
+                            ]
             );
             if($validator->fails())
             {
@@ -142,7 +154,9 @@ class InvoiceController extends Controller
             $invoice->due_date       = $request->due_date;
             $invoice->category_id    = $request->category_id;
             $invoice->ref_number     = $request->ref_number;
+            $invoice->contract_id     = $request->contract_id;
 //            $invoice->discount_apply = isset($request->discount_apply) ? 1 : 0;
+            $invoice->owned_by     = \Auth::user()->id;
             $invoice->created_by     = \Auth::user()->creatorId();
             $invoice->save();
             CustomField::saveData($invoice, $request->customField);
@@ -163,33 +177,33 @@ class InvoiceController extends Controller
                 $invoiceProduct->save();
 
                 //inventory management (Quantity)
-                Utility::total_quantity('minus',$invoiceProduct->quantity,$invoiceProduct->product_id);
+                // Utility::total_quantity('minus',$invoiceProduct->quantity,$invoiceProduct->product_id);
 
                 //For Notification
-                $setting  = Utility::settings(\Auth::user()->creatorId());
-                $customer = Customer::find($request->customer_id);
-                $invoiceNotificationArr = [
-                    'invoice_number' => \Auth::user()->invoiceNumberFormat($invoice->invoice_id),
-                    'user_name' => \Auth::user()->name,
-                    'invoice_issue_date' => $invoice->issue_date,
-                    'invoice_due_date' => $invoice->due_date,
-                    'customer_name' => $customer->name,
-                ];
+                // $setting  = Utility::settings(\Auth::user()->creatorId());
+                // $customer = Customer::find($request->customer_id);
+                // $invoiceNotificationArr = [
+                //     'invoice_number' => \Auth::user()->invoiceNumberFormat($invoice->invoice_id),
+                //     'user_name' => \Auth::user()->name,
+                //     'invoice_issue_date' => $invoice->issue_date,
+                //     'invoice_due_date' => $invoice->due_date,
+                //     'customer_name' => $customer->name,
+                // ];
                 //Slack Notification
-                if(isset($setting['invoice_notification']) && $setting['invoice_notification'] == 1)
-                {
-                    Utility::send_slack_msg('new_invoice', $invoiceNotificationArr);
-                }
-                //Telegram Notification
-                if(isset($setting['telegram_invoice_notification']) && $setting['telegram_invoice_notification'] ==1)
-                {
-                    Utility::send_telegram_msg('new_invoice', $invoiceNotificationArr);
-                }
-                //Twilio Notification
-                if(isset($setting['twilio_invoice_notification']) && $setting['twilio_invoice_notification'] ==1)
-                {
-                    Utility::send_twilio_msg($customer->contact,'new_invoice', $invoiceNotificationArr);
-                }
+                // if(isset($setting['invoice_notification']) && $setting['invoice_notification'] == 1)
+                // {
+                //     Utility::send_slack_msg('new_invoice', $invoiceNotificationArr);
+                // }
+                // //Telegram Notification
+                // if(isset($setting['telegram_invoice_notification']) && $setting['telegram_invoice_notification'] ==1)
+                // {
+                //     Utility::send_telegram_msg('new_invoice', $invoiceNotificationArr);
+                // }
+                // //Twilio Notification
+                // if(isset($setting['twilio_invoice_notification']) && $setting['twilio_invoice_notification'] ==1)
+                // {
+                //     Utility::send_twilio_msg($customer->contact,'new_invoice', $invoiceNotificationArr);
+                // }
 
             }
 
@@ -197,11 +211,11 @@ class InvoiceController extends Controller
 
 
             //Product Stock Report
-            $type='invoice';
-            $type_id = $invoice->id;
-            StockReport::where('type','=','invoice')->where('type_id' ,'=', $invoice->id)->delete();
-            $description=$invoiceProduct->quantity.'  '.__(' quantity sold in invoice').' '. \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-            Utility::addProductStock( $invoiceProduct->product_id,$invoiceProduct->quantity,$type,$description,$type_id);
+            // $type='invoice';
+            // $type_id = $invoice->id;
+            // StockReport::where('type','=','invoice')->where('type_id' ,'=', $invoice->id)->delete();
+            // $description=$invoiceProduct->quantity.'  '.__(' quantity sold in invoice').' '. \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+            // Utility::addProductStock( $invoiceProduct->product_id,$invoiceProduct->quantity,$type,$description,$type_id);
 
             //webhook
             $module ='New Invoice';
@@ -236,14 +250,17 @@ class InvoiceController extends Controller
             $id      = Crypt::decrypt($ids);
             $invoice = Invoice::find($id);
             $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-            $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get();
             $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 'income')->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            // $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $product_services = Space::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');        
             $invoice->customField = CustomField::getData($invoice, 'invoice');
             $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-
-            return view('invoice.edit', compact('customers', 'product_services', 'invoice', 'invoice_number', 'category', 'customFields'));
+            $cust      = Customer::find($invoice->customer_id);
+            $cont = Contract::where('company_id', $cust->company_id)->get();
+            
+            return view('invoice.edit', compact('customers', 'product_services','cont', 'invoice', 'invoice_number', 'category', 'customFields'));
         }
         else
         {
@@ -271,6 +288,7 @@ class InvoiceController extends Controller
 
                     return redirect()->route('invoice.index')->with('error', $messages->first());
                 }
+                
                 $invoice->customer_id    = $request->customer_id;
                 $invoice->issue_date     = $request->issue_date;
                 $invoice->due_date       = $request->due_date;
@@ -279,7 +297,7 @@ class InvoiceController extends Controller
                 $invoice->category_id    = $request->category_id;
                 $invoice->save();
 
-                Utility::starting_number( $invoice->invoice_id + 1, 'invoice');
+                // Utility::starting_number( $invoice->invoice_id + 1, 'invoice');
                 CustomField::saveData($invoice, $request->customField);
                 $products = $request->items;
 
@@ -291,17 +309,18 @@ class InvoiceController extends Controller
                         $invoiceProduct             = new InvoiceProduct();
                         $invoiceProduct->invoice_id = $invoice->id;
 
-                        Utility::total_quantity('minus',$products[$i]['quantity'],$products[$i]['item']);
 
                         $updatePrice= ($products[$i]['price']*$products[$i]['quantity'])+($products[$i]['itemTaxPrice'])-($products[$i]['discount']);
                         Utility::updateUserBalance('customer', $request->customer_id, $updatePrice, 'credit');
                     }
                     else{
-                        Utility::total_quantity('plus',$invoiceProduct->quantity,$invoiceProduct->product_id);
+                        // Utility::total_quantity('plus',$invoiceProduct->quantity,$invoiceProduct->product_id);
 
                     }
 
-                    if (isset($products[$i]['item'])) {
+                    if (isset($products[$i]['item'])) 
+                    {
+                        // dd($products);
                         $invoiceProduct->product_id = $products[$i]['item'];
                     }
 
@@ -314,19 +333,19 @@ class InvoiceController extends Controller
                     $invoiceProduct->save();
 
                     // Utility::total_quantity('plus',$products[$i]['quantity'],$invoiceProduct->product_id);
-                    if($products[$i]['id'] > 0){
-                        Utility::total_quantity('minus',$products[$i]['quantity'],$invoiceProduct->product_id);
-                    }
+                    // if($products[$i]['id'] > 0){
+                    //     Utility::total_quantity('minus',$products[$i]['quantity'],$invoiceProduct->product_id);
+                    // }
 
 
                     //Product Stock Report
-                    $type='invoice';
-                    $type_id = $invoice->id;
-                    StockReport::where('type','=','invoice')->where('type_id' ,'=', $invoice->id)->delete();
-                    $description=$products[$i]['quantity'].'  '.__(' quantity sold in invoice').' '. \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-                    if(empty($products[$i]['id'])){
-                        Utility::addProductStock( $products[$i]['item'],$products[$i]['quantity'],$type,$description,$type_id);
-                    }
+                    // $type='invoice';
+                    // $type_id = $invoice->id;
+                    // StockReport::where('type','=','invoice')->where('type_id' ,'=', $invoice->id)->delete();
+                    // $description=$products[$i]['quantity'].'  '.__(' quantity sold in invoice').' '. \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+                    // if(empty($products[$i]['id'])){
+                    //     Utility::addProductStock( $products[$i]['item'],$products[$i]['quantity'],$type,$description,$type_id);
+                    // }
 
 
                 }
@@ -1247,6 +1266,31 @@ class InvoiceController extends Controller
         $data = Excel::download(new InvoiceExport(), $name . '.xlsx'); ob_end_clean();
 
         return $data;
+    }
+
+    public function companycontract(Request $request)
+    {
+        $customers      = Customer::find($request->id);
+
+        $item = Contract::where('company_id', $customers->company_id)->get();
+        $items = [
+            'data' => $item,
+        ];
+    
+        return response()->json($items);
+    }
+    public function companycontractdetail(Request $request)
+    {
+        
+        $contract_data = Contract::where('id', $request->id)->first();
+        $assign_room = Roomassign::with('space')->where('contract_id', $request->id)->get();
+        $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('id',@$assign_room[0]->space->id)->pluck('name', 'id');
+        // $product_services->prepend('--', '');
+        // dd($assign_room);
+
+        $report = view('invoice.invoice_details', compact('contract_data','assign_room','product_services'))->render();
+        return response(['html' => $report]);
+
     }
 
 

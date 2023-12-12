@@ -35,8 +35,14 @@ class ClientController extends Controller
     {
         if(\Auth::user()->can('manage client'))
         {
-            $user    = \Auth::user();
-            $clients = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'client')->get();
+            if(\Auth::user()->type == 'company'){
+                $user    = \Auth::user();
+                $clients = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'client')->get();
+            }else{
+                $user    = \Auth::user();
+                $clients = User::where('owned_by', '=', $user->id)->where('type', '=', 'client')->get();
+            }
+            
 
             return view('clients.index', compact('clients'));
         }

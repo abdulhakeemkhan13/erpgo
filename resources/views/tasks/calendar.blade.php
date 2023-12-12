@@ -118,7 +118,7 @@
                                 dayGridMonth: "{{ __('Month') }}"
                             },
                             themeSystem: 'bootstrap',
-                            slotDuration: '00:10:00',
+                            slotDuration: '00:15:00',
                             navLinks: true,
                             droppable: true,
                             selectable: true,

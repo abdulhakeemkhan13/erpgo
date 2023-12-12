@@ -665,6 +665,38 @@
 
                     <!--------------------- End Account ----------------------------------->
 
+                    <!--------------------- Start workspace ----------------------------------->
+
+                    @if( Gate::check('view space') || Gate::check('view spacetype') )
+                            <li class="dash-item dash-hasmenu
+                                    {{ (Request::route()->getName() == 'spacetype' || Request::segment(1) == 'customer'  || Request::segment(1) == 'debit-note')?' active dash-trigger':''}}">
+                                        <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-box"></i></span><span class="dash-mtext">{{__('Workspace')}}
+                                            </span><span class="dash-arrow"><i data-feather="chevron-right"></i></span>
+                                        </a>
+                                    <ul class="dash-submenu">
+
+                                    @can('view spacetype')
+                                        <li class="dash-item {{ (Request::segment(1) == 'spacetype')?'active':''}}">
+                                            <a class="dash-link" href="{{ route('spacetype.index') }}">{{__('Spacetype')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('view space')
+                                        <li class="dash-item {{ (Request::segment(1) == 'space')?'active':''}}">
+                                            <a class="dash-link" href="{{ route('space.index') }}">{{__('Space')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('view chair')
+                                        <li class="dash-item {{ (Request::segment(1) == 'chair')?'active':''}}">
+                                            <a class="dash-link" href="{{ route('chair.index') }}">{{__('Chair')}}</a>
+                                        </li>
+                                    @endcan
+                                
+                                </ul>
+                            </li>
+                        @endif
+
+                    <!--------------------- End Workspace ----------------------------------->
+
                     <!--------------------- Start CRM ----------------------------------->
 
                     @if(\Auth::user()->show_crm() == 1)
@@ -745,6 +777,7 @@
                                             <a class="dash-link" href="{{ route('task.calendar',['all']) }}">{{__('Task Calendar')}}</a>
                                         </li>
                                     @endcan
+                                    
                                     @if(\Auth::user()->type!='super admin')
                                         <li class="dash-item  {{ (Request::segment(1) == 'time-tracker')?'active open':''}}">
                                             <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Tracker')}}</a>
@@ -779,14 +812,20 @@
                     @endif
 
                     <!--------------------- End Project ----------------------------------->
-
+                    @if(Gate::check('manage project task'))
+                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bookingcalendar') ? ' active' : '' }}">
+                        <a href="{{ route('booking.calendar',['all']) }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Booking Calender')}}</span>
+                        </a>
+                    </li>
+                @endif
 
 
                     <!--------------------- Start User Managaement System ----------------------------------->
 
-                    @if(\Auth::user()->type!='super admin' && ( Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
+                    @if(\Auth::user()->type!='super admin' && ( Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client') || Gate::check('view companybranch')))
                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'users' || Request::segment(1) == 'roles'
-                            || Request::segment(1) == 'clients'  || Request::segment(1) == 'userlogs')?' active dash-trigger':''}}">
+                            || Request::segment(1) == 'clients' || Request::segment(1) == 'clientuser' || Request::segment(1) == 'branches'  || Request::segment(1) == 'userlogs')?' active dash-trigger':''}}">
 
                             <a href="#!" class="dash-link "
                             ><span class="dash-micon"><i class="ti ti-users"></i></span
@@ -804,9 +843,19 @@
                                         <a class="dash-link" href="{{route('roles.index')}}">{{__('Role')}}</a>
                                     </li>
                                 @endcan
+                                @can('view companybranch')
+                                    <li class="dash-item {{ (Request::route()->getName() == 'branches.index' || Request::segment(1) == 'branches' || Request::route()->getName() == 'branches.edit') ? ' active' : '' }}">
+                                        <a class="dash-link" href="{{ route('branches.index') }}">{{__('Branch')}}</a>
+                                    </li>
+                                @endcan
                                 @can('manage client')
                                     <li class="dash-item {{ (Request::route()->getName() == 'clients.index' || Request::segment(1) == 'clients' || Request::route()->getName() == 'clients.edit') ? ' active' : '' }}">
                                         <a class="dash-link" href="{{ route('clients.index') }}">{{__('Client')}}</a>
+                                    </li>
+                                @endcan
+                                @can('manage clientuser')
+                                    <li class="dash-item {{ (Request::route()->getName() == 'clientuser.index' || Request::segment(1) == 'clientuser' || Request::route()->getName() == 'clientuser.edit') ? ' active' : '' }}">
+                                        <a class="dash-link" href="{{ route('clientuser.index') }}">{{__('Clientuser')}}</a>
                                     </li>
                                 @endcan
 {{--                                    @can('manage user')--}}
@@ -1032,6 +1081,7 @@
                             </a>
                         </li>
                     @endif
+                 
 
                         <li class="dash-item dash-hasmenu">
                             <a href="{{route('support.index')}}" class="dash-link {{ (Request::segment(1) == 'support')?'active':''}}">

@@ -37,14 +37,23 @@
                         var old_status = $("#" + source.id).data('status');
                         var new_status = $("#" + target.id).data('status');
                         var stage_id = $(target).attr('data-id');
+                        var stage_name = $(target).attr('data-name');
                         var pipeline_id = '{{$pipeline->id}}';
+                        if(stage_name == 'Achieved'){
+                            $('#statuscontract'+id).empty().append(` <div class="badge-xs badge bg-primary p-0 rounded float-end mr-1"><a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true"
+                                                data-bs-toggle="tooltip" title="{{ __('Create New Contract') }}" class="btn btn-sm btn-primary rounded">
+                                                make contract
+                                            </a></div>`);
+                        }else{
+                            $('#statuscontract'+id).empty();
+                        }
 
                         $("#" + source.id).parent().find('.count').text($("#" + source.id + " > div").length);
                         $("#" + target.id).parent().find('.count').text($("#" + target.id + " > div").length);
                         $.ajax({
                             url: '{{route('deals.order')}}',
                             type: 'POST',
-                            data: {deal_id: id, stage_id: stage_id, order: order, new_status: new_status, old_status: old_status, pipeline_id: pipeline_id, "_token": $('meta[name="csrf-token"]').attr('content')},
+                            data: {deal_id: id, stage_id: stage_id, order: order, new_status: new_status, old_status: old_status, pipeline_id: pipeline_id,  "_token": $('meta[name="csrf-token"]').attr('content')},
                             success: function (data) {
                             },
                             error: function (data) {
@@ -184,16 +193,24 @@
                             </div>
                             <h4 class="mb-0">{{$stage->name}}</h4>
                         </div>
-                        <div class="card-body kanban-box" id="task-list-{{$stage->id}}" data-id="{{$stage->id}}">
+                        <div class="card-body kanban-box" id="task-list-{{$stage->id}}" data-id="{{$stage->id}}" data-name="{{$stage->name}}" >
                             @foreach($deals as $deal)
                                 <div class="card" data-id="{{$deal->id}}">
                                     <div class="pt-3 ps-3">
                                         @php($labels = $deal->labels())
                                         @if($labels)
                                             @foreach($labels as $label)
-                                                <div class="badge-xs badge bg-{{$label->color}} p-2 px-3 rounded">{{$label->name}}</div>
+                                                <div style="float: left" class="badge-xs badge bg-{{$label->color}} p-2 px-3 rounded">{{$label->name}}</div>
                                             @endforeach
                                         @endif
+                                        <div id="statuscontract{{$deal->id}}">
+                                            @if($stage->name == 'Achieved')
+                                            <div class="badge-xs badge bg-primary p-0 rounded float-end mr-1"><a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true"
+                                                data-bs-toggle="tooltip" title="{{ __('Create New Contract') }}" class="btn btn-sm btn-primary rounded">
+                                                make contract
+                                            </a></div>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="card-header border-0 pb-0 position-relative">
                                         <h5><a href="@can('view deal')@if($deal->is_active){{route('deals.show',$deal->id)}}@else#@endif @else#@endcan">{{$deal->name}}</a></h5>

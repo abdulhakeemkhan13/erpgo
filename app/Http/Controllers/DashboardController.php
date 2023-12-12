@@ -173,6 +173,8 @@ class DashboardController extends Controller
             }
             else
             {
+                return redirect('login');
+
                 $settings = Utility::settings();
                 if ($settings['display_landing_page'] == 'on' && \Schema::hasTable('landing_page_settings'))
                 {

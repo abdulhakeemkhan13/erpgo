@@ -2810,22 +2810,33 @@ class Utility extends Model
                 'created_by' => $created_id,
             ]
         );
-        $stages   = [
-            'Draft',
-            'Sent',
-            'Open',
-            'Revised',
-            'Declined',
+        $leadstages   = [
+            'Initial',
+            'Qualified',
+            'Tour Schedule',
+            'Tour Complete',
+            'Proposal',
         ];
-        foreach($stages as $stage)
+        foreach($leadstages as $leadstage)
         {
             LeadStage::create(
                 [
-                    'name' => $stage,
+                    'name' => $leadstage,
                     'pipeline_id' => $pipeline->id,
                     'created_by' => $created_id,
                 ]
             );
+        }
+        $stages   = [
+            'Proposal',
+            'Sent',
+            'Revised',
+            'Flow up',
+            'Achieved',
+            'Declined',
+        ];
+        foreach($stages as $stage)
+        {
             Stage::create(
                 [
                     'name' => $stage,
