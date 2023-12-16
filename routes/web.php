@@ -721,7 +721,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::resource('spacetype', SpaceTypeController::class)->middleware(['auth', 'XSS']);
     Route::resource('space', SpaceController::class)->middleware(['auth', 'XSS']);
     Route::resource('chair', ChairController::class)->middleware(['auth', 'XSS']);
-    Route::get('space_chair/{id}', [ChairController::class, 'space_chair'])->name('space_chair');
+    Route::get('space_chair/{id}/{con?}', [ChairController::class, 'space_chair'])->name('space_chair');
 
     // Branch Module
     Route::resource('clientuser', ClientUserController::class)->middleware(['auth', 'XSS']);
