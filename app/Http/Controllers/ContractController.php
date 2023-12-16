@@ -165,7 +165,6 @@ class ContractController extends Controller
                     }
                     if (!$latest) {
                         $customer_id = 1;
-
                     }else{
                         $customer_id = $latest->customer_id + 1;
                     }
@@ -250,7 +249,6 @@ class ContractController extends Controller
                 // }
 
                 //webhook
-
                 // $module = 'New Contract';
                 // $webhook =  Utility::webhookSetting($module);
                 // if ($webhook) {
@@ -263,7 +261,6 @@ class ContractController extends Controller
                 //         return redirect()->back()->with('error', __('Webhook call failed.'));
                 //     }
                 // }
-
                 DB::commit();
 
                 return redirect()->back()->with('success', __('Contract successfully created!') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
@@ -299,7 +296,6 @@ class ContractController extends Controller
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
         if (\Auth::user()->type == 'branch') {
-
             $company = Company::where('owned_by', '=', \Auth::user()->id)->get();
             $spaces       = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
             $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
