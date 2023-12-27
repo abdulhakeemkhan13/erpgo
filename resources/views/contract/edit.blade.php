@@ -49,6 +49,12 @@
 {{ Form::model($contract, ['route' => ['contract.update', $contract->id], 'method' => 'PUT']) }}
 <div class="modal-body">
     <div class="row">
+        @if($type == 'virtual')
+        <input type="hidden" name="create_type" value="virtual" required>
+    @else
+        <input type="hidden" name="create_type" value="office" required>
+    @endif
+
         <div class="form-group col-md-6">
             {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}
             {{ Form::text('subject', null, ['class' => 'form-control', 'required' => 'required']) }}
@@ -63,11 +69,12 @@
                 {{ Form::checkbox('new', '1', false, ['class' => 'form-check-input', 'id' => 'addpropcheck']) }}
             </div> --}}
             {{-- {{ Form::text('newcompany', '', ['class' => 'form-control d-none companyText req' ]) }} --}}
-            <select name="company_id" id="companySelect" class="form-control">
+            <input type="text" name="company_id" class="form-control" readonly value="{{@$contract->company->name}}">
+            {{-- <select name="company_id" id="companySelect" class="form-control">
                 @foreach ($company as $comp)
-                    <option value="{{ $comp->id }}" disabled @if($comp->id == $contract->company_id) selected @endif >{{ $comp->name }} </option>
+                    <option value="{{ $comp->id }}" readonly @if($comp->id == $contract->company_id) selected @endif >{{ $comp->name }} </option>
                 @endforeach
-            </select>
+            </select> --}}
             {{-- {{ Form::select('company_id', $company, null, ['class' => 'form-control', 'placeholder' => __('Select Company'), 'id' => 'companySelect']) }} --}}
         </div>  
 
@@ -84,17 +91,26 @@
             {{ Form::label('email', __('Email'), ['class' => 'form-label']) }}
             {{ Form::email('email', '', ['class' => 'form-control req','placeholder' =>'123@gmail.com']) }}
         </div> --}}
-        
+
         <div class="form-group col-md-6">
             {{ Form::label('space', __('Space'), ['class' => 'form-label']) }}
-            <select name="space" class="form-control select space_select" id="space" required
-                onchange="getchairs(this.value)">
+            @if($type == 'virtual')
+            <select name="space" class="form-control select space_select" id="space" required>
                 <option value="" disabled selected>Select a Space</option>
                 @foreach ($spaces as $space)
-                    <option value="{{ $space->id }}" @if($space->id == @$roomassign[0]->space_id) selected @endif>{{ $space->name }} ( {{ @$space->type->name }} )</option>
+                    <option value="{{ $space->id }}" @if($space->id == @$roomassign[0]->space_id) selected @endif>{{ $space->name }} ( {{ @$space->space_types_name }} )</option>
                 @endforeach
             </select>
+            @else
+                <select name="space" class="form-control select space_select" id="space" required>
+                    <option value="" disabled selected>Select a Space</option>
+                    @foreach ($spaces as $space)
+                        <option value="{{ $space->id }}" @if($space->id == @$roomassign[0]->space_id) selected @endif>{{ $space->name }} ( {{ @$space->type->name }} )</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
+        @if($type == 'virtual')@else
         <div class="form-group col-md-6" id="ch">
             {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
             <select name="chair[]" class="form-control select chair_select" id="chair" multiple="multiple">
@@ -104,7 +120,7 @@
                 @endforeach
             </select>
         </div>
-
+        @endif
         <div class="form-group col-md-6">
             {{ Form::label('type', __('Contract Type'), ['class' => 'form-label']) }}
             {{ Form::select('type', $contractTypes, null, ['class' => 'form-control', 'data-toggle="select"', 'required' => 'required']) }}
@@ -126,6 +142,14 @@
         <div class="form-group col-md-12">
             {{ Form::label('description', __('Description'), ['class' => 'form-label']) }}
             {!! Form::textarea('description', null, ['class' => 'form-control', 'rows' => '3']) !!}
+        </div>
+    </div>
+    <div class="row">
+        {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}
+        <div class="d-flex col-md-12">
+            <label class="form-label m-1" style="width: 25%" for="{{ $services->id }}">{{ ucfirst($services->name) }} : </label>
+            <input type="hidden" name="services_id" class="form-label" value="{{ $services->id }}">
+            <input type="number" name="services_charges" id="{{ $services->id }}" value="{{$contract->service_price}}" class="form-label m-1" style="width: 25%" required>
         </div>
     </div>
     <div class="row">

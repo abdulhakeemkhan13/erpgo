@@ -4,13 +4,13 @@
     $profile=\App\Models\Utility::get_file('uploads/avatar/');
 @endphp
 @section('page-title')
-    {{__('Manage Chair')}}
+    {{__('Manage IsMail')}}
 @endsection
 @push('script-page')
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('All Chairs')}}</li>
+    <li class="breadcrumb-item">{{__('All IsMail')}}</li>
 @endsection
 @section('action-btn')
     <div class="float-end">
@@ -28,6 +28,7 @@
                         <table class="table datatable">
                                 <thead>
                                 <tr>
+                                    <th>{{__('Name')}}</th>
                                     <th>{{__('Date')}}</th>
                                     <th>{{__('Price')}}</th>
                                     {{-- <th>{{__('Type')}}</th> --}}
@@ -36,32 +37,35 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach ($chair as $type)
+                                @foreach ($ismails as $ismail)
                                     <tr>
                                     
                                         <td>
-                                            {{ (!empty($type->data)) ? $type->date : '-' }}
+                                            {{ (!empty($ismail->name)) ? $ismail->name : '-' }}
                                         </td>
                                         <td>
-                                            {{ (!empty($type->price)) ? $type->price : '-' }}
+                                            {{ (!empty($ismail->date)) ? $ismail->date : '-' }}
+                                        </td>
+                                        <td>
+                                            {{ (!empty($ismail->price)) ? $ismail->price : '-' }}
                                         </td>
                                         {{-- <td>
-                                            {{ (!empty($type->type)) ? $type->type : '-' }}
+                                            {{ (!empty($ismail->type)) ? $ismail->type : '-' }}
                                         </td> --}}
                                         @if(Gate::check('edit chair') || Gate::check('delete chair'))
                                             <td>
                                                     @can('edit chair')
                                                     <div class="action-btn bg-primary ms-2">
-                                                        <a href="#!"data-url="{{route('ismail.edit',$type->id)}}"  data-ajax-popup="true" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}"
-                                                         data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
+                                                        <a href="#!"data-url="{{route('ismail.edit',$ismail->id)}}"  data-ajax-popup="true" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}"
+                                                        data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
                                                     </div>
     
                                                     @endcan
                                                     @can('delete chair')
                                                     <div class="action-btn bg-danger ms-2">
-                                                    {!! Form::open(['method' => 'DELETE', 'route' => ['ismail.destroy', $type->id],'id'=>'delete-form-'.$type->id]) !!}
+                                                    {!! Form::open(['method' => 'DELETE', 'route' => ['ismail.destroy', $ismail->id],'id'=>'delete-form-'.$ismail->id]) !!}
     
-                                                        <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$type->id}}').submit();"><i class="ti ti-trash text-white"></i></a>
+                                                        <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$ismail->id}}').submit();"><i class="ti ti-trash text-white"></i></a>
                                                         {!! Form::close() !!}
                                                     </div>
                                                     @endcan

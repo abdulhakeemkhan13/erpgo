@@ -46,6 +46,17 @@ return new class extends Migration
         // Schema::table('product_services', function (Blueprint $table) {
         //     $table->integer('owned_by')->after('pro_image');           
         // });
+        // Schema::table('space_types', function (Blueprint $table) {
+        //     $table->integer('tax_id')->after('name')->default(0);           
+        //     $table->integer('account_head')->after('tax_id')->default(0);           
+        // });
+        //   Schema::table('product_services', function (Blueprint $table) {
+        //     $table->integer('space_id')->after('unit_id');           
+        // });
+          Schema::table('contracts', function (Blueprint $table) {
+            $table->integer('service_id')->after('company_id')->default(0);           
+            $table->integer('service_price')->after('service_id')->default(0);           
+        });
 
     }
 
@@ -89,6 +100,17 @@ return new class extends Migration
         // Schema::table('product_services', function (Blueprint $table) {
         //     $table->dropColumn('owned_by');           
         // });
+        // Schema::table('space_types', function (Blueprint $table) {
+        //     $table->dropColumn('tax_id');
+        //     $table->dropColumn('account_head');
+        // });
+        //  Schema::table('product_services', function (Blueprint $table) {
+        //     $table->dropColumn('space_id');          
+        // });
+         Schema::table('contracts', function (Blueprint $table) {
+            $table->dropColumn('service_id');          
+            $table->dropColumn('service_price');          
+        });
 
     }
 };

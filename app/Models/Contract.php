@@ -18,6 +18,10 @@ class Contract extends Model
         'contract_description',
         'company_signature',
         'client_signature',
+        'company_id',
+        'service_id',
+        'service_price',
+        'owned_by',
         'created_by',
     ];
 

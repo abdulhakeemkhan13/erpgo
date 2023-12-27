@@ -9,6 +9,7 @@ use App\Models\Roomassign;
 use App\Models\SpaceType;
 use App\Models\User;
 use App\Models\Utility;
+use App\Models\IsVisitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 
-class ChairController extends Controller
+class IsVisitorController extends Controller
 {
 
     public function __construct()
@@ -40,13 +41,18 @@ class ChairController extends Controller
         {
             if(\Auth::user()->type == 'company'){
                 $user    = \Auth::user();
-                $chair = Chair::where('created_by', '=', $user->creatorId())->get();
+                $isvisitors = IsVisitor::where('created_by', '=', $user->creatorId())->get();
 
+            }
+            else if(\Auth ::user()->type == 'clientuser')
+            {
+                $user    = \Auth::user();
+                $isvisitors = IsVisitor::where('company_id', '=', $user->company_id)->get();
             }else{
                 $user    = \Auth::user();
-                $chair = Chair::where('owned_by', '=', $user->id)->get();
+                $isvisitors = IsVisitor::where('owned_by', '=', $user->id)->get();
             }
-            return view('chair.index', compact('chair'));
+            return view('isvisitor.index', compact('isvisitors'));
         }
         else
         {
@@ -65,13 +71,13 @@ class ChairController extends Controller
         {
             if($request->ajax)
             {
-                return view('chair.createAjax');
+                return view('isvisitor.createAjax');
             }
             else
             {
                 $customFields = CustomField::where('module', '=', 'chair')->get();
 
-                return view('chair.create', compact('customFields'));
+                return view('isvisitor.create', compact('customFields'));
             }
         }
         else
@@ -95,8 +101,9 @@ class ChairController extends Controller
             $validator = \Validator::make(
                 $request->all(), [
                     'name' => 'required',
-                    'price' => 'required',
-                    'type' => 'required',
+                    'date' => 'required',
+                    // 'price' => 'required',
+                    // 'type' => 'required',
                 ]
             );
             if($validator->fails())
@@ -112,17 +119,19 @@ class ChairController extends Controller
                 }
             }
            
-                $chair = Chair::create(
+                $isvisitors = IsVisitor::create(
                     [
                         'name' => $request->name,
-                        'price' => $request->price,
-                        'type' => $request->type,
-                        'owned_by' => $user->id,
+                        'company_id' => $user->company_id,
+                        'cnic' => $request->cnic,
+                        'date_time' => $request->date,
+                        'user_id' => $user->id,
+                        'owned_by' => $user->owned_by,
                         'created_by' => $user->creatorId(),
                     ]
                 );
 
-                return redirect()->route('chair.index')->with('success', __('Chair successfully created.'));
+                return redirect()->route('isvisitor.index')->with('success', __('IsVisitor successfully created.'));
 
         }
         else
@@ -156,22 +165,22 @@ class ChairController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Chair $chair)
+    public function edit(IsVisitor $isvisitor)
     {
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->id)
+            if($isvisitor->created_by == $user->creatorId() || $isvisitor->owned_by == $user->id)
             {
 
-                $chair->customField = CustomField::getData($chair, 'chair');
+                $isvisitor->customField = CustomField::getData($isvisitor, 'chair');
                 $customFields        = CustomField::where('module', '=', 'chair')->get();
 
-                return view('chair.edit', compact('chair', 'customFields'));
+                return view('isvisitor.edit', compact('isvisitor', 'customFields'));
             }
             else
             {
-                return response()->json(['error' => __('Invalid Chair.')], 401);
+                return response()->json(['error' => __('Invalid Visitor.')], 401);
             }
         }
         else
@@ -187,23 +196,26 @@ class ChairController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Chair $chair, Request $request)
+    public function update(IsVisitor $isvisitor, Request $request)
     {
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->id)
+            if($isvisitor->created_by == $user->creatorId() || $isvisitor->owned_by == $user->id)
             {
                 $validation = [
                     'name' => 'required',
-                    'price' => 'required',
-                    'type' => 'required',
+                    // 'date' => 'required',
+                    // 'price' => 'required',
+                    // 'type' => 'required',
                 ];
 
                 $post         = [];
                 $post['name'] = $request->name;
-                $post['price'] = $request->price;
-                $post['type'] = $request->type;
+                $post['date_time'] = $request->date;
+                $post['cnic'] = $request->cnic;
+                // $post['price'] = $request->price;
+                // $post['type'] = $request->type;
                
 
                 $validator = \Validator::make($request->all(), $validation);
@@ -214,15 +226,15 @@ class ChairController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
 
-                $chair->update($post);
+                $isvisitor->update($post);
 
-                CustomField::saveData($chair, $request->customField);
+                CustomField::saveData($isvisitor, $request->customField);
 
-                return redirect()->back()->with('success', __('Chair Updated Successfully!'));
+                return redirect()->back()->with('success', __('Visitor Updated Successfully!'));
             }
             else
             {
-                return redirect()->back()->with('error', __('Invalid Chair.'));
+                return redirect()->back()->with('error', __('Invalid Visitor.'));
             }
         }
         else
@@ -238,40 +250,19 @@ class ChairController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Chair $chair)
+    public function destroy(IsVisitor $isvisitor)
     {
         $user = \Auth::user();
-        if($chair->created_by == $user->creatorId()  || $chair->owned_by == $user->id)
+        if($isvisitor->created_by == $user->creatorId()  || $isvisitor->owned_by == $user->id)
         {
     
-            $chair->delete();
-            return redirect()->back()->with('success', __('Chair Deleted Successfully!'));
+            $isvisitor->delete();
+            return redirect()->back()->with('success', __('Visitor Deleted Successfully!'));
 
         }
         else
         {
-            return redirect()->back()->with('error', __('Invalid Chair.'));
+            return redirect()->back()->with('error', __('Invalid Visitor.'));
         }
     }
-
-    public function space_chair($id,$con=null)
-    {
-        // dd($con);
-        $user = \Auth::user();
-        if(\Auth::user()->type == 'branch'){
-            $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->id)->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
-        }else{
-            $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
-        }
-        if($con != null){
-            $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
-            return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ,'conchair'=>$conchair ], 201);
-        }
-        // $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
-        return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ], 201);
-    }
-
-
 }

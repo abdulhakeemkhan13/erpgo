@@ -121,7 +121,6 @@ class ExpenseController extends Controller
                 $query->where('category_id', '=', $request->category);
             }
 
-
             $expenses = $query->get();
 
             return view('expense.index', compact('expenses', 'vender', 'status','category'));
@@ -178,8 +177,7 @@ class ExpenseController extends Controller
     public function store(Request $request)
     {
 
-
-
+// dd($request->all());
         if(\Auth::user()->can('create bill'))
         {
 
@@ -235,20 +233,19 @@ class ExpenseController extends Controller
             {
                 $expense->vender_id      = $request->vender_id;
             }
-            $expense->bill_date      = $request->payment_date;
-            $expense->status         = 4;
-            $expense->type           = 'Expense';
-            $expense->user_type      = $request->type;
-            $expense->due_date       = $request->payment_date;
-            $expense->category_id    = !empty($request->category_id) ? $request->category_id :0;
-            $expense->order_number   = 0;
-            $expense->created_by     = \Auth::user()->creatorId();
-            $expense->save();
+                $expense->bill_date      = $request->payment_date;
+                $expense->status         = 4;
+                $expense->type           = 'Expense';
+                $expense->user_type      = $request->type;
+                $expense->due_date       = $request->payment_date;
+                $expense->category_id    = !empty($request->category_id) ? $request->category_id :0;
+                $expense->order_number   = 0;
+                $expense->created_by     = \Auth::user()->creatorId();
+                $expense->save();
 
-            $products = $request->items;
+                $products = $request->items;
 
-
-            $total_amount=0;
+                $total_amount=0;
 
             for($i = 0; $i < count($products); $i++)
             {
