@@ -414,8 +414,13 @@
                         $('#sortable-table tbody:gt(0)').remove();
                         $('.ui-sortable').empty().html(data.html);
                         $('.btn-primary[data-repeater-create]').click();
-                        $('#sortable-table tbody:gt(0)').remove();
-
+                        if(data.html !== undefined || data.html !== ''){
+                            $('#sortable-table tbody:eq(1)').empty().html(data.html2);
+                            $('.btn-primary[data-repeater-create]').click();
+                            $('#sortable-table tbody:gt(1)').remove();
+                        }else{
+                            $('#sortable-table tbody:gt(0)').remove();
+                        }
                     }
                     $('.quantity').trigger('keyup');
                 },
@@ -561,9 +566,9 @@
                             <tr>
 
                                 <td width="25%" class="form-group pt-0">
-                                    {{-- {{ Form::text('item', '', array('class' => 'form-control item', 'required' => 'required')) }} --}}
+                                    {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','data-url'=>route('invoice.product'),'required'=>'required')) }}
 
-                                    {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','required'=>'required')) }}
+                                    {{-- {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','required'=>'required')) }} --}}
                                 </td>
                                 <td>
                                     <div class="form-group price-input input-group search-form">

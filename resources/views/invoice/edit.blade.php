@@ -525,11 +525,12 @@
                             <div class="form-group" id="company-box">
                                 {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
                                 {{-- {{ Form::select('customer_id', $customers, null, array('class' => 'form-control select','id'=>'company','required'=>'required')) }} --}}
-                                <select class="form-control select" id="company" required="required" name="customer_id">
+                                {{-- <select class="form-control select" id="company" required="required" name="customer_id">
                                     @foreach ($customers as $customer)
                                     <option value="{{$customer->id}}" disabled @if($customer->id == @$invoice->customer_id) selected @endif>{{$customer->name}}</option>
                                     @endforeach
-                                </select>
+                                </select> --}}
+                                <input type="text" name="customer_id" id="" value="{{$cust->name}}" readonly class="form-control">
                             </div>
 
                             <div id="company_detail" >
@@ -537,8 +538,8 @@
                                 {{-- {{ Form::select('contract_id', null,null, array('class' => 'form-control select','id'=>'contract','required'=>'required')) }} --}}
                                 <select name="contract_id" id="contract" class="form-control select">
                                     @foreach ($cont as $contr)
-                                    <option value="{{ $contr->id }}" disabled @if($contr->id == $invoice->contract_id) selected @endif >{{ $contr->subject }} </option>
-                                @endforeach
+                                        <option value="{{ $contr->id }}" disabled @if($contr->id == $invoice->contract_id) selected @endif >{{ $contr->subject }} </option>
+                                    @endforeach
                                 </select>
 
                             </div>

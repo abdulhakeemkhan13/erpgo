@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null'); 
+            $table->date('name')->nullable();
             $table->date('date')->nullable();
             $table->string('price',20)->nullable();
             $table->integer('owned_by');

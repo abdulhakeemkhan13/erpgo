@@ -6,16 +6,6 @@
 
 @push('css-page')
     <link rel="stylesheet" href="{{ asset('assets/libs/fullcalendar/dist/fullcalendar.min.css') }}">
-    <style>
-        /* .fc-timeGridDay-view{height: 2350px !important;} */
-         /* .fc-view-harness-active {
-                height: 2400px !important;
-            }  */
-            .fc-view-harness{
-                overflow: hidden scroll;
-            }
-
-    </style>
 @endpush
 
 @php
@@ -30,7 +20,7 @@
 @section('content')
 
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
                     <div class="row">
@@ -70,7 +60,7 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
+        {{-- <div class="col-lg-4">
             <div class="card">
                 <div class="card-body task-calendar-scroll">
                     <h4 class="mb-4">{{__('Tasks')}}</h4>
@@ -97,7 +87,7 @@
                     </ul>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 
 @endsection
@@ -151,10 +141,16 @@
                                 timeGridWeek: "{{ __('Week') }}",
                                 dayGridMonth: "{{ __('Month') }}"
                             },
+                            // slotLabelFormat: {
+                            //     hour: '2-digit',
+                            //     minute: '2-digit',
+                            //     hour12: false,
+                            // },
                             themeSystem: 'bootstrap',
                             slotDuration: '00:15:00',
                             slotMinTime: '07:00:00', // Set your desired start time here
                             slotMaxTime: '23:00:00', // Set your desired end time here
+                            allDaySlot:true,
                             navLinks: true,
                             droppable: true,
                             selectable: true,
@@ -162,9 +158,9 @@
                             editable: true,
                             dayMaxEvents: true,
                             handleWindowResize: true,
-                            // initialView: 'timeGridDay',
-                             initialView: 'dayGridMonth',
-                             dayMaxEvents: true,
+                            initialView: 'dayGridMonth',
+                            dayMaxEvents: true,
+                            height: 'auto',
                             events: data,
                         });
 

@@ -577,6 +577,76 @@ class DashboardController extends Controller
         }
     }
 
+    public function clientuser_dashboard_index()
+    {
+
+        if (Auth::check()) {
+
+            // if (\Auth::user()->can('show hrm dashboard')) {
+
+                $user = Auth::user();
+
+                if ($user->type == 'clientuser') {
+                    
+                    $events    = Event::where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $arrEvents = [];
+
+                    foreach ($events as $event) {
+                        $arr['id']    = $event['id'];
+                        $arr['title'] = $event['title'];
+                        $arr['start'] = $event['start_date'];
+                        $arr['end']   = $event['end_date'];
+
+                        $arr['backgroundColor'] = $event['color'];
+                        $arr['borderColor']     = "#fff";
+                        $arr['textColor']       = "white";
+                        $arr['url']             = route('event.edit', $event['id']);
+
+                        $arrEvents[] = $arr;
+                    }
+
+
+                    $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->where('created_by', '=', \Auth::user()->creatorId())->get();
+
+
+                    $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $countEmployee = count($emp);
+
+                    $user      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $countUser = count($user);
+
+                    $currentDate = date('Y-m-d');
+
+                    $employees   = User::where('type', '=', 'client')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $countClient = count($employees);
+                    $notClockIn  = AttendanceEmployee::where('date', '=', $currentDate)->get()->pluck('employee_id');
+
+                    $notClockIns = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id', $notClockIn)->get();
+
+                    $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
+
+                    return view('dashboard.client_user_dashboard', compact('arrEvents', 'announcements', 'employees', 'meetings', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                }
+            // } else {
+
+            //     return $this->project_dashboard_index();
+            // }
+        } else {
+            if (!file_exists(storage_path() . "/installed")) {
+                header('location:install');
+                die;
+            } else {
+                $settings = Utility::settings();
+                if ($settings['display_landing_page'] == 'on') {
+                    $plans = Plan::get();
+
+                    return view('layouts.landing', compact('plans'));
+                } else {
+                    return redirect('login');
+                }
+            }
+        }
+    }
 
     // Load Dashboard user's using ajax
     public function filterView(Request $request)

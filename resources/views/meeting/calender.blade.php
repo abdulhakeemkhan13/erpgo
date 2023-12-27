@@ -185,7 +185,7 @@
                     (function () {
                         var etitle;
                         var etype;
-                        var etypeclass;
+                        var etypeclass; 
                         var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             headerToolbar: {
                                 left: 'prev,next today',

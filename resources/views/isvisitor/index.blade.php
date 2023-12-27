@@ -4,17 +4,17 @@
     $profile=\App\Models\Utility::get_file('uploads/avatar/');
 @endphp
 @section('page-title')
-    {{__('Manage Chair')}}
+    {{__('Manage Visitor')}}
 @endsection
 @push('script-page')
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('All Chairs')}}</li>
+    <li class="breadcrumb-item">{{__('All Visitor')}}</li>
 @endsection
 @section('action-btn')
     <div class="float-end">
-        <a href="#" data-size="md" data-url="{{ route('chair.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
+        <a href="#" data-size="md" data-url="{{ route('isvisitor.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
     </div>
@@ -29,40 +29,40 @@
                                 <thead>
                                 <tr>
                                     <th>{{__('Name')}}</th>
-                                    <th>{{__('Price')}}</th>
-                                    <th>{{__('Type')}}</th>
+                                    <th>{{__('Date')}}</th>
+                                    <th>{{__('CNIC')}}</th>
                                     <th width="200px">{{__('Action')}}</th>
     
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach ($chair as $type)
+                                @foreach ($isvisitors as $isvisitor)
                                     <tr>
                                     
                                         <td>
-                                            {{ (!empty($type->name)) ? $type->name : '-' }}
+                                            {{ (!empty($isvisitor->name)) ? $isvisitor->name : '-' }}
                                         </td>
                                         <td>
-                                            {{ (!empty($type->price)) ? $type->price : '-' }}
+                                            {{ (!empty($isvisitor->date_time)) ? $isvisitor->date_time : '-' }}
                                         </td>
                                         <td>
-                                            {{ (!empty($type->type)) ? $type->type : '-' }}
+                                            {{ (!empty($isvisitor->cnic)) ? $isvisitor->cnic : '-' }}
                                         </td>
                                         @if(Gate::check('edit chair') || Gate::check('delete chair'))
                                             <td>
                                                     @can('edit chair')
                                                     <div class="action-btn bg-primary ms-2">
                                                       
-                                                        <a href="#!"data-url="{{route('chair.edit',$type->id)}}"  data-ajax-popup="true" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}"
+                                                        <a href="#!"data-url="{{route('isvisitor.edit',$isvisitor->id)}}"  data-ajax-popup="true" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}"
                                                          data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
                                                     </div>
     
                                                     @endcan
                                                     @can('delete chair')
                                                     <div class="action-btn bg-danger ms-2">
-                                                    {!! Form::open(['method' => 'DELETE', 'route' => ['chair.destroy', $type->id],'id'=>'delete-form-'.$type->id]) !!}
+                                                    {!! Form::open(['method' => 'DELETE', 'route' => ['isvisitor.destroy', $isvisitor->id],'id'=>'delete-form-'.$isvisitor->id]) !!}
     
-                                                        <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$type->id}}').submit();"><i class="ti ti-trash text-white"></i></a>
+                                                        <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$isvisitor->id}}').submit();"><i class="ti ti-trash text-white"></i></a>
                                                         {!! Form::close() !!}
                                                     </div>
                                                     @endcan

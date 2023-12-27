@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Chair;
 use App\Models\CustomField;
 use App\Models\Plan;
+use App\Models\ProductService;
 use App\Models\SpaceType;
 use App\Models\Space;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rule;
 
 class SpaceController extends Controller
 {
@@ -146,6 +148,24 @@ class SpaceController extends Controller
                         );
                     }
                 }
+                $space_type =SpaceType::where('id', $request->type_id)->first();
+
+                $productService                      = new ProductService();
+                $productService->name                = $branches->name;
+                $productService->description         = $branches->description;
+                $productService->sku                 = $branches->id;
+                $productService->sale_price          = 0;
+                $productService->purchase_price      = 0;
+                $productService->tax_id              = $space_type->tax_id;
+                $productService->unit_id             = 0;
+                $productService->space_id            = $branches->id;
+                $productService->quantity            = 0;
+                $productService->type                = 'service';
+                $productService->sale_chartaccount_id       = $space_type->account_head;
+                $productService->expense_chartaccount_id    = 0;
+                $productService->category_id                = 0;
+                $productService->created_by       = \Auth::user()->creatorId();
+                $productService->save();
 
                 return redirect()->route('space.index')->with('success', __('Space successfully created.'));
 

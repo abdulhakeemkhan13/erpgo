@@ -10,6 +10,7 @@ class IsMail extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'date',
         'price',
         'user_id',
