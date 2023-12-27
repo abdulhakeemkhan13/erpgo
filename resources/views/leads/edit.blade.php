@@ -4,14 +4,14 @@
     @php
         $plan= \App\Models\Utility::getChatGPTSettings();
     @endphp
-    @if($plan->chatgpt == 1)
+    {{-- @if($plan->chatgpt == 1)
     <div class="text-end">
         <a href="#" data-size="md" class="btn  btn-primary btn-icon btn-sm" data-ajax-popup-over="true" data-url="{{ route('generate',['lead']) }}"
            data-bs-placement="top" data-title="{{ __('Generate content with AI') }}">
             <i class="fas fa-robot"></i> <span>{{__('Generate with AI')}}</span>
         </a>
     </div>
-    @endif
+    @endif --}}
     {{-- end for ai module--}}
     <div class="row">
         <div class="col-6 form-group">
@@ -34,22 +34,24 @@
             {{ Form::label('phone', __('Phone'),['class'=>'form-label']) }}<span class="text-danger">*</span>
             {{ Form::text('phone', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
+     
         <div class="col-6 form-group">
-            {{ Form::label('pipeline_id', __('Pipeline'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-            {{ Form::select('pipeline_id', $pipelines,null, array('class' => 'form-control select','required'=>'required')) }}
+            {{ Form::label('sources', __('Sources'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+            {{ Form::select('sources[]', $sources,null, array('class' => 'form-control select2','id'=>'choices-multiple1','multiple'=>'','required'=>'required')) }}
         </div>
         <div class="col-6 form-group">
             {{ Form::label('stage_id', __('Stage'),['class'=>'form-label']) }}<span class="text-danger">*</span>
             {{ Form::select('stage_id', [''=>__('Select Stage')],null, array('class' => 'form-control select','required'=>'required')) }}
         </div>
-        <div class="col-12 form-group">
-            {{ Form::label('sources', __('Sources'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-            {{ Form::select('sources[]', $sources,null, array('class' => 'form-control select2','id'=>'choices-multiple1','multiple'=>'','required'=>'required')) }}
+        <div class="col-6 form-group">
+            {{ Form::label('pipeline_id', __('Pipeline'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+            {{ Form::select('pipeline_id', $pipelines,null, array('class' => 'form-control select','required'=>'required')) }}
         </div>
-        <div class="col-12 form-group">
+       
+        {{-- <div class="col-12 form-group">
             {{ Form::label('products', __('Products'),['class'=>'form-label']) }}<span class="text-danger">*</span>
             {{ Form::select('products[]', $products,null, array('class' => 'form-control select2','id'=>'choices-multiple2','multiple'=>'','required'=>'required')) }}
-        </div>
+        </div> --}}
         <div class="col-12 form-group">
             {{ Form::label('notes', __('Notes'),['class'=>'form-label']) }}
             {{ Form::textarea('notes',null, array('class' => 'summernote-simple')) }}

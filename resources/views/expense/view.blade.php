@@ -181,18 +181,18 @@
                                         <table class="table mb-0 table-striped">
                                             <tr>
                                                 <th class="text-dark" data-width="40">#</th>
-                                                <th class="text-dark">{{__('Product')}}</th>
+                                                {{-- <th class="text-dark">{{__('Product')}}</th>
                                                 <th class="text-dark">{{__('Quantity')}}</th>
                                                 <th class="text-dark">{{__('Rate')}}</th>
                                                 <th class="text-dark">{{__('Discount')}}</th>
-                                                <th class="text-dark">{{__('Tax')}}</th>
+                                                <th class="text-dark">{{__('Tax')}}</th> --}}
                                                 <th class="text-dark">{{__('Chart Of Account')}}</th>
                                                 <th class="text-dark">{{__('Account Amount')}}</th>
                                                 <th class="text-dark">{{__('Description')}}</th>
                                                 <th class="text-end text-dark" width="12%">{{__('Price')}}<br>
-                                                    <small class="text-danger font-weight-bold">{{__('after tax & discount')}}</small>
+                                                    {{-- <small class="text-danger font-weight-bold">{{__('after tax & discount')}}</small> --}}
                                                 </th>
-                                                <th></th>
+                                                {{-- <th></th> --}}
                                             </tr>
                                             @php
                                                 $totalQuantity=0;
@@ -272,11 +272,7 @@
                                                     @else
                                                     <tr>
                                                         <td>{{$key+1}}</td>
-                                                        <td>-</td>
-                                                        <td>-</td>
-                                                        <td>-</td>
-                                                        <td>-</td>
-                                                        <td>-</td>
+                                                        
                                                         @php
                                                             $chartAccount = \App\Models\ChartOfAccount::find($item['chart_account_id']);
                                                         @endphp
@@ -297,42 +293,39 @@
                                             <tr>
                                                 <td></td>
                                                 <td><b>{{__('Total')}}</b></td>
-                                                <td><b>{{$totalQuantity}}</b></td>
-                                                <td><b>{{\Auth::user()->priceFormat($totalRate)}}</b></td>
-                                                <td><b>{{\Auth::user()->priceFormat($totalDiscount)}}</b></td>
-                                                <td><b>{{\Auth::user()->priceFormat($totalTaxPrice)}}</b></td>
+                                                <td></td>
                                                 <td></td>
                                                 <td><b>{{\Auth::user()->priceFormat($expense->getAccountTotal())}}</b></td>
 
                                             </tr>
                                             <tr>
-                                                <td colspan="8"></td>
+                                                <td colspan="3"></td>
                                                 <td class="text-end"><b>{{__('Sub Total')}}</b></td>
                                                 <td class="text-end">{{\Auth::user()->priceFormat($expense->getSubTotal())}}</td>
                                             </tr>
 
-                                                <tr>
-                                                    <td colspan="8"></td>
+                                                {{-- <tr>
+                                                    <td colspan="3"></td>
                                                     <td class="text-end"><b>{{__('Discount')}}</b></td>
                                                     <td class="text-end">{{\Auth::user()->priceFormat($expense->getTotalDiscount())}}</td>
-                                                </tr>
+                                                </tr> --}}
 
                                             @if(!empty($taxesData))
                                                 @foreach($taxesData as $taxName => $taxPrice)
                                                     <tr>
-                                                        <td colspan="8"></td>
+                                                        <td colspan="3"></td>
                                                         <td class="text-end"><b>{{$taxName}}</b></td>
                                                         <td class="text-end">{{ \Auth::user()->priceFormat($taxPrice) }}</td>
                                                     </tr>
                                                 @endforeach
                                             @endif
                                             <tr>
-                                                <td colspan="8"></td>
+                                                <td colspan="3"></td>
                                                 <td class="blue-text text-end"><b>{{__('Total')}}</b></td>
                                                 <td class="blue-text text-end">{{\Auth::user()->priceFormat($expense->getTotal())}}</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="8"></td>
+                                                <td colspan=3"></td>
                                                 <td class="text-end"><b>{{__('Paid')}}</b></td>
                                                 <td class="text-end">{{\Auth::user()->priceFormat(($expense->getTotal()-$expense->getDue())-($expense->billTotalDebitNote()))}}</td>
                                             </tr>

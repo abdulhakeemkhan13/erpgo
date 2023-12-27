@@ -894,7 +894,7 @@
                     <div class="table-responsive">
                         <table class="table mb-0" data-repeater-list="items" id="sortable-table">
                             <thead>
-                                <tr>
+                                {{-- <tr>
                                 <th width="20%">{{__('Items')}}</th>
                                 <th>{{__('Quantity')}}</th>
                                 <th>{{__('Price')}} </th>
@@ -904,12 +904,21 @@
                                     <br><small class="text-danger font-bold">{{__('after tax & discount')}}</small>
                                 </th>
                                 <th></th>
+                            </tr> --}}
+                            <tr>
+                                <th width="20%">{{__('Account')}}</th>
+                                <th>{{__('Price')}} </th>
+                                <th>{{__('Description')}}</th>
+                                <th class="text-end">{{__('Amount')}}
+                                    {{-- <br><small class="text-danger font-bold">{{__('after tax & discount')}}</small> --}}
+                                </th>
+                                <th></th>
                             </tr>
                             </thead>
                             <tbody class="ui-sortable" data-repeater-item>
-                                <tr>
-                                    {{ Form::hidden('id',null, array('class' => 'form-control id')) }}
-                                    {{ Form::hidden('account_id',null, array('class' => 'form-control account_id')) }}
+                                {{ Form::hidden('id',null, array('class' => 'form-control id')) }}
+                                {{ Form::hidden('account_id',null, array('class' => 'form-control account_id')) }}
+                                {{-- <tr>
                                     <td width="25%" class="form-group pt-0">
                                         {{ Form::select('items', $product_services,null, array('class' => 'form-control select item','data-url'=>route('expense.product'))) }}
                                     </td>
@@ -951,7 +960,7 @@
                                             <a href="#" class="ti ti-trash text-white repeater-action-btn bg-danger ms-2 bs-pass-para" data-repeater-delete></a>
                                         @endcan
                                     </td>
-                                </tr>
+                                </tr> --}}
                                 <tr>
                                     <td class="form-group">
                                         {{ Form::select('chart_account_id', $chartAccounts,null, array('class' => 'form-control select js-searchBox')) }}
@@ -970,6 +979,11 @@
                                     <td class="text-end accountamount">
                                         0.00
                                     </td>
+                                    <td>
+                                        @can('delete bill product')
+                                            <a href="#" class="ti ti-trash text-white repeater-action-btn bg-danger ms-2 bs-pass-para" data-repeater-delete></a>
+                                        @endcan
+                                    </td>
                                 </tr>
                             </tbody>
                             <tfoot>
@@ -982,7 +996,7 @@
                                     <td class="text-end subTotal">0.00</td>
                                     <td></td>
                                 </tr>
-                                <tr>
+                                {{-- <tr>
                                     <td>&nbsp;</td>
                                     <td>&nbsp;</td>
                                     <td>&nbsp;</td>
@@ -999,7 +1013,7 @@
                                     <td><strong>{{__('Tax')}} ({{\Auth::user()->currencySymbol()}})</strong></td>
                                     <td class="text-end totalTax">0.00</td>
                                     <td></td>
-                                </tr>
+                                </tr> --}}
                                 <tr>
                                     <td>&nbsp;</td>
                                     <td>&nbsp;</td>

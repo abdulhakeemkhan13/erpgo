@@ -41,7 +41,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'requested_plan',
         'is_active',
         'last_login_at',
+        'owned_by',
         'created_by',
+        'company_id',
     ];
 
     protected $hidden = [
@@ -83,6 +85,18 @@ class User extends Authenticatable implements MustVerifyEmail
         else
         {
             return $this->created_by;
+        }
+    }
+
+    public function ownedId()
+    {
+        if($this->type == 'company' || $this->type == 'branch')
+        {
+            return $this->id;
+        }
+        else
+        {
+            return $this->owned_by;
         }
     }
 
@@ -414,70 +428,138 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function countCustomers()
     {
-        return Customer::where('created_by', '=', $this->creatorId())->count();
+        if($this->type == 'branch' )
+        {
+        return Customer::where('owned_by', '=', $this->id)->count();
+        }
+        else
+        {
+            return Customer::where('created_by', '=', $this->creatorId())->count();
+        }
     }
 
     public function countVenders()
     {
-        return Vender::where('created_by', '=', $this->creatorId())->count();
+        if($this->type == 'branch' )
+        {
+        return Vender::where('owned_by', '=', $this->id)->count();
+        }
+        else
+        {
+            return Vender::where('created_by', '=', $this->creatorId())->count();
+        }
     }
 
     public function countInvoices()
     {
-        return Invoice::where('created_by', '=', $this->creatorId())->count();
+        if($this->type == 'branch' )
+        {
+        return Invoice::where('owned_by', '=', $this->id)->count();
+        }
+        else
+        {
+            return Invoice::where('created_by', '=', $this->creatorId())->count();
+        }
     }
 
     public function countBills()
     {
-        return Bill::where('created_by', '=', $this->creatorId())->count();
+        if($this->type == 'branch' )
+        {
+        return Bill::where('owned_by', '=', $this->id)->count();
+        }
+        else
+        {
+            return Bill::where('created_by', '=', $this->creatorId())->count();
+        }
     }
 
     public function todayIncome()
     {
-        $revenue      = Revenue::where('created_by', '=', $this->creatorId())->whereRaw('Date(date) = CURDATE()')->where('created_by', \Auth::user()->creatorId())->sum('amount');
-        $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('Date(send_date) = CURDATE()')->get();
-        $invoiceArray = array();
-        foreach($invoices as $invoice)
+        if($this->type == 'branch' )
         {
-            $invoiceArray[] = $invoice->getTotal();
+            $revenue      = Revenue::where('owned_by', '=', $this->id)->whereRaw('Date(date) = CURDATE()')->where('owned_by', \Auth::user()->creatorId())->sum('amount');
+            $invoices     = Invoice:: select('*')->where('owned_by', \Auth::user()->id)->whereRAW('Date(send_date) = CURDATE()')->get();
+            $invoiceArray = array();
+            foreach($invoices as $invoice)
+            {
+                $invoiceArray[] = $invoice->getTotal();
+            }
+            $totalIncome = (!empty($revenue) ? $revenue : 0) + (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
+    
+            return $totalIncome;
         }
-        $totalIncome = (!empty($revenue) ? $revenue : 0) + (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
-
-        return $totalIncome;
+        else
+        {
+            $revenue      = Revenue::where('created_by', '=', $this->creatorId())->whereRaw('Date(date) = CURDATE()')->where('created_by', '=', $this->creatorId())->sum('amount');
+            $invoices     = Invoice:: select('*')->where('created_by', '=', $this->creatorId())->whereRAW('Date(send_date) = CURDATE()')->get();
+            $invoiceArray = array();
+            foreach($invoices as $invoice)
+            {
+                $invoiceArray[] = $invoice->getTotal();
+            }
+            $totalIncome = (!empty($revenue) ? $revenue : 0) + (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
+    
+            return $totalIncome;
+        }       
     }
 
     public function todayExpense()
     {
-        $payment = Payment::where('created_by', '=', $this->creatorId())->where('created_by', \Auth::user()->creatorId())->whereRaw('Date(date) = CURDATE()')->sum('amount');
-
-        $bills = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('Date(send_date) = CURDATE()')->get();
-
+        if($this->type == 'branch' )
+        {        
+            $payment = Payment::where('owned_by', '=', $this->id)->where('owned_by', \Auth::user()->id)->whereRaw('Date(date) = CURDATE()')->sum('amount');
+            $bills = Bill:: select('*')->where('owned_by', \Auth::user()->id)->whereRAW('Date(send_date) = CURDATE()')->get();    
+            $billArray = array();
+            foreach($bills as $bill)
+            {
+                $billArray[] = $bill->getTotal();
+            }    
+            $totalExpense = (!empty($payment) ? $payment : 0) + (!empty($billArray) ? array_sum($billArray) : 0);    
+            return $totalExpense;
+        }
+        else
+        {           
+        $payment = Payment::where('created_by', '=', $this->creatorId())->where('created_by', '=', $this->creatorId())->whereRaw('Date(date) = CURDATE()')->sum('amount');
+        $bills = Bill:: select('*')->where('created_by', '=', $this->creatorId())->whereRAW('Date(send_date) = CURDATE()')->get();
         $billArray = array();
         foreach($bills as $bill)
         {
             $billArray[] = $bill->getTotal();
         }
-
         $totalExpense = (!empty($payment) ? $payment : 0) + (!empty($billArray) ? array_sum($billArray) : 0);
-
         return $totalExpense;
+        }
     }
 
     public function incomeCurrentMonth()
     {
-        $currentMonth = date('m');
-        $revenue      = Revenue::where('created_by', '=', $this->creatorId())->whereRaw('MONTH(date) = ?', [$currentMonth])->sum('amount');
-
-        $invoices = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('MONTH(send_date) = ?', [$currentMonth])->get();
-
-        $invoiceArray = array();
-        foreach($invoices as $invoice)
+        if($this->type == 'branch' )
         {
-            $invoiceArray[] = $invoice->getTotal();
+            $currentMonth = date('m');
+            $revenue      = Revenue::where('owned_by', '=', $this->id)->whereRaw('MONTH(date) = ?', [$currentMonth])->sum('amount');
+            $invoices = Invoice:: select('*')->where('owned_by', \Auth::user()->id)->whereRAW('MONTH(send_date) = ?', [$currentMonth])->get();
+            $invoiceArray = array();
+            foreach($invoices as $invoice)
+            {
+                                $invoiceArray[] = $invoice->getTotal();
+            }
+            $totalIncome = (!empty($revenue) ? $revenue : 0) + (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
+            return $totalIncome;
         }
+        else
+        {
+            $currentMonth = date('m');
+            $revenue      = Revenue::where('created_by', '=', $this->creatorId())->whereRaw('MONTH(date) = ?', [$currentMonth])->sum('amount');
+            $invoices = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('MONTH(send_date) = ?', [$currentMonth])->get();
+            $invoiceArray = array();
+            foreach($invoices as $invoice)
+            {
+                $invoiceArray[] = $invoice->getTotal();
+            }
         $totalIncome = (!empty($revenue) ? $revenue : 0) + (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
-
-        return $totalIncome;
+                    return $totalIncome;
+        }
 
     }
     public function incomecat()
@@ -508,20 +590,32 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function expenseCurrentMonth()
     {
+        if($this->type == 'branch' )
+        {
+            $currentMonth = date('m');
+            $payment = Payment::where('owned_by', '=', $this->id)->whereRaw('MONTH(date) = ?', [$currentMonth])->sum('amount');
+            $bills     = Bill:: select('*')->where('owned_by', \Auth::user()->id)->whereRAW('MONTH(send_date) = ?', [$currentMonth])->get();
+            $billArray = array();
+            foreach($bills as $bill)
+            {
+                $billArray[] = $bill->getTotal();
+            }
+            $totalExpense = (!empty($payment) ? $payment : 0) + (!empty($billArray) ? array_sum($billArray) : 0);
+            return $totalExpense;
+        }
+        else
+        {
         $currentMonth = date('m');
-
         $payment = Payment::where('created_by', '=', $this->creatorId())->whereRaw('MONTH(date) = ?', [$currentMonth])->sum('amount');
-
         $bills     = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('MONTH(send_date) = ?', [$currentMonth])->get();
         $billArray = array();
         foreach($bills as $bill)
         {
             $billArray[] = $bill->getTotal();
         }
-
         $totalExpense = (!empty($payment) ? $payment : 0) + (!empty($billArray) ? array_sum($billArray) : 0);
-
         return $totalExpense;
+        }
     }
 
     public function getincExpBarChartData()
@@ -543,10 +637,21 @@ class User extends Authenticatable implements MustVerifyEmail
 
         for($i = 1; $i <= 12; $i++)
         {
-            $monthlyIncome = Revenue::selectRaw('sum(amount) amount')->where('created_by', '=', $this->creatorId())->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->first();
-            $invoices      = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())
-                ->whereRaw('year(`send_date`) = ?', array(date('Y')))
-                ->whereRaw('month(`send_date`) = ?', $i)->get();
+            if($this->type == 'branch' )
+            {
+                $monthlyIncome = Revenue::selectRaw('sum(amount) amount')->where('owned_by', '=', $this->id)->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->first();
+                $invoices      = Invoice:: select('*')->where('owned_by', \Auth::user()->id)
+                    ->whereRaw('year(`send_date`) = ?', array(date('Y')))
+                    ->whereRaw('month(`send_date`) = ?', $i)->get();
+    
+              }
+            else
+            {
+                $monthlyIncome = Revenue::selectRaw('sum(amount) amount')->where('created_by', '=', $this->creatorId())->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->first();
+                $invoices      = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())
+                    ->whereRaw('year(`send_date`) = ?', array(date('Y')))
+                    ->whereRaw('month(`send_date`) = ?', $i)->get();
+            }
 
 
             $invoiceArray = array();
@@ -559,10 +664,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
             $incomeArr[] = !empty($totalIncome) ? str_replace(",", "", number_format($totalIncome, 2) ): 0;
 
-
-            $monthlyExpense = Payment::selectRaw('sum(amount) amount')->where('created_by', '=', $this->creatorId())->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->first();
-            $bills          = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRaw('year(`send_date`) = ?', array(date('Y')))->whereRaw('month(`send_date`) = ?', $i)->get();
-            $billArray      = array();
+            if($this->type == 'branch' )
+            {
+                $monthlyExpense = Payment::selectRaw('sum(amount) amount')->where('owned_by', '=', $this->id)->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->first();
+                $bills          = Bill:: select('*')->where('owned_by', \Auth::user()->id)->whereRaw('year(`send_date`) = ?', array(date('Y')))->whereRaw('month(`send_date`) = ?', $i)->get();
+            }
+            else
+            {
+                $monthlyExpense = Payment::selectRaw('sum(amount) amount')->where('created_by', '=', $this->creatorId())->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->first();
+                $bills          = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRaw('year(`send_date`) = ?', array(date('Y')))->whereRaw('month(`send_date`) = ?', $i)->get();
+            }
+                       $billArray      = array();
             foreach($bills as $bill)
             {
                 $billArray[] = $bill->getTotal();
@@ -604,9 +716,14 @@ class User extends Authenticatable implements MustVerifyEmail
         $dataArr['day'] = $arrDateFormat;
         for($i = 0; $i < count($arrDate); $i++)
         {
-            $dayIncome = Revenue::selectRaw('sum(amount) amount')->where('created_by', \Auth::user()->creatorId())->whereRaw('date = ?', $arrDate[$i])->first();
-
-            $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('send_date = ?', $arrDate[$i])->get();
+            if($this->type == 'branch' )
+            {$dayIncome = Revenue::selectRaw('sum(amount) amount')->where('owned_by', \Auth::user()->id)->whereRaw('date = ?', $arrDate[$i])->first();
+                $invoices     = Invoice:: select('*')->where('owned_by', \Auth::user()->id)->whereRAW('send_date = ?', $arrDate[$i])->get();
+                    }
+            else
+            {$dayIncome = Revenue::selectRaw('sum(amount) amount')->where('created_by', \Auth::user()->creatorId())->whereRaw('date = ?', $arrDate[$i])->first();
+                $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('send_date = ?', $arrDate[$i])->get();
+            }
             $invoiceArray = array();
             foreach($invoices as $invoice)
             {
@@ -616,10 +733,16 @@ class User extends Authenticatable implements MustVerifyEmail
             $incomeAmount = (!empty($dayIncome->amount) ? $dayIncome->amount : 0) + (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
             $incomeArr[]  = str_replace(",", "", number_format($incomeAmount, 2));
 
-            $dayExpense = Payment::selectRaw('sum(amount) amount')->where('created_by', \Auth::user()->creatorId())->whereRaw('date = ?', $arrDate[$i])->first();
-
-            $bills     = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('send_date = ?', $arrDate[$i])->get();
-            $billArray = array();
+            if($this->type == 'branch' )
+            {
+                $dayExpense = Payment::selectRaw('sum(amount) amount')->where('owned_by', \Auth::user()->id)->whereRaw('date = ?', $arrDate[$i])->first();
+                $bills     = Bill:: select('*')->where('owned_by', \Auth::user()->id)->whereRAW('send_date = ?', $arrDate[$i])->get();
+                  }
+            else
+            {
+                $dayExpense = Payment::selectRaw('sum(amount) amount')->where('created_by', \Auth::user()->creatorId())->whereRaw('date = ?', $arrDate[$i])->first();
+                $bills     = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->whereRAW('send_date = ?', $arrDate[$i])->get();
+                 } $billArray = array();
             foreach($bills as $bill)
             {
                 $billArray[] = $bill->getTotal();
@@ -674,7 +797,17 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $staticstart  = date('Y-m-d', strtotime('last Week'));
         $currentDate  = date('Y-m-d');
-        $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->where('issue_date', '>=', $staticstart)->where('issue_date', '<=', $currentDate)->get();
+        if($this->type == 'branch' )
+        {
+            $invoices     = Invoice:: select('*')->where('owned_by', \Auth::user()->id)->where('issue_date', '>=', $staticstart)->where('issue_date', '<=', $currentDate)->get();
+
+        }
+        else
+        {
+            $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->where('issue_date', '>=', $staticstart)->where('issue_date', '<=', $currentDate)->get();
+
+        }
+       
         $invoiceTotal = 0;
         $invoicePaid  = 0;
         $invoiceDue   = 0;
@@ -696,7 +829,16 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $staticstart  = date('Y-m-d', strtotime('last Month'));
         $currentDate  = date('Y-m-d');
-        $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->where('issue_date', '>=', $staticstart)->where('issue_date', '<=', $currentDate)->get();
+        if($this->type == 'branch' )
+        {
+            $invoices     = Invoice:: select('*')->where('owned_by', \Auth::user()->id)->where('issue_date', '>=', $staticstart)->where('issue_date', '<=', $currentDate)->get();
+
+        }
+        else
+        {
+            $invoices     = Invoice:: select('*')->where('created_by', \Auth::user()->creatorId())->where('issue_date', '>=', $staticstart)->where('issue_date', '<=', $currentDate)->get();
+
+        }
         $invoiceTotal = 0;
         $invoicePaid  = 0;
         $invoiceDue   = 0;
@@ -718,7 +860,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $staticstart = date('Y-m-d', strtotime('last Week'));
         $currentDate = date('Y-m-d');
-        $bills       = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->where('bill_date', '>=', $staticstart)->where('bill_date', '<=', $currentDate)->get();
+        if($this->type == 'branch' )
+        {
+            $bills       = Bill:: select('*')->where('owned_by', \Auth::user()->id)->where('bill_date', '>=', $staticstart)->where('bill_date', '<=', $currentDate)->get();
+        }
+        else
+        {
+            $bills       = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->where('bill_date', '>=', $staticstart)->where('bill_date', '<=', $currentDate)->get();
+        }
         $billTotal   = 0;
         $billPaid    = 0;
         $billDue     = 0;
@@ -740,7 +889,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $staticstart = date('Y-m-d', strtotime('last Month'));
         $currentDate = date('Y-m-d');
-        $bills       = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->where('bill_date', '>=', $staticstart)->where('bill_date', '<=', $currentDate)->get();
+        if($this->type == 'branch' )
+        {
+            $bills       = Bill:: select('*')->where('owned_by', \Auth::user()->id)->where('bill_date', '>=', $staticstart)->where('bill_date', '<=', $currentDate)->get();
+        }
+        else
+        {
+            $bills       = Bill:: select('*')->where('created_by', \Auth::user()->creatorId())->where('bill_date', '>=', $staticstart)->where('bill_date', '<=', $currentDate)->get();
+        }
         $billTotal   = 0;
         $billPaid    = 0;
         $billDue     = 0;

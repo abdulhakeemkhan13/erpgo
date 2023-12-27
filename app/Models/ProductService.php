@@ -17,9 +17,11 @@ class ProductService extends Model
         'tax_id',
         'category_id',
         'unit_id',
+        'space_id',
         'type',
         'sale_chartaccount_id',
         'expense_chartaccount_id',
+        'owned_by',
         'created_by',
     ];
 

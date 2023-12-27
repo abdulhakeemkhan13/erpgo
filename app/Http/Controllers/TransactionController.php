@@ -20,21 +20,39 @@ class TransactionController extends Controller
 
             $filter['account']  = __('All');
             $filter['category'] = __('All');
-
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+            if(\Auth::user()->type == 'branch' )
+            {
+                $account = BankAccount::where('owned_by', '=', \Auth::user()->id)->get()->pluck('holder_name', 'id');
+            }
+            else
+            {
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+            }
             $account->prepend(__('Stripe / Paypal'), 'strip-paypal');
             $account->prepend('Select Account', '');
 
             $accounts = Transaction::select('bank_accounts.id', 'bank_accounts.holder_name', 'bank_accounts.bank_name')
-                                   ->leftjoin('bank_accounts', 'transactions.account', '=', 'bank_accounts.id')
-                                   ->groupBy('transactions.account')->selectRaw('sum(amount) as total');
+                                    ->leftjoin('bank_accounts', 'transactions.account', '=', 'bank_accounts.id')
+                                    ->groupBy('transactions.account')->selectRaw('sum(amount) as total');
 
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
-                'type', [
-                          1,
-                          2,
-                      ]
-            )->get()->pluck('name', 'name');
+                                    if(\Auth::user()->type == 'branch' )
+                                    {
+                                        $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)->whereIn(
+                                            'type', [
+                                                        1,
+                                                        2,
+                                                    ]
+                                            )->get()->pluck('name', 'name');
+                                    }
+                                    else
+                                    {
+                                        $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
+                                            'type', [
+                                                        1,
+                                                        2,
+                                                    ]
+                                            )->get()->pluck('name', 'name');
+                                    }
 
             $category->prepend('Invoice', 'Invoice');
             $category->prepend('Bill', 'Bill');
@@ -111,8 +129,16 @@ class TransactionController extends Controller
                 $filter['category'] = $request->category;
             }
 
-            $transactions->where('created_by', '=', \Auth::user()->creatorId());
-            $accounts->where('transactions.created_by', '=', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'branch' )
+            {
+                $transactions->where('owned_by', '=', \Auth::user()->id);
+            $accounts->where('transactions.owned_by', '=', \Auth::user()->id);
+            }
+            else
+            {
+                $transactions->where('created_by', '=', \Auth::user()->creatorId());
+                $accounts->where('transactions.created_by', '=', \Auth::user()->creatorId());
+            }
             $transactions = $transactions->get();
             $accounts     = $accounts->get();
 

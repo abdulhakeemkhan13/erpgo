@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Exports\InvoiceExport;
 use App\Models\BankAccount;
 use App\Models\ChartOfAccount;
+use App\Models\Company;
+use App\Models\Contract;
 use App\Models\CreditNote;
 use App\Models\Customer;
 use App\Models\CustomField;
@@ -17,6 +19,7 @@ use App\Models\Plan;
 use App\Models\Products;
 use App\Models\ProductService;
 use App\Models\ProductServiceCategory;
+use App\Models\Roomassign;
 use App\Models\StockReport;
 use App\Models\Transaction;
 use App\Models\User;
@@ -28,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Space;
 
 class InvoiceController extends Controller
 {
@@ -84,8 +88,18 @@ class InvoiceController extends Controller
             $category->prepend('Select Category', '');
             $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $product_services->prepend('--', '');
+            // $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('meeting','yes')->get()->pluck('name', 'id');
+            // $product_services->prepend('--', '');
 
-            return view('invoice.create', compact('customers', 'invoice_number', 'product_services', 'category', 'customFields', 'customerId'));
+            if(\Auth::user()->type == 'company'){
+                $company = Company::where('created_by', \Auth::user()->creatorId())->pluck('name', 'id');
+            }else{
+                $company = Company::where('owned_by', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+            }
+            $company->prepend('Select Company', '');
+
+
+            return view('invoice.create', compact('customers','company', 'invoice_number', 'product_services', 'category', 'customFields', 'customerId'));
         }
         else
         {
@@ -102,7 +116,7 @@ class InvoiceController extends Controller
     public function product(Request $request)
     {
 
-        $data['product']     = $product = ProductService::find($request->product_id);
+         $data['product']     = $product = ProductService::find($request->product_id);
         $data['unit']        = (!empty($product->unit())) ? $product->unit()->name : '';
         $data['taxRate']     = $taxRate = !empty($product->tax_id) ? $product->taxRate($product->tax_id) : 0;
         $data['taxes']       = !empty($product->tax_id) ? $product->tax($product->tax_id) : 0;
@@ -116,17 +130,16 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
-//        dd($request->all());
         if(\Auth::user()->can('create invoice'))
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'customer_id' => 'required',
-                                   'issue_date' => 'required',
-                                   'due_date' => 'required',
-                                   'category_id' => 'required',
-                                   'items' => 'required',
-                               ]
+                    'customer_id' => 'required',
+                    'issue_date' => 'required',
+                    'due_date' => 'required',
+                    'category_id' => 'required',
+                    'items' => 'required',
+                ]
             );
             if($validator->fails())
             {
@@ -142,7 +155,11 @@ class InvoiceController extends Controller
             $invoice->due_date       = $request->due_date;
             $invoice->category_id    = $request->category_id;
             $invoice->ref_number     = $request->ref_number;
+            $invoice->contract_id     = $request->contract_id;
 //            $invoice->discount_apply = isset($request->discount_apply) ? 1 : 0;
+            if (\Auth::user()->type == 'branch') {
+                $invoice->owned_by     = \Auth::user()->id;
+            }
             $invoice->created_by     = \Auth::user()->creatorId();
             $invoice->save();
             CustomField::saveData($invoice, $request->customField);
@@ -180,12 +197,12 @@ class InvoiceController extends Controller
                 {
                     Utility::send_slack_msg('new_invoice', $invoiceNotificationArr);
                 }
-                //Telegram Notification
+                // //Telegram Notification
                 if(isset($setting['telegram_invoice_notification']) && $setting['telegram_invoice_notification'] ==1)
                 {
                     Utility::send_telegram_msg('new_invoice', $invoiceNotificationArr);
                 }
-                //Twilio Notification
+                // //Twilio Notification
                 if(isset($setting['twilio_invoice_notification']) && $setting['twilio_invoice_notification'] ==1)
                 {
                     Utility::send_twilio_msg($customer->contact,'new_invoice', $invoiceNotificationArr);
@@ -242,8 +259,10 @@ class InvoiceController extends Controller
             $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $invoice->customField = CustomField::getData($invoice, 'invoice');
             $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+            $cust = Customer::find($invoice->customer_id);
+            $cont = Contract::where('company_id', $cust->company_id)->get();
+            return view('invoice.edit', compact('customers', 'product_services','cont','cust','invoice', 'invoice_number', 'category', 'customFields'));
 
-            return view('invoice.edit', compact('customers', 'product_services', 'invoice', 'invoice_number', 'category', 'customFields'));
         }
         else
         {
@@ -259,7 +278,7 @@ class InvoiceController extends Controller
                 $validator = \Validator::make(
                     $request->all(),
                     [
-                        'customer_id' => 'required',
+                        // 'customer_id' => 'required',
                         'issue_date' => 'required',
                         'due_date' => 'required',
                         'category_id' => 'required',
@@ -271,7 +290,8 @@ class InvoiceController extends Controller
 
                     return redirect()->route('invoice.index')->with('error', $messages->first());
                 }
-                $invoice->customer_id    = $request->customer_id;
+                
+                // $invoice->customer_id    = $request->customer_id;
                 $invoice->issue_date     = $request->issue_date;
                 $invoice->due_date       = $request->due_date;
                 $invoice->ref_number     = $request->ref_number;
@@ -279,7 +299,7 @@ class InvoiceController extends Controller
                 $invoice->category_id    = $request->category_id;
                 $invoice->save();
 
-                Utility::starting_number( $invoice->invoice_id + 1, 'invoice');
+                // Utility::starting_number( $invoice->invoice_id + 1, 'invoice');
                 CustomField::saveData($invoice, $request->customField);
                 $products = $request->items;
 
@@ -301,7 +321,9 @@ class InvoiceController extends Controller
 
                     }
 
-                    if (isset($products[$i]['item'])) {
+                    if (isset($products[$i]['item'])) 
+                    {
+                        // dd($products);
                         $invoiceProduct->product_id = $products[$i]['item'];
                     }
 
@@ -1247,6 +1269,92 @@ class InvoiceController extends Controller
         $data = Excel::download(new InvoiceExport(), $name . '.xlsx'); ob_end_clean();
 
         return $data;
+    }
+
+    public function companycontract(Request $request)
+    {
+        $customers      = Customer::find($request->id);
+
+        $item = Contract::where('company_id', $customers->company_id)->get();
+        $items = [
+            'data' => $item,
+        ];
+    
+        return response()->json($items);
+    }
+    public function companycontractdetail(Request $request)
+    {
+
+        $contract_data = Contract::where('id', $request->id)->first();
+        $assign_room = Roomassign::with('space')->where('contract_id', $request->id)->get();
+  
+            if (\Auth::user()->type == 'branch') {
+                $product_services = ProductService::where('owned_by', \Auth::user()->id)->where('space_id',@$assign_room[0]->space->id)->get()->pluck('name', 'id');
+                $product = ProductService::where('owned_by', \Auth::user()->id)->where('space_id',@$assign_room[0]->space->id)->first();
+            }else{
+                $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->where('space_id',@$assign_room[0]->space->id)->get()->pluck('name', 'id');
+                $product = ProductService::where('created_by', \Auth::user()->creatorId())->where('space_id',@$assign_room[0]->space->id)->first();
+            }
+
+        $second = 'no';
+        $data =[];
+        $taxes = '';
+        $tax = [];
+        $totalItemTaxRate = 0;
+        if($product){
+            if ($product->tax_id == 0) {
+                $taxes .= '-';
+            } else {
+                $taxData = $product->tax($product->tax_id);
+                foreach ($taxData as $taxItem) {
+                    $taxes .= '<span class="badge bg-primary mt-1 mr-2">' . $taxItem->name . ' (' . $taxItem->rate . '%)</span>';
+                    $tax[] = $taxItem->id;
+                    $totalItemTaxRate += floatval($taxItem->rate);
+                }
+            }
+        }
+        $itemTaxPrice = floatval(($totalItemTaxRate / 100)) * floatval($contract_data->value);
+        $data['tax'] = $tax;
+        $data['totalItemTaxRate'] = $totalItemTaxRate;
+        $data['itemTaxPrice'] = $itemTaxPrice;
+        $data['total'] = floatval($itemTaxPrice) + floatval($contract_data->value);
+        if (\Auth::user()->type == 'branch') {
+            $serv = ProductService::where('owned_by', \Auth::user()->id)->where('id',@$contract_data->service_id)->first();
+            $servprod = ProductService::where('owned_by', \Auth::user()->id)->where('id',@$contract_data->service_id)->get()->pluck('name', 'id');
+        }else{
+            $serv = ProductService::where('created_by', \Auth::user()->creatorId())->where('id',@$contract_data->service_id)->first();
+            $servprod = ProductService::where('created_by', \Auth::user()->creatorId())->where('id',@$contract_data->service_id)->get()->pluck('name', 'id');
+        }
+        $data2 =[];
+        $taxes2 = '';
+        $tax2 = [];
+        $totalItemTaxRate2 = 0;
+        if($serv){
+                
+            if($serv){
+                if ($serv->tax_id == 0) {
+                    $taxes2 .= '-';
+                } else {
+                    $taxData2 = $serv->tax($serv->tax_id);
+                    foreach ($taxData2 as $taxItem2) {
+                        $taxes2 .= '<span class="badge bg-primary mt-1 mr-2">' . $taxItem2->name . ' (' . $taxItem2->rate . '%)</span>';
+                        $tax2[] = $taxItem2->id;
+                        $totalItemTaxRate2 += floatval($taxItem2->rate);
+                    }
+                }
+            }
+        }
+        $itemTaxPrice2 = floatval(($totalItemTaxRate2 / 100)) * floatval($contract_data->service_price);
+        $data2['tax'] = $tax2;
+        $data2['totalItemTaxRate'] = $totalItemTaxRate2;
+        $data2['itemTaxPrice'] = $itemTaxPrice2;
+        $data2['total'] = floatval($itemTaxPrice2) + floatval($contract_data->service_price);
+// dd($assign_room,$product_services,$product,$taxes,$data,$contract_data,$assign_room,$serv,$servprod,$taxes2,$data2);
+        $report = view('invoice.invoice_details', compact('contract_data','assign_room','product_services','product','taxes','data'))->render();
+        $report2 = view('invoice.invoice_services_details', compact('contract_data','assign_room','serv','servprod','taxes2','data2'))->render();
+
+        return response(['html' => $report,'html2' => $report2]);
+
     }
 
 

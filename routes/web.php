@@ -136,6 +136,14 @@ use App\Http\Controllers\PaytabController;
 use App\Http\Controllers\BenefitPaymentController;
 use App\Http\Controllers\CashfreeController;
 use App\Http\Controllers\AamarpayController;
+use App\Http\Controllers\BranchesController;
+use App\Http\Controllers\SpaceTypeController;
+use App\Http\Controllers\SpaceController;
+use App\Http\Controllers\ChairController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\IsMailController;
+use App\Http\Controllers\ClientUserController;
+use App\Http\Controllers\IsVisitorController;
 use App\Http\Controllers\PaytrController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
@@ -316,6 +324,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/hrm-dashboard', [DashboardController::class, 'hrm_dashboard_index'])->name('hrm.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/crm-dashboard', [DashboardController::class, 'crm_dashboard_index'])->name('crm.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/pos-dashboard', [DashboardController::class, 'pos_dashboard_index'])->name('pos.dashboard')->middleware(['auth','XSS', 'revalidate']);
+    Route::get('/clientuser-dashboard', [DashboardController::class, 'clientuser_dashboard_index'])->name('clientuser.dashboard')->middleware(['auth','XSS', 'revalidate']);
 
 
     Route::get('profile', [UserController::class, 'profile'])->name('profile')->middleware(['auth', 'XSS', 'revalidate']);
@@ -505,6 +514,8 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('invoice/items', [InvoiceController::class, 'items'])->name('invoice.items');
         Route::resource('invoice', InvoiceController::class);
         Route::get('invoice/create/{cid}', [InvoiceController::class, 'create'])->name('invoice.create');
+        Route::post('company_contract', [InvoiceController::class, 'companycontract'])->name('company_contract');
+        Route::post('company_contract_detail', [InvoiceController::class, 'companycontractdetail'])->name('company_contract_detail');
     }
     );
 
@@ -710,6 +721,23 @@ Route::group(['middleware' => ['verified']], function () {
 
     }
     );
+   //Is Mail
+   Route::resource('ismail', IsMailController::class)->middleware(['auth', 'XSS']);
+   //IsVsitor
+   Route::resource('isvisitor', IsVisitorController::class)->middleware(['auth', 'XSS']);
+
+    // Space Module
+    Route::resource('spacetype', SpaceTypeController::class)->middleware(['auth', 'XSS']);
+    Route::resource('space', SpaceController::class)->middleware(['auth', 'XSS']);
+    Route::resource('chair', ChairController::class)->middleware(['auth', 'XSS']);
+    Route::get('space_chair/{id}/{con?}', [ChairController::class, 'space_chair'])->name('space_chair');
+
+    // Branch Module
+    Route::resource('clientuser', ClientUserController::class)->middleware(['auth', 'XSS']);
+    // Branch Module
+    Route::resource('branches', BranchesController::class)->middleware(['auth', 'XSS']);
+    Route::any('branch-reset-password/{id}', [BranchesController::class, 'branchPassword'])->name('branch.reset');
+    Route::post('branch-reset-password/{id}', [BranchesController::class, 'branchPasswordReset'])->name('branch.password.update');
 
     // Client Module
 
@@ -1114,6 +1142,15 @@ Route::group(['middleware' => ['verified']], function () {
 
     // End Project Module
 
+    // booking module 
+    Route::get('/bookingcalendar/{id}/show', [BookingController::class, 'calendarShow'])->name('booking.calendar.show')->middleware(['auth', 'XSS']);
+    Route::post('/bookingcalendar/{id}/drag', [BookingController::class, 'calendarDrag'])->name('booking.calendar.drag');
+    Route::get('bookingcalendar/{task}/{pid?}', [BookingController::class, 'calendarView'])->name('booking.calendar')->middleware(['auth', 'XSS']);
+    Route::post('bookingcalendar/get_task_data', [BookingController::class, 'get_task_data'])->name('booking.calendar.get_task_data')->middleware(['auth', 'XSS']);
+    Route::post('booking', [BookingController::class, 'get_task_data'])->name('booking.calendar.get_task_data')->middleware(['auth', 'XSS']);
+    Route::resource('booking', BookingController::class)->middleware(['auth', 'XSS']);
+    Route::get('/bookings/create/{id?}', [BookingController::class, 'bookingcreate'])->name('bookings.create')->middleware(['auth', 'XSS']);
+    
 
     // Task Module
 
@@ -1298,6 +1335,9 @@ Route::group(['middleware' => ['verified']], function () {
         Route::resource('contract', ContractController::class);
     }
     );
+    // for virtule office contract
+    Route::get('/create_virtual_office', [ContractController::class, 'createvirtualoffice'])->name('createvirtualoffice')->middleware(['auth', 'XSS']);
+
     Route::post('/contract/{id}/file', [ContractController::class, 'fileUpload'])->name('contract.file.upload')->middleware(['auth', 'XSS']);
     Route::get('contract/pdf/{id}', [ContractController::class, 'pdffromcontract'])->name('contract.download.pdf')->middleware(['auth']);
     Route::get('contract/{id}/get_contract', [ContractController::class, 'printContract'])->name('get.contract')->middleware(['auth']);

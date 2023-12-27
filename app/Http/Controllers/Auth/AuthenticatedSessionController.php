@@ -162,10 +162,12 @@ class AuthenticatedSessionController extends Controller
         //end for user log
 
 //        if($user->type =='employee')
-        if($user->type =='company' || $user->type =='super admin' || $user->type =='client')
+        if($user->type =='company' || $user->type =='super admin' || $user->type =='branch' || $user->type =='client')
         {
             return redirect()->intended(RouteServiceProvider::HOME);
 
+        }else  if($user->type =='clientuser' ){
+            return redirect(route('clientuser.dashboard'));
         }
         else
         {

@@ -68,13 +68,6 @@
         }
 
 
-
-
-
-
-
-
-
         $(document).on('change', '.item', function () {
 
             var iteams_id = $(this).val();
@@ -175,8 +168,6 @@
                     $('.totalAmount').val(totalAmount.toFixed(2));
 
 
-
-
                 },
             });
         });
@@ -217,7 +208,6 @@
                 totalItemPrice += (parseFloat(priceInput[j].value) * parseFloat(inputs_quantity[j].value));
             }
 
-
             var totalAccount = 0;
             var accountInput = $('.accountAmount');
 
@@ -249,7 +239,6 @@
            //get hidden value of totalAmount
             var totalAmount= (parseFloat(subTotal)+totalAccount);
             $('.totalAmount').val(totalAmount.toFixed(2));
-
 
 
         })
@@ -739,7 +728,7 @@
                     <div class="table-responsive">
                         <table class="table mb-0" data-repeater-list="items" id="sortable-table">
                             <thead>
-                            <tr>
+                            {{-- <tr>
                                 <th width="20%">{{__('Items')}}</th>
                                 <th>{{__('Quantity')}}</th>
                                 <th>{{__('Price')}} </th>
@@ -749,51 +738,18 @@
                                     <br><small class="text-danger font-bold">{{__('after tax & discount')}}</small>
                                 </th>
                                 <th></th>
+                            </tr> --}}
+                            <tr>
+                                <th width="20%">{{__('Account')}}</th>
+                                <th>{{__('Price')}} </th>
+                                <th>{{__('Description')}}</th>
+                                <th class="text-end">{{__('Amount')}}
+                                    {{-- <br><small class="text-danger font-bold">{{__('after tax & discount')}}</small> --}}
+                                </th>
+                                <th></th>
                             </tr>
                             </thead>
                             <tbody class="ui-sortable" data-repeater-item>
-                            <tr>
-                                <td width="25%" class="form-group pt-0">
-                                    {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','data-url'=>route('expense.product'))) }}
-                                </td>
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('quantity','', array('class' => 'form-control quantity','placeholder'=>__('Qty'))) }}
-                                        <span class="unit input-group-text bg-transparent"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('price','', array('class' => 'form-control price','placeholder'=>__('Price'))) }}
-                                        <span class="input-group-text bg-transparent">{{\Auth::user()->currencySymbol()}}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('discount','', array('class' => 'form-control discount','placeholder'=>__('Discount'))) }}
-                                        <span class="input-group-text bg-transparent">{{\Auth::user()->currencySymbol()}}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="form-group">
-                                        <div class="input-group">
-                                            <div class="taxes"></div>
-                                            {{ Form::hidden('tax','', array('class' => 'form-control tax')) }}
-                                            {{ Form::hidden('itemTaxPrice','', array('class' => 'form-control itemTaxPrice')) }}
-                                            {{ Form::hidden('itemTaxRate','', array('class' => 'form-control itemTaxRate')) }}
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td class="text-end amount">
-                                    0.00
-                                </td>
-                                <td>
-                                    @can('delete proposal product')
-                                        <a href="#" class="ti ti-trash text-white repeater-action-btn bg-danger ms-2" data-repeater-delete></a>
-                                    @endcan
-                                </td>
-                            </tr>
                             <tr>
                                 <td  class="form-group">
                                     {{ Form::select('chart_account_id', $chartAccounts,'', array('class' => 'form-control select2 js-searchBox')) }}
@@ -811,6 +767,11 @@
                                 <td class="text-end accountamount">
                                     0.00
                                 </td>
+                                <td>
+                                    @can('delete proposal product')
+                                        <a href="#" class="ti ti-trash text-white repeater-action-btn bg-danger ms-2" data-repeater-delete></a>
+                                    @endcan
+                                </td>
                             </tr>
 
                             </tbody>
@@ -822,24 +783,6 @@
                                 <td></td>
                                 <td><strong>{{__('Sub Total')}} ({{\Auth::user()->currencySymbol()}})</strong></td>
                                 <td class="text-end subTotal">0.00</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td></td>
-                                <td><strong>{{__('Discount')}} ({{\Auth::user()->currencySymbol()}})</strong></td>
-                                <td class="text-end totalDiscount">0.00</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td></td>
-                                <td><strong>{{__('Tax')}} ({{\Auth::user()->currencySymbol()}})</strong></td>
-                                <td class="text-end totalTax">0.00</td>
                                 <td></td>
                             </tr>
                             <tr>

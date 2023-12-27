@@ -372,7 +372,7 @@ class LeadController extends Controller
                                        'user_id' => 'required',
                                        'stage_id' => 'required',
                                        'sources' => 'required',
-                                       'products' => 'required',
+                                    //    'products' => 'required',
                                    ]
                 );
 
@@ -391,9 +391,24 @@ class LeadController extends Controller
                 $lead->pipeline_id = $request->pipeline_id;
                 $lead->stage_id    = $request->stage_id;
                 $lead->sources     = implode(",", array_filter($request->sources));
-                $lead->products    = implode(",", array_filter($request->products));
+                // $lead->products    = implode(",", array_filter($request->products));
                 $lead->notes       = $request->notes;
                 $lead->save();
+
+                $checkStage = LeadStage::find($lead->stage_id);
+                if($checkStage->name == 'Proposal'){
+                    $deal='';
+                    $deal  = Deal::where('id', $lead->is_converted)->first();
+    
+                    if($deal){}else{
+                        $isTransfer = ["products", "sources", "files", "discussion", "notes", "calls", "emails"];
+                        $dealdata = [];
+                        $dealdata['name'] = $lead->name;
+                        $dealdata['price'] = '0';
+                        $dealdata['isTransfer'] = $isTransfer;
+                        $this->autoconvertToDeal($lead->id,$dealdata);
+                    }
+                }
 
                 return redirect()->back()->with('success', __('Lead successfully updated!'));
             }
@@ -1090,8 +1105,10 @@ class LeadController extends Controller
             $usr        = \Auth::user();
             $post       = $request->all();
             $lead       = Lead::find($post['lead_id']);
+            $lead_data       = Lead::find($post['lead_id']);
             $lead_users = $lead->users->pluck('email', 'id')->toArray();
-
+            $checkStage = LeadStage::find($post['stage_id']);
+            
             if($lead->stage_id != $post['stage_id'])
             {
                 $newStage = LeadStage::find($post['stage_id']);
@@ -1134,11 +1151,26 @@ class LeadController extends Controller
 
             foreach($post['order'] as $key => $item)
             {
+
                 $lead           = Lead::find($item);
                 $lead->order    = $key;
                 $lead->stage_id = $post['stage_id'];
                 $lead->save();
             }
+            if($checkStage->name == 'Proposal'){
+                $deal='';
+                $deal  = Deal::where('id', $lead_data->is_converted)->first();
+
+                if($deal){}else{
+                    $isTransfer = ["products", "sources", "files", "discussion", "notes", "calls", "emails"];
+                    $dealdata = [];
+                    $dealdata['name'] = $lead_data->name;
+                    $dealdata['price'] = '0';
+                    $dealdata['isTransfer'] = $isTransfer;
+                    $this->autoconvertToDeal($post['lead_id'],$dealdata);
+                }
+            }
+
         }
         else
         {
@@ -1162,66 +1194,66 @@ class LeadController extends Controller
         $lead = Lead::findOrFail($id);
         $usr  = \Auth::user();
 
-        if($request->client_check == 'exist')
-        {
-            $validator = \Validator::make(
-                $request->all(), [
-                                   'clients' => 'required',
-                               ]
-            );
+        // if($request->client_check == 'exist')
+        // {
+        //     $validator = \Validator::make(
+        //         $request->all(), [
+        //                            'clients' => 'required',
+        //                        ]
+        //     );
 
-            if($validator->fails())
-            {
-                $messages = $validator->getMessageBag();
+        //     if($validator->fails())
+        //     {
+        //         $messages = $validator->getMessageBag();
 
-                return redirect()->back()->with('error', $messages->first());
-            }
+        //         return redirect()->back()->with('error', $messages->first());
+        //     }
 
-            $client = User::where('type', '=', 'client')->where('email', '=', $request->clients)->where('created_by', '=', $usr->creatorId())->first();
+        //     $client = User::where('type', '=', 'client')->where('email', '=', $request->clients)->where('created_by', '=', $usr->creatorId())->first();
 
-            if(empty($client))
-            {
-                return redirect()->back()->with('error', 'Client is not available now.');
-            }
-        }
-        else
-        {
-            $validator = \Validator::make(
-                $request->all(), [
-                                   'client_name' => 'required',
-                                   'client_email' => 'required|email|unique:users,email',
-                                   'client_password' => 'required',
-                               ]
-            );
+        //     if(empty($client))
+        //     {
+        //         return redirect()->back()->with('error', 'Client is not available now.');
+        //     }
+        // }
+        // else
+        // {
+        //     $validator = \Validator::make(
+        //         $request->all(), [
+        //                            'client_name' => 'required',
+        //                            'client_email' => 'required|email|unique:users,email',
+        //                            'client_password' => 'required',
+        //                        ]
+        //     );
 
-            if($validator->fails())
-            {
-                $messages = $validator->getMessageBag();
+        //     if($validator->fails())
+        //     {
+        //         $messages = $validator->getMessageBag();
 
-                return redirect()->back()->with('error', $messages->first());
-            }
+        //         return redirect()->back()->with('error', $messages->first());
+        //     }
 
-            $role   = Role::findByName('client');
-            $client = User::create(
-                [
-                    'name' => $request->client_name,
-                    'email' => $request->client_email,
-                    'password' => \Hash::make($request->client_password),
-                    'type' => 'client',
-                    'lang' => 'en',
-                    'created_by' => $usr->creatorId(),
-                ]
-            );
-            $client->assignRole($role);
+        //     $role   = Role::findByName('client');
+        //     $client = User::create(
+        //         [
+        //             'name' => $request->client_name,
+        //             'email' => $request->client_email,
+        //             'password' => \Hash::make($request->client_password),
+        //             'type' => 'client',
+        //             'lang' => 'en',
+        //             'created_by' => $usr->creatorId(),
+        //         ]
+        //     );
+        //     $client->assignRole($role);
 
-            $cArr = [
-                'email' => $request->client_email,
-                'password' => $request->client_password,
-            ];
+        //     $cArr = [
+        //         'email' => $request->client_email,
+        //         'password' => $request->client_password,
+        //     ];
 
-            // Send Email to client if they are new created.
-            Utility::sendEmailTemplate('New User', [$client->id => $client->email], $cArr);
-        }
+        //     // Send Email to client if they are new created.
+        //     Utility::sendEmailTemplate('New User', [$client->id => $client->email], $cArr);
+        // }
 
         // Create Deal
         $stage = Stage::where('pipeline_id', '=', $lead->pipeline_id)->first();
@@ -1244,14 +1276,14 @@ class LeadController extends Controller
         $deal->save();
         // end create deal
 
-        // Make entry in ClientDeal Table
-        ClientDeal::create(
-            [
-                'deal_id' => $deal->id,
-                'client_id' => $client->id,
-            ]
-        );
-        // end
+        // // Make entry in ClientDeal Table
+        // ClientDeal::create(
+        //     [
+        //         'deal_id' => $deal->id,
+        //         'client_id' => $client->id,
+        //     ]
+        // );
+        // // end
 
         $dealArr = [
             'deal_id' => $deal->id,
@@ -1262,14 +1294,14 @@ class LeadController extends Controller
 
         // Send Mail
         $pipeline = Pipeline::find($lead->pipeline_id);
-        $dArr     = [
-            'deal_name' => $deal->name,
-            'deal_pipeline' => $pipeline->name,
-            'deal_stage' => $stage->name,
-            'deal_status' => $deal->status,
-            'deal_price' => $usr->priceFormat($deal->price),
-        ];
-        Utility::sendEmailTemplate('Assign Deal', [$client->id => $client->email], $dArr);
+        // $dArr     = [
+        //     'deal_name' => $deal->name,
+        //     'deal_pipeline' => $pipeline->name,
+        //     'deal_stage' => $stage->name,
+        //     'deal_status' => $deal->status,
+        //     'deal_price' => $usr->priceFormat($deal->price),
+        // ];
+        // Utility::sendEmailTemplate('Assign Deal', [$client->id => $client->email], $dArr);
 
         // Make Entry in UserDeal Table
         $leadUsers = UserLead::where('lead_id', '=', $lead->id)->get();
@@ -1726,4 +1758,195 @@ class LeadController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'))->with('status', 'emails');
         }
     }
+
+    public function autoconvertToDeal($id,$data)
+    {
+        $request = $data;
+        $is_transfer =$request['isTransfer'];
+
+        $lead = Lead::findOrFail($id);
+        $usr  = \Auth::user();
+
+
+        // Create Deal
+        $stage = Stage::where('pipeline_id', '=', $lead->pipeline_id)->first();
+        if(empty($stage))
+        {
+            return redirect()->back()->with('error', __('Please Create Stage for This Pipeline.'));
+        }
+
+        $deal              = new Deal();
+        $deal->name        = $request['name'];
+        $deal->price       = empty($request['price']) ? 0 : $request['price'];
+        $deal->pipeline_id = $lead->pipeline_id;
+        $deal->stage_id    = $stage->id;
+        $deal->sources     = in_array('sources', $is_transfer) ? $lead->sources : '';
+        $deal->products    = in_array('products', $is_transfer) ? $lead->products : '';
+        $deal->notes       = in_array('notes', $is_transfer) ? $lead->notes : '';
+        $deal->labels      = $lead->labels;
+        $deal->status      = 'Active';
+        $deal->created_by  = $lead->created_by;
+        $deal->save();
+        // end create deal
+
+
+        $dealArr = [
+            'deal_id' => $deal->id,
+            'name' => $deal->name,
+            'updated_by' => $usr->id,
+        ];
+        // Send Notification
+
+        // Send Mail
+        $pipeline = Pipeline::find($lead->pipeline_id);
+
+        // Make Entry in UserDeal Table
+        $leadUsers = UserLead::where('lead_id', '=', $lead->id)->get();
+        foreach($leadUsers as $leadUser)
+        {
+            UserDeal::create(
+                [
+                    'user_id' => $leadUser->user_id,
+                    'deal_id' => $deal->id,
+                ]
+            );
+        }
+        // end
+
+        //Transfer Lead Discussion to Deal
+        if(in_array('discussion', $is_transfer))
+        {
+            $discussions = LeadDiscussion::where('lead_id', '=', $lead->id)->where('created_by', '=', $usr->creatorId())->get();
+            if(!empty($discussions))
+            {
+                foreach($discussions as $discussion)
+                {
+                    DealDiscussion::create(
+                        [
+                            'deal_id' => $deal->id,
+                            'comment' => $discussion->comment,
+                            'created_by' => $discussion->created_by,
+                        ]
+                    );
+                }
+            }
+        }
+        // end Transfer Discussion
+
+        // Transfer Lead Files to Deal
+        if(in_array('files', $is_transfer))
+        {
+            $files = LeadFile::where('lead_id', '=', $lead->id)->get();
+            if(!empty($files))
+            {
+                foreach($files as $file)
+                {
+                    $location     = base_path() . '/storage/lead_files/' . $file->file_path;
+                    $new_location = base_path() . '/storage/deal_files/' . $file->file_path;
+                    $copied       = copy($location, $new_location);
+
+                    if($copied)
+                    {
+                        DealFile::create(
+                            [
+                                'deal_id' => $deal->id,
+                                'file_name' => $file->file_name,
+                                'file_path' => $file->file_path,
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+        // end Transfer Files
+
+        // Transfer Lead Calls to Deal
+        if(in_array('calls', $is_transfer))
+        {
+            $calls = LeadCall::where('lead_id', '=', $lead->id)->get();
+            if(!empty($calls))
+            {
+                foreach($calls as $call)
+                {
+                    DealCall::create(
+                        [
+                            'deal_id' => $deal->id,
+                            'subject' => $call->subject,
+                            'call_type' => $call->call_type,
+                            'duration' => $call->duration,
+                            'user_id' => $call->user_id,
+                            'description' => $call->description,
+                            'call_result' => $call->call_result,
+                        ]
+                    );
+                }
+            }
+        }
+        //end
+
+        // Transfer Lead Emails to Deal
+        if(in_array('emails', $is_transfer))
+        {
+            $emails = LeadEmail::where('lead_id', '=', $lead->id)->get();
+            if(!empty($emails))
+            {
+                foreach($emails as $email)
+                {
+                    DealEmail::create(
+                        [
+                            'deal_id' => $deal->id,
+                            'to' => $email->to,
+                            'subject' => $email->subject,
+                            'description' => $email->description,
+                        ]
+                    );
+                }
+            }
+        }
+
+        // Update is_converted field as deal_id
+        $lead->is_converted = $deal->id;
+        $lead->save();
+
+        //For Notification
+        $setting  = Utility::settings(\Auth::user()->creatorId());
+        $leadUsers = Lead::where('id', '=', $lead->id)->first();
+        $leadUserArr = [
+            'lead_user_name' => $leadUsers->name,
+            'lead_name' => $lead->name,
+            'lead_email' => $lead->email,
+        ];
+        //Slack Notification
+        if(isset($setting['leadtodeal_notification']) && $setting['leadtodeal_notification'] ==1)
+        {
+            Utility::send_slack_msg('lead_to_deal_conversion', $leadUserArr);
+        }
+        //Telegram Notification
+        if(isset($setting['telegram_leadtodeal_notification']) && $setting['telegram_leadtodeal_notification'] ==1)
+        {
+            Utility::send_telegram_msg('lead_to_deal_conversion', $leadUserArr);
+        }
+
+        //webhook
+        $module ='Lead to Deal Conversion';
+        $webhook=  Utility::webhookSetting($module);
+        if($webhook)
+        {
+            $parameter = json_encode($lead);
+            // 1 parameter is  URL , 2 parameter is data , 3 parameter is method
+            $status = Utility::WebhookCall($webhook['url'],$parameter,$webhook['method']);
+            if($status == true)
+            {
+                return redirect()->back()->with('success', __('Lead successfully converted!'));
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Webhook call failed.'));
+            }
+        }
+
+
+        return redirect()->back()->with('success', __('Lead successfully converted'));
+    }
+
 }

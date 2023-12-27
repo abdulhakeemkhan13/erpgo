@@ -18,6 +18,10 @@ class Contract extends Model
         'contract_description',
         'company_signature',
         'client_signature',
+        'company_id',
+        'service_id',
+        'service_price',
+        'owned_by',
         'created_by',
     ];
 
@@ -87,6 +91,21 @@ class Contract extends Model
     public function ContractNote()
     {
         return $this->belongsTo('App\Models\ContractNotes', 'id', 'contract_id');
+    }
+
+    public function company()
+    {
+        return $this->hasOne('App\Models\Company', 'id', 'company_id');
+    }
+
+    public function contractSpace()
+    {
+        return $this->hasMany('App\Models\ContractSpaceHoure', 'contract_id', 'id');
+    }
+
+    public static function spaceContract($contract , $space)
+    {
+        return ContractSpaceHoure::where('contract_id', $contract)->where('space_id',$space)->first();
     }
 
 }

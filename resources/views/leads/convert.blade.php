@@ -9,7 +9,7 @@
             {{ Form::label('price', __('Price'),['class'=>'form-label']) }}
             {{ Form::number('price', 0, array('class' => 'form-control','min'=>0)) }}
         </div>
-        <div class="col-sm-12 col-md-12">
+        {{-- <div class="col-sm-12 col-md-12">
             <div class="d-flex radio-check">
                 <div class="orm-check form-check-inline form-group col-md-6">
                     <input type="radio" name="client_check" value="new" id="new_client" class="form-check-input" @if(empty($exist_client)) checked @endif/>
@@ -41,7 +41,7 @@
         <div class="col-6 new_client form-group">
             {{ Form::label('client_password', __('Client Password'),['class'=>'form-label']) }}
             {{ Form::text('client_password',null, array('class' => 'form-control','required'=>'required')) }}
-        </div>
+        </div> --}}
     </div>
     <div class="row px-3 text-sm">
         <div class="col-12 pl-0 pb-2 font-bold text-dark">{{__('Copy To')}}</div>

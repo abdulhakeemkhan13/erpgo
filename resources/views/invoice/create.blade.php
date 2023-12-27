@@ -32,9 +32,9 @@
                             max_size: 2048
                         });
                     }
-                    if($('.select2').length) {
-                        $('.select2').select2();
-                    }
+                    // if($('.select2').length) {
+                    //     $('.select2').select2();
+                    // }
 
                 },
                 hide: function (deleteElement) {
@@ -366,6 +366,69 @@
             $(".price").change();
             $(".discount").change();
         });
+
+        $('#company').on('change', function () {
+            var comp_id = $('#company').val();
+            $.ajax({
+                url: "{{ route('company_contract') }}",
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': jQuery('#token').val()
+                },
+                data: {
+                    'id': comp_id
+                },
+                cache: false,
+                success: function (data) {
+                    console.log(data);
+                    if (data != '') {
+
+                        // $('#company_detail').removeClass('d-block');
+                        $('#contract').empty().append(`<option selected disabled value="">Select a Contract</option>`);
+                        for(var i=0; i<data.data.length; i++){
+                            $('#contract').append(`<option value="` + data.data[i]['id'] + `">` + data.data[i]['subject'] +`</option>`);
+                        }
+                    }
+
+                },
+
+            });
+        
+        });
+
+        $('#contract').on('change', function () {
+            var comp_id = $('#contract').val();
+            $.ajax({
+                url: "{{ route('company_contract_detail') }}",
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': jQuery('#token').val()
+                },
+                data: {
+                    'id': comp_id
+                },
+                cache: false,
+                success: function (data) {
+
+                    if (data.html !== undefined) {
+                        $('#sortable-table tbody:gt(0)').remove();
+                        $('.ui-sortable').empty().html(data.html);
+                        $('.btn-primary[data-repeater-create]').click();
+                        if(data.html !== undefined || data.html !== ''){
+                            $('#sortable-table tbody:eq(1)').empty().html(data.html2);
+                            $('.btn-primary[data-repeater-create]').click();
+                            $('#sortable-table tbody:gt(1)').remove();
+                        }else{
+                            $('#sortable-table tbody:gt(0)').remove();
+                        }
+                    }
+                    $('.quantity').trigger('keyup');
+                },
+
+            });
+        
+        });
+
     </script>
 @endpush
 @section('content')
@@ -376,7 +439,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                        {{-- <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                             <div class="form-group" id="customer-box">
                                 {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
                                 {{ Form::select('customer_id', $customers,$customerId, array('class' => 'form-control select','id'=>'customer','data-url'=>route('invoice.customer'),'required'=>'required')) }}
@@ -384,6 +447,22 @@
                             </div>
 
                             <div id="customer_detail" class="d-none">
+                            </div>
+                        </div> --}}
+                        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="form-group" id="company-box">
+                                {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
+                                {{ Form::select('customer_id', $customers,$customerId, array('class' => 'form-control select','id'=>'company','required'=>'required')) }}
+
+                            </div>
+
+                            <div id="company_detail" >
+                                {{ Form::label('contract', __('Contract'),['class'=>'form-label']) }}
+                                {{-- {{ Form::select('contract_id', null,null, array('class' => 'form-control select','id'=>'contract','required'=>'required')) }} --}}
+                                <select name="contract_id" id="contract" class="form-control select">
+                                    <option selected disabled value="">Select a Contract</option>
+                                </select>
+
                             </div>
                         </div>
                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
@@ -488,6 +567,8 @@
 
                                 <td width="25%" class="form-group pt-0">
                                     {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','data-url'=>route('invoice.product'),'required'=>'required')) }}
+
+                                    {{-- {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','required'=>'required')) }} --}}
                                 </td>
                                 <td>
                                     <div class="form-group price-input input-group search-form">
