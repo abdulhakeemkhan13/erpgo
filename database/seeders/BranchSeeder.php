@@ -633,6 +633,30 @@ class BranchSeeder extends Seeder
         //         'created_at' => date('Y-m-d H:i:s'),
         //         'updated_at' => date('Y-m-d H:i:s'),
         //     ],
+            // [
+            //     'name' => 'manage clientuser',
+            //     'guard_name' => 'web',
+            //     'created_at' => date('Y-m-d H:i:s'),
+            //     'updated_at' => date('Y-m-d H:i:s'),
+            // ],
+            // [
+            //     'name' => 'create clientuser',
+            //     'guard_name' => 'web',
+            //     'created_at' => date('Y-m-d H:i:s'),
+            //     'updated_at' => date('Y-m-d H:i:s'),
+            // ],
+            // [
+            //     'name' => 'edit clientuser',
+            //     'guard_name' => 'web',
+            //     'created_at' => date('Y-m-d H:i:s'),
+            //     'updated_at' => date('Y-m-d H:i:s'),
+            // ],
+            // [
+            //     'name' => 'delete clientuser',
+            //     'guard_name' => 'web',
+            //     'created_at' => date('Y-m-d H:i:s'),
+            //     'updated_at' => date('Y-m-d H:i:s'),
+            // ],
         //     ];
         //     Permission::insert($arrPermissions);
 
@@ -655,46 +679,70 @@ class BranchSeeder extends Seeder
     
             //     $branchRole->givePermissionTo($branchPermissions);
 
-            // $arrPermissions = [
-            //         [
-            //             'name' => 'manage clientuser',
-            //             'guard_name' => 'web',
-            //             'created_at' => date('Y-m-d H:i:s'),
-            //             'updated_at' => date('Y-m-d H:i:s'),
-            //         ],
-            //         [
-            //             'name' => 'create clientuser',
-            //             'guard_name' => 'web',
-            //             'created_at' => date('Y-m-d H:i:s'),
-            //             'updated_at' => date('Y-m-d H:i:s'),
-            //         ],
-            //         [
-            //             'name' => 'edit clientuser',
-            //             'guard_name' => 'web',
-            //             'created_at' => date('Y-m-d H:i:s'),
-            //             'updated_at' => date('Y-m-d H:i:s'),
-            //         ],
-            //         [
-            //             'name' => 'delete clientuser',
-            //             'guard_name' => 'web',
-            //             'created_at' => date('Y-m-d H:i:s'),
-            //             'updated_at' => date('Y-m-d H:i:s'),
-            //         ],
-            //     ];
+            $arrPermissions = [
+                    [
+                        'name' => 'manage ismail',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'create ismail',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'edit ismail',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'delete ismail',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'manage vistor',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'create vistor',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'edit vistor',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'name' => 'delete vistor',
+                        'guard_name' => 'web',
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ],
+                ];
                 // 
-                            // Permission::insert($arrPermissions);
+                            Permission::insert($arrPermissions);
       
-            $client_userRole       = Role::where('name','branch')->first();
+            // $client_userRole       = Role::where('name','branch')->first();
                  
-            $client_userPermission = [
-                ['name' => 'manage clientuser'],
-                ['name' => 'create clientuser'],
-                ['name' => 'edit clientuser'],
-                ['name' => 'delete clientuser'],
+            // $client_userPermission = [
+            //     ['name' => 'manage clientuser'],
+            //     ['name' => 'create clientuser'],
+            //     ['name' => 'edit clientuser'],
+            //     ['name' => 'delete clientuser'],
                 
-            ];
+            // ];
     
-            $client_userRole->givePermissionTo($client_userPermission);
+            // $client_userRole->givePermissionTo($client_userPermission);
 
     }
 }

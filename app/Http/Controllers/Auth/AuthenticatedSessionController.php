@@ -167,7 +167,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(RouteServiceProvider::HOME);
 
         }else  if($user->type =='clientuser' ){
-            return redirect(route('booking.calendar',['all']));
+            return redirect(route('clientuser.dashboard'));
         }
         else
         {

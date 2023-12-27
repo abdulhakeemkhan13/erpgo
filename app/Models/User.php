@@ -90,7 +90,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function ownedId()
     {
+<<<<<<< HEAD
         if($this->type == 'branch' || $this->type == 'company')
+=======
+        if($this->type == 'company' || $this->type == 'branch')
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
         {
             return $this->id;
         }
