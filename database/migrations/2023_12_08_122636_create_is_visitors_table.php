@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('is_visitors', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('name')->nullable();
+            $table->string('name')->nullable();
             $table->unsignedInteger('company_id')->nullable();
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->unsignedBigInteger('user_id')->nullable();

@@ -42,7 +42,7 @@ class ClientUserController extends Controller
                 $clients = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'clientuser')->get();
             }else{
                 $user    = \Auth::user();
-                $clients = User::where('owned_by', '=', $user->id)->where('type', '=', 'clientuser')->get();
+                $clients = User::where('owned_by', '=', $user->ownedId())->where('type', '=', 'clientuser')->get();
             }
             
 
@@ -72,7 +72,7 @@ class ClientUserController extends Controller
                     $company = Company::where('created_by', '=', $user->creatorId())->pluck('name','id');
                 }else{
                     $user    = \Auth::user();
-                    $company = Company::where('owned_by', '=', $user->id)->pluck('name','id');
+                    $company = Company::where('owned_by', '=', $user->ownedId())->pluck('name','id');
                 }
 
                 return view('clientuser.create', compact('customFields','company'));
@@ -131,7 +131,7 @@ class ClientUserController extends Controller
                         'password' => Hash::make($request->password),
                         'type' => 'clientuser',
                         'lang' => !empty($default_language) ? $default_language->value : 'en',
-                        'owned_by' => $user->id,
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                         'email_verified_at' => date('Y-m-d H:i:s'),
                     ]

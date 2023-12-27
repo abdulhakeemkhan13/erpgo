@@ -8,6 +8,7 @@ class Contract extends Model
 {
     protected $fillable = [
         'client_name',
+        'contract_id',
         'subject',
         'value',
         'type',

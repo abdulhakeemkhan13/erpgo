@@ -38,9 +38,11 @@ class UserController extends Controller
             {
                 $users = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'company')->get();
             }
-            else
+            else if(\Auth::user()->type == 'company')
             {
-                $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->get();
+                $users = User::where('created_by', '=', $user->creatorId())->whereNotIn('type', ['client', 'branch','clientuser'])->get();
+            }else{
+                $users = User::where('owned_by', '=', $user->ownedId())->whereNotIn('type', ['client', 'branch','clientuser'])->get();
             }
 
             return view('user.index')->with('users', $users);
@@ -79,10 +81,10 @@ class UserController extends Controller
             {
                 $validator = \Validator::make(
                     $request->all(), [
-                                       'name' => 'required|max:120',
-                                       'email' => 'required|email|unique:users',
-                                       'password' => 'required|min:6',
-                                   ]
+                                    'name' => 'required|max:120',
+                                    'email' => 'required|email|unique:users',
+                                    'password' => 'required|min:6',
+                                ]
                 );
                 if($validator->fails())
                 {
@@ -99,6 +101,7 @@ class UserController extends Controller
                 $user['default_pipeline'] = 1;
                 $user['plan'] = 1;
                 $user['lang']       = !empty($default_language) ? $default_language->value : 'en';
+                $user['owned_by'] = \Auth::user()->ownedId();
                 $user['created_by'] = \Auth::user()->creatorId();
                 $user['plan']       = Plan::first()->id;
                 $user['email_verified_at'] = date('Y-m-d H:i:s');
@@ -132,11 +135,11 @@ class UserController extends Controller
             {
                 $validator = \Validator::make(
                     $request->all(), [
-                                       'name' => 'required|max:120',
-                                       'email' => 'required|email|unique:users',
-                                       'password' => 'required|min:6',
-                                       'role' => 'required',
-                                   ]
+                                    'name' => 'required|max:120',
+                                    'email' => 'required|email|unique:users',
+                                    'password' => 'required|min:6',
+                                    'role' => 'required',
+                                ]
                 );
                 if($validator->fails())
                 {
@@ -157,13 +160,14 @@ class UserController extends Controller
                     $request['password']   = Hash::make($request->password);
                     $request['type']       = $role_r->name;
                     $request['lang']       = !empty($default_language) ? $default_language->value : 'en';
+                    $request['owned_by'] = \Auth::user()->ownedId();
                     $request['created_by'] = \Auth::user()->creatorId();
                     $request['email_verified_at'] = date('Y-m-d H:i:s');
 
                     $user = User::create($request->all());
                     $user->assignRole($role_r);
                     if($request['type'] != 'client')
-                      \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
+                    \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
                 }
                 else
                 {

@@ -93,9 +93,15 @@
     <div class="row">
         {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}
         <div class="d-flex col-md-12">
+<<<<<<< HEAD
+            <label class="form-label m-1" style="width: 25%" for="{{ @$services->id }}">{{ ucfirst(@$services->name) }} : </label>
+            <input type="hidden" name="services_id" class="form-label" value="{{ @$services->id }}">
+            <input type="number" name="services_charges" id="{{ @$services->id }}" class="form-label m-1" style="width: 25%" required>
+=======
             <label class="form-label m-1" style="width: 25%" for="{{ $services->id }}">{{ ucfirst($services->name) }} : </label>
             <input type="hidden" name="services_id" class="form-label" value="{{ $services->id }}">
             <input type="number" name="services_charges" id="{{ $services->id }}" class="form-label m-1" style="width: 25%" required>
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
         </div>
     </div>
     <div class="row">

@@ -33,9 +33,12 @@ class VenderController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->can('manage vender'))
-        {
-            $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
+        if(\Auth::user()->can('manage vender')){
+            if(\Auth::user()->type == ('company')){
+                $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
+            }else{
+                $venders = Vender::where('owned_by', \Auth::user()->ownedId())->get();                
+            }
 
             return view('vender.index', compact('venders'));
         }
@@ -96,7 +99,8 @@ class VenderController extends Controller
                     $vender->name             = $request->name;
                     $vender->contact          = $request->contact;
                     $vender->email            = $request->email;
-                    $vender->tax_number      =$request->tax_number;
+                    $vender->tax_number       =$request->tax_number;
+                    $vender->owned_by         = \Auth::user()->ownedId();
                     $vender->created_by       = \Auth::user()->creatorId();
                     $vender->billing_name     = $request->billing_name;
                     $vender->billing_country  = $request->billing_country;
@@ -253,7 +257,11 @@ class VenderController extends Controller
 
     function venderNumber()
     {
+        if(\Auth::user()->type == ('company')){
         $latest = Vender::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }else{
+        $latest = Vender::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;
@@ -524,6 +532,7 @@ class VenderController extends Controller
             $vendorData->shipping_phone     = $vendor[16];
             $vendorData->shipping_zip       = $vendor[17];
             $vendorData->shipping_address   = $vendor[18];
+            // $vendorData->owned_by         = \Auth::user()->ownedId();
             $vendorData->created_by         = \Auth::user()->creatorId();
 
             if(empty($vendorData))

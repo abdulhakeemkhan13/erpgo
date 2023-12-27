@@ -20,13 +20,13 @@ class TransactionController extends Controller
 
             $filter['account']  = __('All');
             $filter['category'] = __('All');
-            if(\Auth::user()->type == 'branch' )
+            if(\Auth::user()->type == 'company' )
             {
-                $account = BankAccount::where('owned_by', '=', \Auth::user()->id)->get()->pluck('holder_name', 'id');
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
             }
             else
             {
-                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account = BankAccount::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('holder_name', 'id');
             }
             $account->prepend(__('Stripe / Paypal'), 'strip-paypal');
             $account->prepend('Select Account', '');
@@ -35,18 +35,18 @@ class TransactionController extends Controller
                                     ->leftjoin('bank_accounts', 'transactions.account', '=', 'bank_accounts.id')
                                     ->groupBy('transactions.account')->selectRaw('sum(amount) as total');
 
-                                    if(\Auth::user()->type == 'branch' )
+                                    if(\Auth::user()->type == 'company' )
                                     {
-                                        $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)->whereIn(
+                                        $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
                                             'type', [
                                                         1,
                                                         2,
                                                     ]
                                             )->get()->pluck('name', 'name');
-                                    }
-                                    else
-                                    {
-                                        $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
+                                        }
+                                        else
+                                        {
+                                        $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())->whereIn(
                                             'type', [
                                                         1,
                                                         2,
@@ -129,15 +129,15 @@ class TransactionController extends Controller
                 $filter['category'] = $request->category;
             }
 
-            if(\Auth::user()->type == 'branch' )
-            {
-                $transactions->where('owned_by', '=', \Auth::user()->id);
-            $accounts->where('transactions.owned_by', '=', \Auth::user()->id);
-            }
-            else
+            if(\Auth::user()->type == 'company' )
             {
                 $transactions->where('created_by', '=', \Auth::user()->creatorId());
                 $accounts->where('transactions.created_by', '=', \Auth::user()->creatorId());
+            }
+            else
+                $transactions->where('owned_by', '=', \Auth::user()->ownedId());
+                $accounts->where('transactions.owned_by', '=', \Auth::user()->ownedId());
+            {
             }
             $transactions = $transactions->get();
             $accounts     = $accounts->get();

@@ -17,8 +17,9 @@ class LeaveController extends Controller
 
         if(\Auth::user()->can('manage leave'))
         {
-            $leaves = Leave::where('created_by', '=', \Auth::user()->creatorId())->get();
-            if(\Auth::user()->type == 'Employee')
+            if(\Auth::user()->type == 'company'){
+                $leaves = Leave::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else if(\Auth::user()->type == 'Employee')
             {
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
@@ -26,7 +27,7 @@ class LeaveController extends Controller
             }
             else
             {
-                $leaves = Leave::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $leaves = Leave::where('owned_by', '=', \Auth::user()->ownedId())->get();
             }
 
             return view('leave.index', compact('leaves'));
@@ -41,15 +42,16 @@ class LeaveController extends Controller
     {
         if(\Auth::user()->can('create leave'))
         {
-            if(Auth::user()->type == 'Employee')
-            {
+            if(\Auth::user()->type == 'company'){
                 $employees = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             }
-            else
-            {
+            else if(\Auth::user()->type == 'Employee'){
                 $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else {
+                $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
             }
             $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+           
 //            $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
 
             return view('leave.create', compact('employees', 'leavetypes'));

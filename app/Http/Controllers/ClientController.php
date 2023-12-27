@@ -40,7 +40,7 @@ class ClientController extends Controller
                 $clients = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'client')->get();
             }else{
                 $user    = \Auth::user();
-                $clients = User::where('owned_by', '=', $user->id)->where('type', '=', 'client')->get();
+                $clients = User::where('owned_by', '=', $user->ownedId())->where('type', '=', 'client')->get();
             }
             
 
@@ -117,6 +117,7 @@ class ClientController extends Controller
                         'password' => Hash::make($request->password),
                         'type' => 'client',
                         'lang' => !empty($default_language) ? $default_language->value : 'en',
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                         'email_verified_at' => date('Y-m-d H:i:s'),
                     ]

@@ -37,11 +37,16 @@ class EmployeeController extends Controller
      */
     public function index()
     {
+        // dd(\Auth::user()->ownedId());
         if(\Auth::user()->can('manage employee'))
         {
             if(Auth::user()->type == 'Employee')
             {
                 $employees = Employee::where('user_id', '=', Auth::user()->id)->get();
+            }
+            else if(Auth::user()->type == 'branch')
+            {
+                $employees = Employee::where('owned_by', \Auth::user()->ownedId())->get();
             }
             else
             {

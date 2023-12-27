@@ -18,19 +18,30 @@ class RevenueController extends Controller
     public function index(Request $request)
     {
 
-        if(\Auth::user()->can('manage revenue'))
-        {
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customer->prepend('Select Customer', '');
+        if(\Auth::user()->can('manage revenue')){
+            if(\Auth::user()->type == ('company')){
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
 
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-            $account->prepend('Select Account', '');
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
 
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'income')->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'income')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
 
+                $query = Revenue::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $customer = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
 
-            $query = Revenue::where('created_by', '=', \Auth::user()->creatorId());
+                $account = BankAccount::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+
+                $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())->where('type', '=', 'income')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+
+                $query = Revenue::where('owned_by', '=', \Auth::user()->ownedId());
+            }
 
 
             if(count(explode('to', $request->date)) > 1)
@@ -76,12 +87,19 @@ class RevenueController extends Controller
     public function create()
     {
 
-        if(\Auth::user()->can('create revenue'))
-        {
-            $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customers->prepend('--', 0);
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'income')->get()->pluck('name', 'id');
-            $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->can('create revenue')){
+            if(\Auth::user()->type == 'company' ){
+                $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customers->prepend('--', 0);
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'income')->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $customers = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $customers->prepend('--', 0);
+                $categories = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())->where('type', '=', 'income')->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
+
 
             return view('revenue.create', compact('customers', 'categories', 'accounts'));
         }
@@ -99,12 +117,12 @@ class RevenueController extends Controller
 
             $validator = \Validator::make(
                 $request->all(), [
-                                   'date' => 'required',
-                                   'amount' => 'required',
-                                   'account_id' => 'required',
-                                   'category_id' => 'required',
-                               ]
-            );
+                                'date' => 'required',
+                                'amount' => 'required',
+                                'account_id' => 'required',
+                                'category_id' => 'required',
+                            ]
+        );
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
@@ -141,6 +159,7 @@ class RevenueController extends Controller
             }
 
 
+            $revenue->owned_by     = \Auth::user()->ownedId();
             $revenue->created_by     = \Auth::user()->creatorId();
             $revenue->save();
 

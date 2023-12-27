@@ -27,10 +27,9 @@ use Illuminate\Support\Facades\Validator;
 
 class ExpenseController extends Controller
 {
-
     function billNumber()
     {
-        $latest = Bill::where('created_by', '=', \Auth::user()->creatorId())->where('type' ,'=' ,'Bill')->latest()->first();
+        $latest = Bill::where('owned_by', '=', \Auth::user()->ownedId())->where('type' ,'=' ,'Bill')->latest()->first();
         if(!$latest)
         {
             return 1;
@@ -41,7 +40,7 @@ class ExpenseController extends Controller
 
     function expenseNumber()
     {
-        $latest = Bill::where('created_by', '=', \Auth::user()->creatorId())->where('type' ,'=' ,'Expense')->latest()->first();
+        $latest = Bill::where('owned_by', '=', \Auth::user()->ownedId())->where('type' ,'=' ,'Expense')->latest()->first();
         if(!$latest)
         {
             return 1;
@@ -86,21 +85,34 @@ class ExpenseController extends Controller
     public function index(Request $request)
     {
 
-        if(\Auth::user()->can('manage bill'))
-        {
+        if(\Auth::user()->can('manage bill')){
+            if(\Auth::user()->type == ('company')){
+                $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
 
-            $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $vender->prepend('Select Vendor', '');
+                $category     = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())
+                    ->whereNotIn('type', ['product & service', 'income',])
+                    ->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
 
-            $category     = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())
-                ->whereNotIn('type', ['product & service', 'income',])
-                ->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
+                $status = Bill::$statues;
 
-            $status = Bill::$statues;
+                $query = Bill::where('type', '=', 'Expense')
+                ->where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $vender = Vender::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
 
-            $query = Bill::where('type', '=', 'Expense')
-            ->where('created_by', '=', \Auth::user()->creatorId());
+                $category     = ProductServiceCategory::where('owned_by', \Auth::user()->ownedId())
+                    ->whereNotIn('type', ['product & service', 'income',])
+                    ->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+
+                $status = Bill::$statues;
+
+                $query = Bill::where('type', '=', 'Expense')
+                ->where('owned_by', '=', \Auth::user()->ownedId());
+            }
             if(!empty($request->vender))
             {
                 $query->where('vender_id', '=', $request->vender);
@@ -136,33 +148,61 @@ class ExpenseController extends Controller
         if(\Auth::user()->can('create bill'))
         {
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'bill')->get();
-            $category     = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())
+            if(\Auth::user()->type == ('company')){
+                $expense_number = \Auth::user()->expenseNumberFormat($this->expenseNumber());
+                $category     = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())
+                    ->whereNotIn('type', ['product & service', 'income',])
+                    ->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees->prepend('Select Employee', '');
+
+                $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customers->prepend('Select Customer', '');
+
+                $venders     = Vender::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $venders->prepend('Select Vender', '');
+
+                $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $product_services->prepend('Select Item', '');
+
+                $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('created_by', \Auth::user()->creatorId())->get()
+                    ->pluck('code_name', 'id');
+                $chartAccounts->prepend('Select Account', '');
+
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))
+                            ->where('created_by', \Auth::user()->creatorId())
+                            ->get()->pluck('name', 'id');
+            }else{
+                $expense_number = \Auth::user()->expenseNumberFormat($this->expenseNumber());
+                $category     = ProductServiceCategory::where('owned_by', \Auth::user()->ownedId())
                 ->whereNotIn('type', ['product & service', 'income',])
                 ->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
+                $category->prepend('Select Category', '');
+                
+                $employees        = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $employees->prepend('Select Employee', '');
 
-            $expense_number = \Auth::user()->expenseNumberFormat($this->expenseNumber());
+                $customers = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $customers->prepend('Select Customer', '');
 
-            $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employees->prepend('Select Employee', '');
+                $venders     = Vender::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $venders->prepend('Select Vender', '');
 
-            $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customers->prepend('Select Customer', '');
+                $product_services = ProductService::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $product_services->prepend('Select Item', '');
 
-            $venders     = Vender::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $venders->prepend('Select Vender', '');
+                $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('owned_by', \Auth::user()->ownedId())->get()
+                    ->pluck('code_name', 'id');
+                $chartAccounts->prepend('Select Account', '');
 
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $product_services->prepend('Select Item', '');
-
-            $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('created_by', \Auth::user()->creatorId())->get()
-                ->pluck('code_name', 'id');
-            $chartAccounts->prepend('Select Account', '');
-
-            $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))
-                        ->where('created_by', \Auth::user()->creatorId())
-                        ->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))
+                            ->where('owned_by', \Auth::user()->ownedId())
+                            ->get()->pluck('name', 'id');
+            }
 
 
             return view('expense.create', compact('employees','customers','venders', 'expense_number', 'product_services', 'category', 'customFields', 'Id','chartAccounts','accounts'));
@@ -240,6 +280,10 @@ class ExpenseController extends Controller
                 $expense->due_date       = $request->payment_date;
                 $expense->category_id    = !empty($request->category_id) ? $request->category_id :0;
                 $expense->order_number   = 0;
+<<<<<<< HEAD
+                $expense->owned_by     = \Auth::user()->ownedId();
+=======
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
                 $expense->created_by     = \Auth::user()->creatorId();
                 $expense->save();
 
@@ -605,7 +649,7 @@ class ExpenseController extends Controller
                 $products = $request->items;
 
                 $total_amount=0;
-
+dd($products);
                 for ($i = 0; $i < count($products); $i++)
                 {
                     $expenseProduct = BillProduct::find($products[$i]['id']);

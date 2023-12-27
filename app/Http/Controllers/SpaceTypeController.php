@@ -45,7 +45,7 @@ class SpaceTypeController extends Controller
 
         }else{
             $user    = \Auth::user();
-            $spacetype = SpaceType::where('owned_by', '=', $user->id)->get();
+            $spacetype = SpaceType::where('owned_by', '=', $user->ownedId())->get();
             }
             return view('spacetype.index', compact('spacetype'));
         }
@@ -108,7 +108,7 @@ class SpaceTypeController extends Controller
                     return response()->json(['error' => $messages->first()], 401);
                 }
                 else
-                {
+                {       
                     return redirect()->back()->with('error', $messages->first());
                 }
             }
@@ -118,10 +118,47 @@ class SpaceTypeController extends Controller
                 $branches = SpaceType::create(
                     [
                         'name' => $request->name,
-                        'owned_by' => $user->id,
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                     ]
                 );
+<<<<<<< HEAD
+                
+                $tax             = new Tax();
+                $tax->name       = $request->tax_name;
+                $tax->rate       = $request->rate;
+                $tax->owned_by = \Auth::user()->ownedId();
+                $tax->created_by = \Auth::user()->creatorId();
+                $tax->save();
+                // if(\Auth::user()->type == 'company'){                
+                    $types = ChartOfAccountType::where('created_by', '=', \Auth::user()->creatorId())->where('name','Income')->first();
+                // }else{
+                //     $types = ChartOfAccountType::where('owend_by', '=', \Auth::user()->ownedId())->where('name','Income')->first();
+                // }
+                if($types){
+                    $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Sales Revenue')->first();
+                }
+                
+                $account              = new ChartOfAccount();
+                $account->name        = $branches->name;
+                $account->code        = $branches->id;
+                $account->type        = @$types->id;
+                $account->sub_type    = @$sub_type->id;
+                $account->description = $branches->name.' Income ';
+                $account->is_enabled  = 1;
+                $account->owned_by  = \Auth::user()->ownedId();
+                $account->created_by  = \Auth::user()->creatorId();
+                $account->save();
+                // dd($account);
+                
+                SpaceType::where('id',$branches->id)->update(
+                    [
+                        'tax_id' => $tax->id,
+                        'account_head' => $account->id,
+                        ]
+                    );
+
+=======
                 $tax             = new Tax();
                 $tax->name       = $request->tax_name;
                 $tax->rate       = $request->rate;
@@ -148,11 +185,16 @@ class SpaceTypeController extends Controller
                     ]
                 );
 
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
                 DB::commit();
                 return redirect()->route('spacetype.index')->with('success', __('Spacetype successfully created.'));
             }
             catch(\Exception $e)
             {
+<<<<<<< HEAD
+                dd($e);
+=======
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
                 DB::rollback();
                 return redirect()->route('spacetype.index')->with('error', $e);
             }
@@ -193,7 +235,7 @@ class SpaceTypeController extends Controller
         if(\Auth::user()->can('edit spacetype'))
         {
             $user = \Auth::user();
-            if($spacetype->created_by == $user->creatorId() || $spacetype->owned_by == $user->id)
+            if($spacetype->created_by == $user->creatorId() || $spacetype->owned_by == $user->ownedId())
             {
 
                 $spacetype->customField = CustomField::getData($spacetype, 'spacetype');
@@ -224,7 +266,7 @@ class SpaceTypeController extends Controller
         if(\Auth::user()->can('edit spacetype'))
         {
             $user = \Auth::user();
-            if($spacetype->created_by == $user->creatorId() || $spacetype->owned_by == $user->id)
+            if($spacetype->created_by == $user->creatorId() || $spacetype->owned_by == $user->ownedId())
             {
                 $validation = [
                     'name' => 'required',
@@ -269,7 +311,7 @@ class SpaceTypeController extends Controller
     public function destroy(SpaceType $spacetype)
     {
         $user = \Auth::user();
-        if($spacetype->created_by == $user->creatorId()  || $spacetype->owned_by == $user->id)
+        if($spacetype->created_by == $user->creatorId()  || $spacetype->owned_by == $user->ownedId())
         {
     
             $spacetype->delete();

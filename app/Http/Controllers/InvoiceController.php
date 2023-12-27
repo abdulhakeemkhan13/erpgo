@@ -43,10 +43,17 @@ class InvoiceController extends Controller
     {
         if(\Auth::user()->can('manage invoice'))
         {
+        if(\Auth::user()->type == 'company' ){
             $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $customer->prepend('Select Customer', '');
             $status = Invoice::$statues;
             $query = Invoice::where('created_by', '=', \Auth::user()->creatorId());
+        }else{
+            $customer = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $customer->prepend('Select Customer', '');
+            $status = Invoice::$statues;
+            $query = Invoice::where('owned_by', '=', \Auth::user()->ownedId());
+        }
 
             if(!empty($request->customer))
             {
@@ -81,6 +88,25 @@ class InvoiceController extends Controller
         if(\Auth::user()->can('create invoice'))
         {
             $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+<<<<<<< HEAD
+                if(\Auth::user()->type == 'company'){
+                    $invoice_number = \Auth::user()->invoiceNumberFormat($this->invoiceNumber());
+                    $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                    $customers->prepend('Select Customer', '');
+                    $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type','income')->get()->pluck('name', 'id');
+                    $category->prepend('Select Category', '');
+                    $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                    $product_services->prepend('--', '');
+                } else{
+                    $invoice_number = \Auth::user()->invoiceNumberFormat($this->invoiceNumber());
+                    $customers      = Customer::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                    $customers->prepend('Select Customer', '');
+                    $category = ProductServiceCategory::where('owned_by', \Auth::user()->ownedId())->where('type','income')->get()->pluck('name', 'id');
+                    $category->prepend('Select Category', '');
+                    $product_services = ProductService::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                    $product_services->prepend('--', '');
+                }
+=======
             $invoice_number = \Auth::user()->invoiceNumberFormat($this->invoiceNumber());
             $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $customers->prepend('Select Customer', '');
@@ -88,6 +114,7 @@ class InvoiceController extends Controller
             $category->prepend('Select Category', '');
             $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $product_services->prepend('--', '');
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
             // $product_services = Space::where('created_by', \Auth::user()->creatorId())->where('meeting','yes')->get()->pluck('name', 'id');
             // $product_services->prepend('--', '');
 
@@ -116,7 +143,11 @@ class InvoiceController extends Controller
     public function product(Request $request)
     {
 
+<<<<<<< HEAD
+        $data['product']     = $product = ProductService::find($request->product_id);
+=======
          $data['product']     = $product = ProductService::find($request->product_id);
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
         $data['unit']        = (!empty($product->unit())) ? $product->unit()->name : '';
         $data['taxRate']     = $taxRate = !empty($product->tax_id) ? $product->taxRate($product->tax_id) : 0;
         $data['taxes']       = !empty($product->tax_id) ? $product->tax($product->tax_id) : 0;
@@ -157,9 +188,15 @@ class InvoiceController extends Controller
             $invoice->ref_number     = $request->ref_number;
             $invoice->contract_id     = $request->contract_id;
 //            $invoice->discount_apply = isset($request->discount_apply) ? 1 : 0;
+<<<<<<< HEAD
+            
+            $invoice->owned_by     = \Auth::user()->ownedId();
+            
+=======
             if (\Auth::user()->type == 'branch') {
                 $invoice->owned_by     = \Auth::user()->id;
             }
+>>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
             $invoice->created_by     = \Auth::user()->creatorId();
             $invoice->save();
             CustomField::saveData($invoice, $request->customField);
@@ -209,10 +246,6 @@ class InvoiceController extends Controller
                 }
 
             }
-
-
-
-
             //Product Stock Report
             $type='invoice';
             $type_id = $invoice->id;
@@ -364,7 +397,11 @@ class InvoiceController extends Controller
 
     function invoiceNumber()
     {
-        $latest = Invoice::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        // if(\Auth::user()->type == ('company')){
+        //     $latest = Invoice::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        // }else{
+            $latest = Invoice::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
+        // }
         if(!$latest)
         {
             return 1;
@@ -1059,13 +1096,18 @@ class InvoiceController extends Controller
 
     public function invoice($invoice_id)
     {
+        // dd($invoice_id);
         $settings = Utility::settings();
 
         $invoiceId = Crypt::decrypt($invoice_id);
         $invoice   = Invoice::where('id', $invoiceId)->first();
 
         $data  = DB::table('settings');
+        if(\Auth::user()->type == ('company')){
         $data  = $data->where('created_by', '=', $invoice->created_by);
+        }else{
+        $data  = $data->where('owned_by', '=', $invoice->created_by);
+        }
         $data1 = $data->get();
 
         foreach($data1 as $row)
