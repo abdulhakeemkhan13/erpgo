@@ -17,6 +17,9 @@
             <a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
+            <a href="#" data-size="lg" data-url="{{ route('createvirtualoffice') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Virtual Office Contract')}}" class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i>
+            </a>
         @endif
     </div>
 @endsection
@@ -50,7 +53,9 @@
 
                                 <tr class="font-style">
                                     <td>
-                                        <a href="{{route('contract.show',$contract->id)}}" class="btn btn-outline-primary">{{\Auth::user()->contractNumberFormat($contract->id)}}</a>
+                                        <a href="{{ route('contract.show', \Crypt::encrypt($contract->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->contractNumberFormat($contract->contract_id) }}</a>
+
+                                        {{-- <a href="{{route('contract.show',$contract->id)}}" class="btn btn-outline-primary">{{\Auth::user()->contractNumberFormat($contract->id)}}</a> --}}
                                     </td>
                                     <td>{{ $contract->subject}}</td>
                                     @if(\Auth::user()->type!='client')

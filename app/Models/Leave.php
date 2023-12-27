@@ -16,6 +16,7 @@ class Leave extends Model
         'leave_reason',
         'remark',
         'status',
+        'owned_by',
         'created_by',
     ];
 

@@ -2,7 +2,11 @@
 <div class="modal-body">
     <div class="row">
         <div class="form-group">
-            {{ Form::label('date', __('Date'),['class'=>'form-label']) }}
+            {{ Form::label('name', __('Name'),['class'=>'form-label']) }}<span style="color: red"> *</span>
+            {{ Form::text('name', null, array('class' => 'form-control','placeholder'=>__('Enter Name/Details'),'required'=>'required')) }}
+        </div>
+        <div class="form-group">
+            {{ Form::label('date', __('Date'),['class'=>'form-label']) }}<span style="color: red"> *</span>
             {{ Form::date('date', null, array('class' => 'form-control','placeholder'=>__('Enter Date'),'required'=>'required')) }}
         </div>
         {{-- <div class="form-group">

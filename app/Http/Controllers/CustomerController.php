@@ -35,7 +35,11 @@ class CustomerController extends Controller
     {
         if(\Auth::user()->can('manage customer'))
         {
-            $customers = Customer::where('created_by', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company'){
+                $customers = Customer::where('created_by', \Auth::user()->creatorId())->get();
+            }else{
+                $customers = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
 
             return view('customer.index', compact('customers'));
         }
@@ -64,7 +68,6 @@ class CustomerController extends Controller
     {
         if(\Auth::user()->can('create customer'))
         {
-
             $rules = [
                 'name' => 'required',
                 'contact' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
@@ -99,6 +102,7 @@ class CustomerController extends Controller
                 $customer->contact         = $request->contact;
                 $customer->email           = $request->email;
                 $customer->tax_number      =$request->tax_number;
+                $customer->owned_by          = \Auth::user()->ownedId();
                 $customer->created_by      = \Auth::user()->creatorId();
                 $customer->billing_name    = $request->billing_name;
                 $customer->billing_country = $request->billing_country;
@@ -257,7 +261,11 @@ class CustomerController extends Controller
 
     function customerNumber()
     {
+        if(\Auth::user()->type == 'company'){
         $latest = Customer::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }else{
+        $latest = Customer::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;

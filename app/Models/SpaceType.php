@@ -11,6 +11,8 @@ class SpaceType extends Model
 
     protected $fillable = [
         'name',
+        'tax_id',
+        'account_head',
         'owned_by',
         'created_by',
     ];

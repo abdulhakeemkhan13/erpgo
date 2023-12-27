@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class IsVisiter extends Model
+class IsVisitor extends Model
 {
     use HasFactory;
 
@@ -13,8 +13,9 @@ class IsVisiter extends Model
         'name',
         'date_time',
         'user_id',
+        'cnic',
         'company_id',
-        'created_by',
+        'owned_by',
         'created_by',
     ];
 }

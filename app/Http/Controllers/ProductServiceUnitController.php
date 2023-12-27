@@ -10,9 +10,12 @@ class ProductServiceUnitController extends Controller
 {
     public function index()
     {
-        if(\Auth::user()->can('manage constant unit'))
-        {
+        if(\Auth::user()->can('manage constant unit')){
+        if (\Auth::user()->type == 'company') {        
             $units = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get();
+        }else{
+            $units = ProductServiceUnit::where('owned_by', '=', \Auth::user()->ownedId())->get();
+        }
 
             return view('productServiceUnit.index', compact('units'));
         }
@@ -41,8 +44,8 @@ class ProductServiceUnitController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required|max:20',
-                               ]
+                                'name' => 'required|max:20',
+                            ]
             );
             if($validator->fails())
             {
@@ -53,6 +56,7 @@ class ProductServiceUnitController extends Controller
 
             $category             = new ProductServiceUnit();
             $category->name       = $request->name;
+            $category->owned_by = \Auth::user()->ownedId();
             $category->created_by = \Auth::user()->creatorId();
             $category->save();
 
@@ -89,8 +93,8 @@ class ProductServiceUnitController extends Controller
             {
                 $validator = \Validator::make(
                     $request->all(), [
-                                       'name' => 'required|max:20',
-                                   ]
+                                    'name' => 'required|max:20',
+                                ]
                 );
                 if($validator->fails())
                 {

@@ -88,6 +88,18 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
+    public function ownedId()
+    {
+        if($this->type == 'branch' || $this->type == 'company')
+        {
+            return $this->id;
+        }
+        else
+        {
+            return $this->owned_by;
+        }
+    }
+
     public function ownerId()
     {
         if($this->type == 'company' || $this->type == 'super admin')
@@ -168,6 +180,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $settings["pos_prefix"] . sprintf("%05d", $number);
     }
+
 
 
     public function invoiceNumberFormat($number)

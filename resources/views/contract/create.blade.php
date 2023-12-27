@@ -5,6 +5,11 @@
             {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}
             {{ Form::text('subject', '', ['class' => 'form-control', 'required' => 'required']) }}
         </div>
+        @if($type == 'virtual')
+            <input type="hidden" name="create_type" value="virtual" required>
+        @else
+            <input type="hidden" name="create_type" value="office" required>
+        @endif
 
         <div class="form-group col-md-6 row">
             <div class="col-md-9">
@@ -36,21 +41,32 @@
         
         <div class="form-group col-md-6">
             {{ Form::label('space', __('Space'), ['class' => 'form-label']) }}
-            <select name="space" class="form-control select space_select" id="space" required
+            @if($type == 'virtual')
+                <select name="space" class="form-control select space_select" id="space" required
                 onchange="getchairs(this.value)">
                 <option value="" disabled selected>Select a Space</option>
                 @foreach ($spaces as $space)
-                    <option value="{{ $space->id }}">{{ $space->name }} ( {{ @$space->type->name }} )</option>
+                    <option value="{{ $space->id }}">{{ $space->name }} ( {{ @$space->space_types_name }} )</option>
                 @endforeach
-            </select>
+                </select>
+            @else
+                <select name="space" class="form-control select space_select" id="space" required
+                    onchange="getchairs(this.value)">
+                    <option value="" disabled selected>Select a Space</option>
+                    @foreach ($spaces as $space)
+                        <option value="{{ $space->id }}">{{ $space->name }} ( {{ @$space->type->name }} )</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
-        <div class="form-group col-md-6" id="ch">
-            {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
-            <select name="chair[]" class="form-control select chair_select" id="chair" multiple="multiple">
-                <option value="" disabled>Select Chairs</option>
-            </select>
-        </div>
-
+        @if($type == 'virtual')@else
+            <div class="form-group col-md-6" id="ch">
+                {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
+                <select name="chair[]" class="form-control select chair_select" id="chair" multiple="multiple">
+                    <option value="" disabled>Select Chairs</option>
+                </select>
+            </div>
+        @endif
         <div class="form-group col-md-6">
             {{ Form::label('type', __('Contract Type'), ['class' => 'form-label']) }}
             {{ Form::select('type', $contractTypes, null, ['class' => 'form-control', 'data-toggle="select"', 'required' => 'required']) }}
@@ -72,6 +88,14 @@
         <div class="form-group col-md-12">
             {{ Form::label('description', __('Description'), ['class' => 'form-label']) }}
             {!! Form::textarea('description', null, ['class' => 'form-control', 'rows' => '3']) !!}
+        </div>
+    </div>
+    <div class="row">
+        {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}
+        <div class="d-flex col-md-12">
+            <label class="form-label m-1" style="width: 25%" for="{{ @$services->id }}">{{ ucfirst(@$services->name) }} : </label>
+            <input type="hidden" name="services_id" class="form-label" value="{{ @$services->id }}">
+            <input type="number" name="services_charges" id="{{ @$services->id }}" class="form-label m-1" style="width: 25%" required>
         </div>
     </div>
     <div class="row">

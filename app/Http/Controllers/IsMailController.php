@@ -39,14 +39,21 @@ class IsMailController extends Controller
     {
         if(\Auth::user()->can('view chair'))
         {
+            
             if(\Auth::user()->type == 'company'){
                 $user    = \Auth::user();
-                $chair = IsMail::where('created_by', '=', $user->creatorId())->get();
-            }else{
+                $ismails = IsMail::where('created_by', '=', $user->creatorId())->get();
+            }else if(\Auth ::user()->type == 'clientuser')
+            {
                 $user    = \Auth::user();
-                $chair = IsMail::where('owned_by', '=', $user->id)->get();
+                $ismails = IsMail::where('company_id', '=', $user->company_id)->get();
             }
-            return view('ismail.index', compact('chair'));
+            else{
+                $user    = \Auth::user();
+                $ismails = IsMail::where('owned_by', '=', $user->id)->get();
+            }
+            // dd($ismails);
+            return view('ismail.index', compact('ismails'));
         }
         else
         {
@@ -94,8 +101,8 @@ class IsMailController extends Controller
             $user      = \Auth::user();
             $validator = \Validator::make(
                 $request->all(), [
+                    'name' => 'required',
                     'date' => 'required',
-                    // 'price' => 'required',
                     // 'type' => 'required',
                 ]
             );
@@ -112,9 +119,10 @@ class IsMailController extends Controller
                 }
             }
            
-                $chair = IsMail::create(
+                $ismail = IsMail::create(
                     [
                         'company_id' => $user->company_id,
+                        'name' => $request->name,
                         'date' => $request->date,
                         'user_id' => $user->id,
                         'type' => $request->type,
@@ -157,22 +165,23 @@ class IsMailController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(IsMail $mail)
+    public function edit(IsMail $ismail)
     {
+        // dd($ismail);
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($mail->created_by == $user->creatorId() || $mail->owned_by == $user->id)
+            if($ismail->created_by == $user->creatorId() || $ismail->owned_by == $user->id)
             {
 
-                $mail->customField = CustomField::getData($chair, 'chair');
+                $ismail->customField = CustomField::getData($ismail, 'ismail');
                 $customFields        = CustomField::where('module', '=', 'chair')->get();
 
-                return view('ismail.edit', compact('mail', 'customFields'));
+                return view('ismail.edit', compact('ismail', 'customFields'));
             }
             else
             {
-                return response()->json(['error' => __('Invalid Chair.')], 401);
+                return response()->json(['error' => __('Invalid IsMail.')], 401);
             }
         }
         else
@@ -188,24 +197,24 @@ class IsMailController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Chair $chair, Request $request)
+    public function update(IsMail $ismail, Request $request)
     {
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->id)
+            if($ismail->created_by == $user->creatorId() || $ismail->owned_by == $user->id)
             {
                 $validation = [
                     'name' => 'required',
-                    'price' => 'required',
-                    'type' => 'required',
+                    'date' => 'required',
+                    // 'type' => 'required',
                 ];
 
                 $post         = [];
                 $post['name'] = $request->name;
-                $post['price'] = $request->price;
-                $post['type'] = $request->type;
-               
+                $post['date'] = $request->date;
+                // $post['price'] = $request->price;
+                // $post['type'] = $request->type;               
 
                 $validator = \Validator::make($request->all(), $validation);
                 if($validator->fails())
@@ -215,15 +224,15 @@ class IsMailController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
 
-                $chair->update($post);
+                $ismail->update($post);
 
-                CustomField::saveData($chair, $request->customField);
+                CustomField::saveData($ismail, $request->customField);
 
-                return redirect()->back()->with('success', __('Chair Updated Successfully!'));
+                return redirect()->back()->with('success', __('IsMail Updated Successfully!'));
             }
             else
             {
-                return redirect()->back()->with('error', __('Invalid Chair.'));
+                return redirect()->back()->with('error', __('Invalid IsMail.'));
             }
         }
         else
@@ -239,40 +248,19 @@ class IsMailController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Chair $chair)
+    public function destroy(IsMail $ismail)
     {
         $user = \Auth::user();
-        if($chair->created_by == $user->creatorId()  || $chair->owned_by == $user->id)
+        if($ismail->created_by == $user->creatorId()  || $ismail->owned_by == $user->id)
         {
     
-            $chair->delete();
-            return redirect()->back()->with('success', __('Chair Deleted Successfully!'));
+            $ismail->delete();
+            return redirect()->back()->with('success', __('IsMail Deleted Successfully!'));
 
         }
         else
         {
-            return redirect()->back()->with('error', __('Invalid Chair.'));
+            return redirect()->back()->with('error', __('Invalid IsMail.'));
         }
     }
-
-    public function space_chair($id,$con=null)
-    {
-        // dd($con);
-        $user = \Auth::user();
-        if(\Auth::user()->type == 'branch'){
-            $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->id)->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
-        }else{
-            $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
-        }
-        if($con != null){
-            $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
-            return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ,'conchair'=>$conchair ], 201);
-        }
-        // $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
-        return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ], 201);
-    }
-
-
 }

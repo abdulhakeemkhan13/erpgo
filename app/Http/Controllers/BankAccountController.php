@@ -18,9 +18,12 @@ class BankAccountController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->can('create bank account'))
-        {
-            $accounts = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get();
+        if(\Auth::user()->can('create bank account')){
+            if (\Auth::user()->type == 'company') {
+                $accounts = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $accounts = BankAccount::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
 
             return view('bankAccount.index', compact('accounts'));
         }
@@ -34,11 +37,18 @@ class BankAccountController extends Controller
     {
         if(\Auth::user()->can('create bank account'))
         {
-            $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('created_by', \Auth::user()->creatorId())->get()
+            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'account')->get();
+            if (\Auth::user()->type == 'company') {
+                $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('created_by', \Auth::user()->creatorId())->get()
+                    ->pluck('code_name', 'id');
+                $chart_accounts->prepend('Select Account', '');
+            }else{
+                $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                ->where('owned_by', \Auth::user()->ownedId())->get()
                 ->pluck('code_name', 'id');
             $chart_accounts->prepend('Select Account', '');
-            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'account')->get();
+            }
 
             return view('bankAccount.create', compact('customFields','chart_accounts'));
         }
@@ -55,12 +65,12 @@ class BankAccountController extends Controller
 
             $validator = \Validator::make(
                 $request->all(), [
-                                   'holder_name' => 'required',
-                                   'bank_name' => 'required',
-                                   'account_number' => 'required',
-                                   'opening_balance' => 'required',
-                                   'contact_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
-                               ]
+                                'holder_name' => 'required',
+                                'bank_name' => 'required',
+                                'account_number' => 'required',
+                                'opening_balance' => 'required',
+                                'contact_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
+                            ]
             );
 
             if($validator->fails())
@@ -78,6 +88,7 @@ class BankAccountController extends Controller
             $account->opening_balance = $request->opening_balance;
             $account->contact_number  = $request->contact_number;
             $account->bank_address    = $request->bank_address;
+            $account->owned_by      = \Auth::user()->ownedId();
             $account->created_by      = \Auth::user()->creatorId();
             $account->save();
             CustomField::saveData($account, $request->customField);
@@ -128,15 +139,14 @@ class BankAccountController extends Controller
     {
         if(\Auth::user()->can('create bank account'))
         {
-
             $validator = \Validator::make(
                 $request->all(), [
-                                   'holder_name' => 'required',
-                                   'bank_name' => 'required',
-                                   'account_number' => 'required',
-                                   'opening_balance' => 'required',
-                                   'contact_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
-                               ]
+                                'holder_name' => 'required',
+                                'bank_name' => 'required',
+                                'account_number' => 'required',
+                                'opening_balance' => 'required',
+                                'contact_number' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
+                            ]
             );
 
             if($validator->fails())

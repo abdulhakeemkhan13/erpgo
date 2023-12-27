@@ -17,10 +17,12 @@ class CreditNoteController extends Controller
     public function index()
     {
 
-        if(\Auth::user()->can('manage credit note'))
-        {
-            $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
-
+        if(\Auth::user()->can('manage credit note')){
+            if(\Auth::user()->type == 'company' ){
+                $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
+            }else{
+                $invoices = Invoice::where('owned_by', \Auth::user()->ownedId())->get();
+            }
             return view('creditNote.index', compact('invoices'));
         }
         else
@@ -52,9 +54,9 @@ class CreditNoteController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'amount' => 'required|numeric',
-                                   'date' => 'required',
-                               ]
+                                'amount' => 'required|numeric',
+                                'date' => 'required',
+                            ]
             );
             if($validator->fails())
             {

@@ -157,10 +157,14 @@ class DealController extends Controller
      */
     public function create()
     {
-        if(\Auth::user()->can('create deal'))
-        {
-            $clients      = User::where('created_by', '=', \Auth::user()->ownerId())->where('type', 'client')->get()->pluck('name', 'id');
-            $customFields = CustomField::where('module', '=', 'deal')->get();
+        if(\Auth::user()->can('create deal')){
+            if(\Auth::user()->type == 'company' ){
+                $clients      = User::where('created_by', '=', \Auth::user()->ownerId())->where('type', 'client')->get()->pluck('name', 'id');
+                $customFields = CustomField::where('module', '=', 'deal')->get();
+            }else{
+                $clients      = User::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'client')->get()->pluck('name', 'id');
+                $customFields = CustomField::where('module', '=', 'deal')->get();  
+            }
 
             return view('deals.create', compact('clients', 'customFields'));
         }
@@ -185,8 +189,8 @@ class DealController extends Controller
             $countDeal = Deal::where('created_by', '=', $usr->ownerId())->count();
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required',
-                               ]
+                                'name' => 'required',
+                            ]
             );
 
             if($validator->fails())
@@ -234,6 +238,7 @@ class DealController extends Controller
                 $deal->pipeline_id = $pipeline->id;
                 $deal->stage_id    = $stage->id;
                 $deal->status      = 'Active';
+                $deal->owned_by  = $usr->ownedId();
                 $deal->created_by  = $usr->ownerId();
                 $deal->save();
 

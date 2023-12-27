@@ -14,7 +14,11 @@ class ProductServiceCategoryController extends Controller
     public function index()
     {
         if (\Auth::user()->can('manage constant category')) {
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $categories = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
 
             return view('productServiceCategory.index', compact('categories'));
         } else {
@@ -29,11 +33,17 @@ class ProductServiceCategoryController extends Controller
             $type = ['' => 'Select Category Type'];
 
             $types = array_merge($type, $types);
-
+            if (\Auth::user()->type == 'company') {
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
             $chart_accounts->prepend('Select Account', '');
+            }else{
+                $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                ->where('owned_by', \Auth::user()->ownedId())->get()
+                ->pluck('code_name', 'id');
+            $chart_accounts->prepend('Select Account', '');
+            }
 
             return view('productServiceCategory.create', compact('types', 'chart_accounts'));
         } else {
@@ -64,6 +74,7 @@ class ProductServiceCategoryController extends Controller
             $category->color = $request->color;
             $category->type = $request->type;
             $category->chart_account_id = !empty($request->chart_account) ? $request->chart_account : 0;
+            $category->owned_by = \Auth::user()->ownedId();
             $category->created_by = \Auth::user()->creatorId();
             $category->save();
 

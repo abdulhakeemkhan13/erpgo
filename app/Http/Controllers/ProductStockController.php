@@ -17,11 +17,12 @@ class ProductStockController extends Controller
     public function index()
     {
 
-        if(\Auth::user()->can('manage product & service'))
-        {
-
-            $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product')->get();
-
+        if(\Auth::user()->can('manage product & service')){
+            if(\Auth::user()->type == 'company' ){
+                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product')->get();
+            }else{
+                $productServices = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', '=', 'product')->get();
+            }
 
             return view('productstock.index', compact('productServices'));
         }

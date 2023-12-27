@@ -23,6 +23,7 @@ class Customer extends Authenticatable
         'contact',
         'avatar',
         'is_active',
+        'owned_by',
         'created_by',
         'email_verified_at',
         'billing_name',

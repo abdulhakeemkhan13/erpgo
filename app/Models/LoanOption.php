@@ -8,6 +8,7 @@ class LoanOption extends Model
 {
     protected $fillable = [
         'name',
+        'owned_by',
         'created_by',
     ];
 }

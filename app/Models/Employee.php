@@ -29,6 +29,7 @@ class Employee extends Model
         'tax_payer_id',
         'salary_type',
         'salary',
+        'owned_by',
         'created_by',
     ];
 
