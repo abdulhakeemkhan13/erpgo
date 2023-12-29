@@ -50,7 +50,6 @@ return new class extends Migration
         //     $table->integer('tax_id')->after('name')->default(0);           
         //     $table->integer('account_head')->after('tax_id')->default(0);           
         // });
-<<<<<<< HEAD
         // Schema::table('product_services', function (Blueprint $table) {
         //     $table->integer('space_id')->after('unit_id');           
         // });
@@ -88,16 +87,6 @@ return new class extends Migration
         // Schema::table('contracts', function (Blueprint $table) {
         //     $table->integer('contract_id')->after('client_name');           
         // });
-=======
-        //   Schema::table('product_services', function (Blueprint $table) {
-        //     $table->integer('space_id')->after('unit_id');           
-        // });
-          Schema::table('contracts', function (Blueprint $table) {
-            $table->integer('service_id')->after('company_id')->default(0);           
-            $table->integer('service_price')->after('service_id')->default(0);           
-        });
-
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
     }
 
     /**
@@ -144,7 +133,6 @@ return new class extends Migration
         //     $table->dropColumn('tax_id');
         //     $table->dropColumn('account_head');
         // });
-<<<<<<< HEAD
         // Schema::table('product_services', function (Blueprint $table) {
         //     $table->dropColumn('space_id');          
         // });
@@ -182,15 +170,6 @@ return new class extends Migration
         // Schema::table('contracts', function (Blueprint $table) {
         //     $table->dropColumn('contract_id');         
         // });
-=======
-        //  Schema::table('product_services', function (Blueprint $table) {
-        //     $table->dropColumn('space_id');          
-        // });
-         Schema::table('contracts', function (Blueprint $table) {
-            $table->dropColumn('service_id');          
-            $table->dropColumn('service_price');          
-        });
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
 
-    }
+        }
 };

@@ -17638,3 +17638,333 @@
 #54 C:\\xampp\\htdocs\\erpgo\\index.php(21): require_once('C:\\\\xampp\\\\htdocs...')
 #55 {main}
 "} 
+[2023-12-27 08:43:26] local.ERROR: syntax error, unexpected token "<<" {"view":{"view":"C:\\xampp\\htdocs\\erpgo\\resources\\views\\layouts\\auth.blade.php","data":{"errors":"<pre class=sf-dump id=sf-dump-1246072761 data-indent-pad=\"  \"><span class=sf-dump-note>Illuminate\\Support\\ViewErrorBag</span> {<a class=sf-dump-ref>#3027</a><samp data-depth=1 class=sf-dump-expanded>
+  #<span class=sf-dump-protected title=\"Protected property\">bags</span>: []
+</samp>}
+</pre><script>Sfdump(\"sf-dump-1246072761\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","lang":"<pre class=sf-dump id=sf-dump-1563905368 data-indent-pad=\"  \">\"<span class=sf-dump-str title=\"2 characters\">en</span>\"
+</pre><script>Sfdump(\"sf-dump-1563905368\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","settings":"<pre class=sf-dump id=sf-dump-158380135 data-indent-pad=\"  \"><span class=sf-dump-note>array:151</span> [<samp data-depth=1 class=sf-dump-expanded>
+  \"<span class=sf-dump-key>site_currency</span>\" => \"<span class=sf-dump-str title=\"3 characters\">USD</span>\"
+  \"<span class=sf-dump-key>site_currency_symbol</span>\" => \"<span class=sf-dump-str>$</span>\"
+  \"<span class=sf-dump-key>site_currency_symbol_position</span>\" => \"<span class=sf-dump-str title=\"3 characters\">pre</span>\"
+  \"<span class=sf-dump-key>site_date_format</span>\" => \"<span class=sf-dump-str title=\"6 characters\">M j, Y</span>\"
+  \"<span class=sf-dump-key>site_time_format</span>\" => \"<span class=sf-dump-str title=\"5 characters\">g:i A</span>\"
+  \"<span class=sf-dump-key>company_name</span>\" => \"\"
+  \"<span class=sf-dump-key>company_address</span>\" => \"\"
+  \"<span class=sf-dump-key>company_city</span>\" => \"\"
+  \"<span class=sf-dump-key>company_state</span>\" => \"\"
+  \"<span class=sf-dump-key>company_zipcode</span>\" => \"\"
+  \"<span class=sf-dump-key>company_country</span>\" => \"\"
+  \"<span class=sf-dump-key>company_telephone</span>\" => \"\"
+  \"<span class=sf-dump-key>company_email</span>\" => \"\"
+  \"<span class=sf-dump-key>company_email_from_name</span>\" => \"\"
+  \"<span class=sf-dump-key>invoice_prefix</span>\" => \"<span class=sf-dump-str title=\"5 characters\">#INVO</span>\"
+  \"<span class=sf-dump-key>journal_prefix</span>\" => \"<span class=sf-dump-str title=\"4 characters\">#JUR</span>\"
+  \"<span class=sf-dump-key>invoice_color</span>\" => \"<span class=sf-dump-str title=\"6 characters\">ffffff</span>\"
+  \"<span class=sf-dump-key>proposal_prefix</span>\" => \"<span class=sf-dump-str title=\"5 characters\">#PROP</span>\"
+  \"<span class=sf-dump-key>proposal_color</span>\" => \"<span class=sf-dump-str title=\"6 characters\">ffffff</span>\"
+  \"<span class=sf-dump-key>bill_prefix</span>\" => \"<span class=sf-dump-str title=\"5 characters\">#BILL</span>\"
+  \"<span class=sf-dump-key>expense_prefix</span>\" => \"<span class=sf-dump-str title=\"4 characters\">#EXP</span>\"
+  \"<span class=sf-dump-key>bill_color</span>\" => \"<span class=sf-dump-str title=\"6 characters\">ffffff</span>\"
+  \"<span class=sf-dump-key>customer_prefix</span>\" => \"<span class=sf-dump-str title=\"5 characters\">#CUST</span>\"
+  \"<span class=sf-dump-key>vender_prefix</span>\" => \"<span class=sf-dump-str title=\"5 characters\">#VEND</span>\"
+  \"<span class=sf-dump-key>footer_title</span>\" => \"\"
+  \"<span class=sf-dump-key>footer_notes</span>\" => \"\"
+  \"<span class=sf-dump-key>invoice_template</span>\" => \"<span class=sf-dump-str title=\"9 characters\">template1</span>\"
+  \"<span class=sf-dump-key>bill_template</span>\" => \"<span class=sf-dump-str title=\"9 characters\">template1</span>\"
+  \"<span class=sf-dump-key>proposal_template</span>\" => \"<span class=sf-dump-str title=\"9 characters\">template1</span>\"
+  \"<span class=sf-dump-key>registration_number</span>\" => \"\"
+  \"<span class=sf-dump-key>vat_number</span>\" => \"\"
+  \"<span class=sf-dump-key>default_language</span>\" => \"<span class=sf-dump-str title=\"2 characters\">en</span>\"
+  \"<span class=sf-dump-key>enable_stripe</span>\" => \"\"
+  \"<span class=sf-dump-key>enable_paypal</span>\" => \"\"
+  \"<span class=sf-dump-key>paypal_mode</span>\" => \"\"
+  \"<span class=sf-dump-key>paypal_client_id</span>\" => \"\"
+  \"<span class=sf-dump-key>paypal_secret_key</span>\" => \"\"
+  \"<span class=sf-dump-key>stripe_key</span>\" => \"\"
+  \"<span class=sf-dump-key>stripe_secret</span>\" => \"\"
+  \"<span class=sf-dump-key>decimal_number</span>\" => \"<span class=sf-dump-str>2</span>\"
+  \"<span class=sf-dump-key>tax_type</span>\" => \"\"
+  \"<span class=sf-dump-key>shipping_display</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>display_landing_page</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>employee_prefix</span>\" => \"<span class=sf-dump-str title=\"6 characters\">#EMP00</span>\"
+  \"<span class=sf-dump-key>leave_status</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>bug_prefix</span>\" => \"<span class=sf-dump-str title=\"6 characters\">#ISSUE</span>\"
+  \"<span class=sf-dump-key>title_text</span>\" => \"\"
+  \"<span class=sf-dump-key>footer_text</span>\" => \"\"
+  \"<span class=sf-dump-key>company_start_time</span>\" => \"<span class=sf-dump-str title=\"5 characters\">09:00</span>\"
+  \"<span class=sf-dump-key>company_end_time</span>\" => \"<span class=sf-dump-str title=\"5 characters\">18:00</span>\"
+  \"<span class=sf-dump-key>gdpr_cookie</span>\" => \"<span class=sf-dump-str title=\"3 characters\">off</span>\"
+  \"<span class=sf-dump-key>interval_time</span>\" => \"\"
+  \"<span class=sf-dump-key>zoom_apikey</span>\" => \"\"
+  \"<span class=sf-dump-key>zoom_apisecret</span>\" => \"\"
+  \"<span class=sf-dump-key>slack_webhook</span>\" => \"\"
+  \"<span class=sf-dump-key>telegram_accestoken</span>\" => \"\"
+  \"<span class=sf-dump-key>telegram_chatid</span>\" => \"\"
+  \"<span class=sf-dump-key>enable_signup</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>email_verification</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>cookie_text</span>\" => \"<span class=sf-dump-str title=\"155 characters\">We use cookies to ensure that we give you the best experience on our website. If you continue to use this site we will assume that you are happy with it.<span class=\"sf-dump-default sf-dump-ns\">\\r\\n</span></span>\"
+  \"<span class=sf-dump-key>company_logo_light</span>\" => \"<span class=sf-dump-str title=\"14 characters\">logo-light.png</span>\"
+  \"<span class=sf-dump-key>company_logo_dark</span>\" => \"<span class=sf-dump-str title=\"13 characters\">logo-dark.png</span>\"
+  \"<span class=sf-dump-key>company_favicon</span>\" => \"<span class=sf-dump-str title=\"11 characters\">favicon.png</span>\"
+  \"<span class=sf-dump-key>cust_theme_bg</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>cust_darklayout</span>\" => \"<span class=sf-dump-str title=\"3 characters\">off</span>\"
+  \"<span class=sf-dump-key>color</span>\" => \"\"
+  \"<span class=sf-dump-key>SITE_RTL</span>\" => \"<span class=sf-dump-str title=\"3 characters\">off</span>\"
+  \"<span class=sf-dump-key>purchase_prefix</span>\" => \"<span class=sf-dump-str title=\"4 characters\">#PUR</span>\"
+  \"<span class=sf-dump-key>purchase_color</span>\" => \"<span class=sf-dump-str title=\"6 characters\">ffffff</span>\"
+  \"<span class=sf-dump-key>purchase_template</span>\" => \"<span class=sf-dump-str title=\"9 characters\">template1</span>\"
+  \"<span class=sf-dump-key>pos_color</span>\" => \"<span class=sf-dump-str title=\"6 characters\">ffffff</span>\"
+  \"<span class=sf-dump-key>pos_template</span>\" => \"<span class=sf-dump-str title=\"9 characters\">template1</span>\"
+  \"<span class=sf-dump-key>pos_prefix</span>\" => \"<span class=sf-dump-str title=\"4 characters\">#POS</span>\"
+  \"<span class=sf-dump-key>storage_setting</span>\" => \"<span class=sf-dump-str title=\"5 characters\">local</span>\"
+  \"<span class=sf-dump-key>local_storage_validation</span>\" => \"<span class=sf-dump-str title=\"29 characters\">jpg,jpeg,png,xlsx,xls,csv,pdf</span>\"
+  \"<span class=sf-dump-key>local_storage_max_upload_size</span>\" => \"<span class=sf-dump-str title=\"7 characters\">2048000</span>\"
+  \"<span class=sf-dump-key>s3_key</span>\" => \"\"
+  \"<span class=sf-dump-key>s3_secret</span>\" => \"\"
+  \"<span class=sf-dump-key>s3_region</span>\" => \"\"
+  \"<span class=sf-dump-key>s3_bucket</span>\" => \"\"
+  \"<span class=sf-dump-key>s3_url</span>\" => \"\"
+  \"<span class=sf-dump-key>s3_endpoint</span>\" => \"\"
+  \"<span class=sf-dump-key>s3_max_upload_size</span>\" => \"<span class=sf-dump-str title=\"7 characters\">2048000</span>\"
+  \"<span class=sf-dump-key>s3_storage_validation</span>\" => \"<span class=sf-dump-str title=\"29 characters\">jpg,jpeg,png,xlsx,xls,csv,pdf</span>\"
+  \"<span class=sf-dump-key>wasabi_key</span>\" => \"\"
+  \"<span class=sf-dump-key>wasabi_secret</span>\" => \"\"
+  \"<span class=sf-dump-key>wasabi_region</span>\" => \"\"
+  \"<span class=sf-dump-key>wasabi_bucket</span>\" => \"\"
+  \"<span class=sf-dump-key>wasabi_url</span>\" => \"\"
+  \"<span class=sf-dump-key>wasabi_root</span>\" => \"\"
+  \"<span class=sf-dump-key>wasabi_max_upload_size</span>\" => \"<span class=sf-dump-str title=\"7 characters\">2048000</span>\"
+  \"<span class=sf-dump-key>wasabi_storage_validation</span>\" => \"<span class=sf-dump-str title=\"29 characters\">jpg,jpeg,png,xlsx,xls,csv,pdf</span>\"
+  \"<span class=sf-dump-key>purchase_logo</span>\" => \"\"
+  \"<span class=sf-dump-key>proposal_logo</span>\" => \"\"
+  \"<span class=sf-dump-key>invoice_logo</span>\" => \"\"
+  \"<span class=sf-dump-key>bill_logo</span>\" => \"\"
+  \"<span class=sf-dump-key>pos_logo</span>\" => \"\"
+  \"<span class=sf-dump-key>contract_prefix</span>\" => \"<span class=sf-dump-str title=\"4 characters\">#CON</span>\"
+  \"<span class=sf-dump-key>barcode_type</span>\" => \"<span class=sf-dump-str title=\"7 characters\">code128</span>\"
+  \"<span class=sf-dump-key>barcode_format</span>\" => \"<span class=sf-dump-str title=\"3 characters\">css</span>\"
+  \"<span class=sf-dump-key>new_user</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_client</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_support_ticket</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>lead_assigned</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>deal_assigned</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_award</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>customer_invoice_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_invoice_payment</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_payment_reminder</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_bill_payment</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>bill_resent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>proposal_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>complaint_resent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>leave_action_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>payslip_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>promotion_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>resignation_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>termination_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>transfer_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>trip_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>vender_bill_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>warning_sent</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>new_contract</span>\" => \"<span class=sf-dump-str>1</span>\"
+  \"<span class=sf-dump-key>vat_gst_number_switch</span>\" => \"<span class=sf-dump-str title=\"3 characters\">off</span>\"
+  \"<span class=sf-dump-key>google_calendar_enable</span>\" => \"<span class=sf-dump-str title=\"3 characters\">off</span>\"
+  \"<span class=sf-dump-key>google_calender_json_file</span>\" => \"\"
+  \"<span class=sf-dump-key>meta_title</span>\" => \"\"
+  \"<span class=sf-dump-key>meta_desc</span>\" => \"\"
+  \"<span class=sf-dump-key>meta_image</span>\" => \"\"
+  \"<span class=sf-dump-key>enable_cookie</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>necessary_cookies</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>cookie_logging</span>\" => \"<span class=sf-dump-str title=\"2 characters\">on</span>\"
+  \"<span class=sf-dump-key>cookie_title</span>\" => \"<span class=sf-dump-str title=\"15 characters\">We use cookies!</span>\"
+  \"<span class=sf-dump-key>cookie_description</span>\" => \"<span class=sf-dump-str title=\"130 characters\">Hi, this website uses essential cookies to ensure its proper operation and tracking cookies to understand how you interact with it</span>\"
+  \"<span class=sf-dump-key>strictly_cookie_title</span>\" => \"<span class=sf-dump-str title=\"26 characters\">Strictly necessary cookies</span>\"
+  \"<span class=sf-dump-key>strictly_cookie_description</span>\" => \"<span class=sf-dump-str title=\"128 characters\">These cookies are essential for the proper functioning of my website. Without these cookies, the website would not work properly</span>\"
+  \"<span class=sf-dump-key>more_information_description</span>\" => \"<span class=sf-dump-str title=\"88 characters\">For any queries in relation to our policy on cookies and your choices, please contact us</span>\"
+  \"<span class=sf-dump-key>contactus_url</span>\" => \"<span class=sf-dump-str>#</span>\"
+  \"<span class=sf-dump-key>twilio_sid</span>\" => \"\"
+  \"<span class=sf-dump-key>twilio_token</span>\" => \"\"
+  \"<span class=sf-dump-key>twilio_from</span>\" => \"\"
+  \"<span class=sf-dump-key>chat_gpt_key</span>\" => \"\"
+  \"<span class=sf-dump-key>ip_restrict</span>\" => \"<span class=sf-dump-str title=\"3 characters\">off</span>\"
+  \"<span class=sf-dump-key>mail_driver</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_host</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_port</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_username</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_password</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_encryption</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_from_address</span>\" => \"\"
+  \"<span class=sf-dump-key>mail_from_name</span>\" => \"\"
+</samp>]
+</pre><script>Sfdump(\"sf-dump-158380135\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","logo":"<pre class=sf-dump id=sf-dump-2037894014 data-indent-pad=\"  \">\"<span class=sf-dump-str title=\"37 characters\">http://localhost/storage/uploads/logo</span>\"
+</pre><script>Sfdump(\"sf-dump-2037894014\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","company_logo":"<pre class=sf-dump id=sf-dump-1071343572 data-indent-pad=\"  \">\"\"
+</pre><script>Sfdump(\"sf-dump-1071343572\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","__currentLoopData":"<pre class=sf-dump id=sf-dump-1221908990 data-indent-pad=\"  \"><span class=sf-dump-note>Illuminate\\Support\\Collection</span> {<a class=sf-dump-ref>#3135</a><samp data-depth=1 class=sf-dump-expanded>
+  #<span class=sf-dump-protected title=\"Protected property\">items</span>: <span class=sf-dump-note>array:16</span> [<samp data-depth=2 class=sf-dump-compact>
+    \"<span class=sf-dump-key>ar</span>\" => \"<span class=sf-dump-str title=\"6 characters\">Arabic</span>\"
+    \"<span class=sf-dump-key>zh</span>\" => \"<span class=sf-dump-str title=\"7 characters\">Chinese</span>\"
+    \"<span class=sf-dump-key>da</span>\" => \"<span class=sf-dump-str title=\"6 characters\">Danish</span>\"
+    \"<span class=sf-dump-key>de</span>\" => \"<span class=sf-dump-str title=\"6 characters\">German</span>\"
+    \"<span class=sf-dump-key>en</span>\" => \"<span class=sf-dump-str title=\"7 characters\">English</span>\"
+    \"<span class=sf-dump-key>es</span>\" => \"<span class=sf-dump-str title=\"7 characters\">Spanish</span>\"
+    \"<span class=sf-dump-key>fr</span>\" => \"<span class=sf-dump-str title=\"6 characters\">French</span>\"
+    \"<span class=sf-dump-key>he</span>\" => \"<span class=sf-dump-str title=\"6 characters\">Hebrew</span>\"
+    \"<span class=sf-dump-key>it</span>\" => \"<span class=sf-dump-str title=\"7 characters\">Italian</span>\"
+    \"<span class=sf-dump-key>ja</span>\" => \"<span class=sf-dump-str title=\"8 characters\">Japanese</span>\"
+    \"<span class=sf-dump-key>nl</span>\" => \"<span class=sf-dump-str title=\"5 characters\">Dutch</span>\"
+    \"<span class=sf-dump-key>pl</span>\" => \"<span class=sf-dump-str title=\"6 characters\">Polish</span>\"
+    \"<span class=sf-dump-key>pt</span>\" => \"<span class=sf-dump-str title=\"10 characters\">Portuguese</span>\"
+    \"<span class=sf-dump-key>ru</span>\" => \"<span class=sf-dump-str title=\"7 characters\">Russian</span>\"
+    \"<span class=sf-dump-key>tr</span>\" => \"<span class=sf-dump-str title=\"7 characters\">Turkish</span>\"
+    \"<span class=sf-dump-key>pt-br</span>\" => \"<span class=sf-dump-str title=\"19 characters\">Portuguese (Brazil)</span>\"
+  </samp>]
+  #<span class=sf-dump-protected title=\"Protected property\">escapeWhenCastingToString</span>: <span class=sf-dump-const>false</span>
+</samp>}
+</pre><script>Sfdump(\"sf-dump-1221908990\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","language":"<pre class=sf-dump id=sf-dump-1245071156 data-indent-pad=\"  \">\"<span class=sf-dump-str title=\"19 characters\">Portuguese (Brazil)</span>\"
+</pre><script>Sfdump(\"sf-dump-1245071156\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","code":"<pre class=sf-dump id=sf-dump-851368993 data-indent-pad=\"  \">\"<span class=sf-dump-str title=\"5 characters\">pt-br</span>\"
+</pre><script>Sfdump(\"sf-dump-851368993\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+","loop":"<pre class=sf-dump id=sf-dump-1826040978 data-indent-pad=\"  \"><span class=sf-dump-const>null</span>
+</pre><script>Sfdump(\"sf-dump-1826040978\", {\"maxDepth\":3,\"maxStringLength\":160})</script>
+"}},"exception":"[object] (Spatie\\LaravelIgnition\\Exceptions\\ViewException(code: 0): syntax error, unexpected token \"<<\" at C:\\xampp\\htdocs\\erpgo\\app\\Models\\User.php:93)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\erpgo\\vendor\\composer\\ClassLoader.php(432): Composer\\Autoload\\ClassLoader::Composer\\Autoload\\{closure}('C:\\\\xampp\\\\htdocs...')
+#1 C:\\xampp\\htdocs\\erpgo\\app\\Models\\Utility.php(4019): Composer\\Autoload\\ClassLoader->loadClass('App\\\\Models\\\\User')
+#2 C:\\xampp\\htdocs\\erpgo\\resources\\views\\layouts\\auth.blade.php(2): App\\Models\\Utility::colorset()
+#3 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(109): require('C:\\\\xampp\\\\htdocs...')
+#4 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(110): Illuminate\\Filesystem\\Filesystem::Illuminate\\Filesystem\\{closure}()
+#5 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\PhpEngine.php(58): Illuminate\\Filesystem\\Filesystem->getRequire('C:\\\\xampp\\\\htdocs...', Array)
+#6 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\CompilerEngine.php(70): Illuminate\\View\\Engines\\PhpEngine->evaluatePath('C:\\\\xampp\\\\htdocs...', Array)
+#7 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(195): Illuminate\\View\\Engines\\CompilerEngine->get('C:\\\\xampp\\\\htdocs...', Array)
+#8 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(178): Illuminate\\View\\View->getContents()
+#9 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(147): Illuminate\\View\\View->renderContents()
+#10 C:\\xampp\\htdocs\\erpgo\\resources\\views\\auth\\login.blade.php(84): Illuminate\\View\\View->render()
+#11 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(109): require('C:\\\\xampp\\\\htdocs...')
+#12 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(110): Illuminate\\Filesystem\\Filesystem::Illuminate\\Filesystem\\{closure}()
+#13 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\PhpEngine.php(58): Illuminate\\Filesystem\\Filesystem->getRequire('C:\\\\xampp\\\\htdocs...', Array)
+#14 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\CompilerEngine.php(70): Illuminate\\View\\Engines\\PhpEngine->evaluatePath('C:\\\\xampp\\\\htdocs...', Array)
+#15 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(195): Illuminate\\View\\Engines\\CompilerEngine->get('C:\\\\xampp\\\\htdocs...', Array)
+#16 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(178): Illuminate\\View\\View->getContents()
+#17 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(147): Illuminate\\View\\View->renderContents()
+#18 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Response.php(69): Illuminate\\View\\View->render()
+#19 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Response.php(35): Illuminate\\Http\\Response->setContent(Object(Illuminate\\View\\View))
+#20 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(906): Illuminate\\Http\\Response->__construct(Object(Illuminate\\View\\View), 200, Array)
+#21 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(875): Illuminate\\Routing\\Router::toResponse(Object(Illuminate\\Http\\Request), Object(Illuminate\\View\\View))
+#22 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(797): Illuminate\\Routing\\Router->prepareResponse(Object(Illuminate\\Http\\Request), Object(Illuminate\\View\\View))
+#23 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(141): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\xampp\\htdocs\\erpgo\\app\\Http\\Middleware\\RedirectIfAuthenticated.php(30): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): App\\Http\\Middleware\\RedirectIfAuthenticated->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#34 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(116): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(797): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#41 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(776): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#42 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(740): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#43 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(729): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#44 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(190): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#45 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(141): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#47 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#52 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#53 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#54 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(86): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#55 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#56 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#57 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#58 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#59 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#60 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(116): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#61 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(165): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#62 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(134): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#63 C:\\xampp\\htdocs\\erpgo\\public\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#64 C:\\xampp\\htdocs\\erpgo\\index.php(21): require_once('C:\\\\xampp\\\\htdocs...')
+#65 {main}
+
+[previous exception] [object] (ParseError(code: 0): syntax error, unexpected token \"<<\" at C:\\xampp\\htdocs\\erpgo\\app\\Models\\User.php:93)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\erpgo\\vendor\\composer\\ClassLoader.php(432): Composer\\Autoload\\ClassLoader::Composer\\Autoload\\{closure}('C:\\\\xampp\\\\htdocs...')
+#1 C:\\xampp\\htdocs\\erpgo\\app\\Models\\Utility.php(4019): Composer\\Autoload\\ClassLoader->loadClass('App\\\\Models\\\\User')
+#2 C:\\xampp\\htdocs\\erpgo\\storage\\framework\\views\\183ce02bd00f95b6047144b1fddc8ca2e90679d2.php(10): App\\Models\\Utility::colorset()
+#3 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(109): require('C:\\\\xampp\\\\htdocs...')
+#4 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(110): Illuminate\\Filesystem\\Filesystem::Illuminate\\Filesystem\\{closure}()
+#5 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\PhpEngine.php(58): Illuminate\\Filesystem\\Filesystem->getRequire('C:\\\\xampp\\\\htdocs...', Array)
+#6 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\CompilerEngine.php(70): Illuminate\\View\\Engines\\PhpEngine->evaluatePath('C:\\\\xampp\\\\htdocs...', Array)
+#7 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(195): Illuminate\\View\\Engines\\CompilerEngine->get('C:\\\\xampp\\\\htdocs...', Array)
+#8 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(178): Illuminate\\View\\View->getContents()
+#9 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(147): Illuminate\\View\\View->renderContents()
+#10 C:\\xampp\\htdocs\\erpgo\\storage\\framework\\views\\09133355c38ad0a44009c4b4910645809ba572eb.php(136): Illuminate\\View\\View->render()
+#11 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(109): require('C:\\\\xampp\\\\htdocs...')
+#12 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\Filesystem.php(110): Illuminate\\Filesystem\\Filesystem::Illuminate\\Filesystem\\{closure}()
+#13 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\PhpEngine.php(58): Illuminate\\Filesystem\\Filesystem->getRequire('C:\\\\xampp\\\\htdocs...', Array)
+#14 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Engines\\CompilerEngine.php(70): Illuminate\\View\\Engines\\PhpEngine->evaluatePath('C:\\\\xampp\\\\htdocs...', Array)
+#15 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(195): Illuminate\\View\\Engines\\CompilerEngine->get('C:\\\\xampp\\\\htdocs...', Array)
+#16 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(178): Illuminate\\View\\View->getContents()
+#17 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\View.php(147): Illuminate\\View\\View->renderContents()
+#18 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Response.php(69): Illuminate\\View\\View->render()
+#19 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Response.php(35): Illuminate\\Http\\Response->setContent(Object(Illuminate\\View\\View))
+#20 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(906): Illuminate\\Http\\Response->__construct(Object(Illuminate\\View\\View), 200, Array)
+#21 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(875): Illuminate\\Routing\\Router::toResponse(Object(Illuminate\\Http\\Request), Object(Illuminate\\View\\View))
+#22 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(797): Illuminate\\Routing\\Router->prepareResponse(Object(Illuminate\\Http\\Request), Object(Illuminate\\View\\View))
+#23 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(141): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\xampp\\htdocs\\erpgo\\app\\Http\\Middleware\\RedirectIfAuthenticated.php(30): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): App\\Http\\Middleware\\RedirectIfAuthenticated->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#27 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#28 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#29 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#34 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(116): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(797): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#41 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(776): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#42 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(740): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#43 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(729): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#44 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(190): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#45 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(141): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#46 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#47 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#52 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#53 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#54 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(86): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#55 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#56 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#57 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#58 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#59 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(180): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#60 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(116): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#61 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(165): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#62 C:\\xampp\\htdocs\\erpgo\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(134): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#63 C:\\xampp\\htdocs\\erpgo\\public\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#64 C:\\xampp\\htdocs\\erpgo\\index.php(21): require_once('C:\\\\xampp\\\\htdocs...')
+#65 {main}
+"} 
