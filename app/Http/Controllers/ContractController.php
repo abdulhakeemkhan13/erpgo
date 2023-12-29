@@ -91,18 +91,7 @@ class ContractController extends Controller
         $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-<<<<<<< HEAD
         if (\Auth::user()->type == 'company') {
-=======
-        $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
-        if (\Auth::user()->type == 'branch') {
-            $company = Company::where('owned_by', '=', \Auth::user()->id)->pluck('name', 'id');
-            // dd($company);
-            $spaces       = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        } else {
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
             $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
             $spaces       = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->get();
             // $space->prepend(__('Select Space'),0);
@@ -140,8 +129,6 @@ class ContractController extends Controller
         }
 
         return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','type'));
-<<<<<<< HEAD
-=======
     }
 
     public function createvirtualoffice()
@@ -151,20 +138,20 @@ class ContractController extends Controller
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
         $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
-        if (\Auth::user()->type == 'branch') {
-            $company = Company::where('owned_by', '=', \Auth::user()->id)->pluck('name', 'id');
-            $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->id)->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        } else {
+        if (\Auth::user()->type == 'company') {
             $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
             $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.created_by', '=', \Auth::user()->creatorId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
             // $space->prepend(__('Select Space'),0);
             $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
+        } else {
+            $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
+            $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->ownedId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
+            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
+            // $space->prepend(__('Select Space'),0);
         }
 
         return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','type'));
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
+
     }
 
 
@@ -232,21 +219,12 @@ class ContractController extends Controller
                 $contract->description = $request->description;
                 $contract->service_id = $request->services_id;
                 $contract->service_price = $request->services_charges;
-<<<<<<< HEAD
                 $contract->owned_by  = \Auth::user()->ownedId();
                 $contract->created_by  = \Auth::user()->creatorId();
                 $contract->save();
                 if ($request->has('new') && $request->input('new') == '1') {
                     if (\Auth::user()->type == 'company') {
-=======
-                $contract->owned_by  = \Auth::user()->id;
-                $contract->created_by  = \Auth::user()->creatorId();
-                $contract->save();
-                if ($request->has('new') && $request->input('new') == '1') {
-                    if (\Auth::user()->type == 'branch') {
-                        $latest = Customer::where('owned_by', '=', \Auth::user()->id)->latest()->first();
-                    } else {
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
+
                         $latest = Customer::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
                     } else {
                         $latest = Customer::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
@@ -410,7 +388,6 @@ class ContractController extends Controller
         $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-<<<<<<< HEAD
         if (\Auth::user()->type == 'company') {
             if($space_type->chair_id == 0){
                 $type ='virtual';
@@ -430,26 +407,7 @@ class ContractController extends Controller
                 $spaces      = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->get();
             }
             $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
-=======
-        if (\Auth::user()->type == 'branch') {
-            if($space_type->chair_id == 0){
-                $type ='virtual';
-                $spaces  = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->id)->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            }else{
-                $type ='office';
-                $spaces      = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
-            }
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        } else {
-            if($space_type->chair_id == 0){
-                $type ='virtual';
-                $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.created_by', '=', \Auth::user()->creatorId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            }else{
-                $type ='office';
-                $spaces       = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->get();
-            }
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
+
             // $space->prepend(__('Select Space'),0);
         }
         $roomassign = Roomassign::where('contract_id',$contract->id)->get();

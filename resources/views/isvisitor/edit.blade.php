@@ -12,7 +12,7 @@
         </div>
         <div class="form-group">
             <label for="datetimeInput" class="form-label">{{ __('Date Time') }}</label>
-            <input type="datetime-local" class="form-control" id="datetimeInput" name="date" value="{{$isvisitor->date_time}}">
+            <input type="datetime-local" class="form-control" id="datetimeInput" name="date" value="{{$isvisitor->date_time}}" >
         </div>
         {{-- <div class="form-group">
             {{ Form::label('price', __('Price'),['class'=>'form-label']) }}

@@ -163,10 +163,8 @@ class SpaceController extends Controller
                 $productService->sale_chartaccount_id       = $space_type->account_head;
                 $productService->expense_chartaccount_id    = 0;
                 $productService->category_id                = 0;
-<<<<<<< HEAD
                 $productService->owned_by       = \Auth::user()->ownedId();
-=======
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
+
                 $productService->created_by       = \Auth::user()->creatorId();
                 $productService->save();
 

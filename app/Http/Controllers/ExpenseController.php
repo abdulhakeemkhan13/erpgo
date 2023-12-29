@@ -280,10 +280,8 @@ class ExpenseController extends Controller
                 $expense->due_date       = $request->payment_date;
                 $expense->category_id    = !empty($request->category_id) ? $request->category_id :0;
                 $expense->order_number   = 0;
-<<<<<<< HEAD
                 $expense->owned_by     = \Auth::user()->ownedId();
-=======
->>>>>>> fe38d5df8381522d0b78bff945675cb011d1eba2
+
                 $expense->created_by     = \Auth::user()->creatorId();
                 $expense->save();
 
@@ -649,7 +647,7 @@ class ExpenseController extends Controller
                 $products = $request->items;
 
                 $total_amount=0;
-dd($products);
+// dd($products);
                 for ($i = 0; $i < count($products); $i++)
                 {
                     $expenseProduct = BillProduct::find($products[$i]['id']);
@@ -928,10 +926,4 @@ dd($products);
         }
 
     }
-
-
-
-
-
-
 }
