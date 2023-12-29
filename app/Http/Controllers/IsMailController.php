@@ -37,7 +37,7 @@ class IsMailController extends Controller
      */
     public function index()
     {
-        if(\Auth::user()->can('view chair'))
+        if(\Auth::user()->can('manage ismail'))
         {
             
             if(\Auth::user()->type == 'company'){
@@ -50,9 +50,8 @@ class IsMailController extends Controller
             }
             else{
                 $user    = \Auth::user();
-                $ismails = IsMail::where('owned_by', '=', $user->id)->get();
+                $ismails = IsMail::where('owned_by', '=', $user->ownedId())->get();
             }
-            // dd($ismails);
             return view('ismail.index', compact('ismails'));
         }
         else
@@ -68,7 +67,7 @@ class IsMailController extends Controller
      */
     public function create(Request $request)
     {
-        if(\Auth::user()->can('create chair'))
+        if(\Auth::user()->can('create ismail'))
         {
             if($request->ajax)
             {
@@ -95,15 +94,13 @@ class IsMailController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
-        if(\Auth::user()->can('create chair'))
+        if(\Auth::user()->can('create ismail'))
         {
             $user      = \Auth::user();
             $validator = \Validator::make(
                 $request->all(), [
                     'name' => 'required',
                     'date' => 'required',
-                    // 'type' => 'required',
                 ]
             );
             if($validator->fails())
@@ -125,13 +122,12 @@ class IsMailController extends Controller
                         'name' => $request->name,
                         'date' => $request->date,
                         'user_id' => $user->id,
-                        'type' => $request->type,
-                        'owned_by' => $user->owned_by,
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                     ]
                 );
 
-                return redirect()->route('ismail.index')->with('success', __('IsMail successfully created.'));
+                return redirect()->route('ismail.index')->with('success', __('Mail successfully created.'));
 
         }
         else
@@ -168,7 +164,7 @@ class IsMailController extends Controller
     public function edit(IsMail $ismail)
     {
         // dd($ismail);
-        if(\Auth::user()->can('edit chair'))
+        if(\Auth::user()->can('edit ismail'))
         {
             $user = \Auth::user();
             if($ismail->created_by == $user->creatorId() || $ismail->owned_by == $user->id)
@@ -199,23 +195,22 @@ class IsMailController extends Controller
      */
     public function update(IsMail $ismail, Request $request)
     {
-        if(\Auth::user()->can('edit chair'))
+        if(\Auth::user()->can('edit ismail'))
         {
             $user = \Auth::user();
-            if($ismail->created_by == $user->creatorId() || $ismail->owned_by == $user->id)
+            if($ismail->created_by == $user->creatorId() || $ismail->owned_by == $user->ownedId())
             {
                 $validation = [
                     'name' => 'required',
                     'date' => 'required',
-                    // 'type' => 'required',
                 ];
 
                 $post         = [];
                 $post['name'] = $request->name;
                 $post['date'] = $request->date;
-                // $post['price'] = $request->price;
-                // $post['type'] = $request->type;               
-
+                if(Auth::user()->type != 'clientuser'){
+                    $post['price'] = $request->price;            
+                }
                 $validator = \Validator::make($request->all(), $validation);
                 if($validator->fails())
                 {
@@ -228,7 +223,7 @@ class IsMailController extends Controller
 
                 CustomField::saveData($ismail, $request->customField);
 
-                return redirect()->back()->with('success', __('IsMail Updated Successfully!'));
+                return redirect()->back()->with('success', __('Mail Updated Successfully!'));
             }
             else
             {
@@ -250,17 +245,24 @@ class IsMailController extends Controller
      */
     public function destroy(IsMail $ismail)
     {
-        $user = \Auth::user();
-        if($ismail->created_by == $user->creatorId()  || $ismail->owned_by == $user->id)
+        if(\Auth::user()->can('delete ismail'))
         {
-    
-            $ismail->delete();
-            return redirect()->back()->with('success', __('IsMail Deleted Successfully!'));
+            $user = \Auth::user();
+            if($ismail->created_by == $user->creatorId()  || $ismail->owned_by ==  $user->ownedId())
+            {
+        
+                $ismail->delete();
+                return redirect()->back()->with('success', __('Mail Deleted Successfully!'));
 
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Invalid Mail.'));
+            }
         }
         else
         {
-            return redirect()->back()->with('error', __('Invalid IsMail.'));
+            return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
 }

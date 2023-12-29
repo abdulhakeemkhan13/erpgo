@@ -131,30 +131,6 @@ class ContractController extends Controller
         return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','type'));
     }
 
-    public function createvirtualoffice()
-    {
-        $type ='virtual';
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-        $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
-        if (\Auth::user()->type == 'company') {
-            $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
-            $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.created_by', '=', \Auth::user()->creatorId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            // $space->prepend(__('Select Space'),0);
-            $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
-        } else {
-            $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
-            $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->ownedId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        }
-
-        return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','type'));
-
-    }
-
-
     public function store(Request $request)
     {
         // dd($request->all());

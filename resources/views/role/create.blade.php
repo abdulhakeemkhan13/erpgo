@@ -1393,7 +1393,7 @@
 </div>
 
 {{Form::close()}}
-
+ 
 <script>
     $(document).ready(function () {
         $("#staff_checkall").click(function(){

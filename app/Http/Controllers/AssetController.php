@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\Company;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 
@@ -27,9 +28,10 @@ class AssetController extends Controller
     {
         if(\Auth::user()->can('create assets'))
         {
-            $employee      = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'user_id');
+            // $employee      = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'user_id');
+            $company      = Company::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
 
-            return view('assets.create',compact('employee'));
+            return view('assets.create',compact('company'));
         }
         else
         {

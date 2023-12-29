@@ -14,9 +14,11 @@
 @endsection
 @section('action-btn')
     <div class="float-end">
-        <a href="#" data-size="md" data-url="{{ route('ismail.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
-            <i class="ti ti-plus"></i>
-        </a>
+        @can('create ismail')
+            <a href="#" data-size="md" data-url="{{ route('ismail.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i>
+            </a>
+        @endcan
     </div>
 @endsection
 @section('content')
@@ -52,22 +54,23 @@
                                         {{-- <td>
                                             {{ (!empty($ismail->type)) ? $ismail->type : '-' }}
                                         </td> --}}
-                                        @if(Gate::check('edit chair') || Gate::check('delete chair'))
+                                        @if(Gate::check('edit ismail') || Gate::check('delete ismail'))
                                             <td>
-                                                    @can('edit chair')
+                                                    @can('edit ismail')
                                                     <div class="action-btn bg-primary ms-2">
                                                         <a href="#!"data-url="{{route('ismail.edit',$ismail->id)}}"  data-ajax-popup="true" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}"
                                                         data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
                                                     </div>
     
                                                     @endcan
-                                                    @can('delete chair')
+                                                    @can('delete ismail')
+                                                    @if(empty($ismail->price))
                                                     <div class="action-btn bg-danger ms-2">
                                                     {!! Form::open(['method' => 'DELETE', 'route' => ['ismail.destroy', $ismail->id],'id'=>'delete-form-'.$ismail->id]) !!}
-    
                                                         <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$ismail->id}}').submit();"><i class="ti ti-trash text-white"></i></a>
                                                         {!! Form::close() !!}
                                                     </div>
+                                                    @endif
                                                     @endcan
                                                 {{-- @else
     

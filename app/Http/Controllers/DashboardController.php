@@ -592,8 +592,8 @@ class DashboardController extends Controller
                     $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
                     $countEmployee = count($emp);
 
-                    $user      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countUser = count($user);
+                    $users      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $countUser = count($users);
 
                     $currentDate = date('Y-m-d');
 
@@ -604,8 +604,8 @@ class DashboardController extends Controller
                     $notClockIns = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id', $notClockIn)->get();
 
                     $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
-
-                    return view('dashboard.client_user_dashboard', compact('arrEvents', 'announcements', 'employees', 'meetings', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                  
+                    return view('dashboard.client_user_dashboard', compact('arrEvents','user', 'announcements', 'employees', 'meetings', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
             // } else {
 

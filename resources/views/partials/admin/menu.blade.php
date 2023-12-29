@@ -820,23 +820,27 @@
                     </li>
                     @endif
 
-                    @if(\Auth::user()->type == 'clientuser')
+                    @if(\Auth::user()->type == 'clientuser' )
                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bookingcalendar') ? ' active' : '' }}">
                             <a href="{{ route('booking.calendar',['all']) }}" class="dash-link">
                                 <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Booking Calender')}}</span>
                             </a>
                         </li>
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'isvisitor') ? ' active' : '' }}">
-                            <a href="{{ route('isvisitor.index') }}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Vistor')}}</span>
-                            </a>
-                        </li>
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'ismail') ? ' active' : '' }}">
-                            <a href="{{ route('ismail.index') }}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Mail')}}</span>
-                            </a>
-                        </li>
-                    @endif
+                        @endif
+                        @if( Gate::check('manage vistor'))
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'isvisitor') ? ' active' : '' }}">
+                                <a href="{{ route('isvisitor.index') }}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Vistor')}}</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if( Gate::check('manage ismail'))
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'ismail') ? ' active' : '' }}">
+                                <a href="{{ route('ismail.index') }}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Mail')}}</span>
+                                </a>
+                            </li>
+                        @endif
 
 
                     <!--------------------- Start User Managaement System ----------------------------------->

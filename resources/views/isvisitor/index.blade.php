@@ -14,9 +14,11 @@
 @endsection
 @section('action-btn')
     <div class="float-end">
-        <a href="#" data-size="md" data-url="{{ route('isvisitor.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
-            <i class="ti ti-plus"></i>
-        </a>
+        @can('create vistor')
+            <a href="#" data-size="md" data-url="{{ route('isvisitor.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i>
+            </a>
+        @endif
     </div>
 @endsection
 @section('content')
@@ -48,9 +50,9 @@
                                         <td>
                                             {{ (!empty($isvisitor->cnic)) ? $isvisitor->cnic : '-' }}
                                         </td>
-                                        @if(Gate::check('edit chair') || Gate::check('delete chair'))
+                                        @if(Gate::check('edit vistor') || Gate::check('delete vistor'))
                                             <td>
-                                                    @can('edit chair')
+                                                    @can('edit vistor')
                                                     <div class="action-btn bg-primary ms-2">
                                                       
                                                         <a href="#!"data-url="{{route('isvisitor.edit',$isvisitor->id)}}"  data-ajax-popup="true" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}"
@@ -58,7 +60,7 @@
                                                     </div>
     
                                                     @endcan
-                                                    @can('delete chair')
+                                                    @can('delete vistor')
                                                     <div class="action-btn bg-danger ms-2">
                                                     {!! Form::open(['method' => 'DELETE', 'route' => ['isvisitor.destroy', $isvisitor->id],'id'=>'delete-form-'.$isvisitor->id]) !!}
     
