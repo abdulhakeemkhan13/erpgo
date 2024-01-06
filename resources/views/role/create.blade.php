@@ -27,9 +27,9 @@
                 <li class="nav-item">
                     <a class="nav-link" id="pills-account-tab" data-bs-toggle="pill" href="#account" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('Account')}}</a>
                 </li>
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a class="nav-link" id="pills-account-tab" data-bs-toggle="pill" href="#pos" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('POS')}}</a>
-                </li>
+                </li> --}}
                 <li class="nav-item">
                     <a class="nav-link" id="pills-account-tab" data-bs-toggle="pill" href="#workspace" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('WorkSpace')}}</a>
                 </li>
@@ -1135,7 +1135,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="pos" role="tabpanel" aria-labelledby="pills-contact-tab">
+                {{-- <div class="tab-pane fade" id="pos" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
                         $modules=['warehouse','purchase','pos','barcode'];
                     @endphp
@@ -1156,7 +1156,6 @@
                                     <tbody>
 
                                     @foreach($modules as $module)
-                                    {{-- @dd($modules); --}}
                                         <tr>
                                             <td><input type="checkbox" class="form-check-input ischeck"  data-id="{{str_replace(' ', '', $module)}}" ></td>
                                             <td><label class="ischeck" data-id="{{str_replace(' ', '', $module)}}">{{ ucfirst($module) }}</label></td>
@@ -1257,7 +1256,7 @@
                             @endif
                         </div>
                     </div>
-                </div>
+                </div> --}}
                 <div class="tab-pane fade" id="workspace" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
                         $modules=['companybranch','space','spacetype','chair','clientuser','ismail','vistor'];
@@ -1411,9 +1410,9 @@
         $("#account_checkall").click(function(){
             $('.account_checkall').not(this).prop('checked', this.checked);
         });
-        $("#pos_checkall").click(function(){
-            $('.pos_checkall').not(this).prop('checked', this.checked);
-        });
+        // $("#pos_checkall").click(function(){
+        //     $('.pos_checkall').not(this).prop('checked', this.checked);
+        // });
         $("#workspace_checkall").click(function(){
             $('.workspace_checkall').not(this).prop('checked', this.checked);
         });

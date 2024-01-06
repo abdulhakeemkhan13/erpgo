@@ -53,7 +53,7 @@
 
                                 <tr class="font-style">
                                     <td>
-                                        <a href="{{ route('contract.show', \Crypt::encrypt($contract->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->contractNumberFormat($contract->contract_id) }}</a>
+                                        <a href="{{ route('contract.show', \Crypt::encrypt($contract->id)) }}" class="btn btn-outline-primary">{{ Auth::user()->contractNumberFormat($contract->id) }}</a>
 
                                         {{-- <a href="{{route('contract.show',$contract->id)}}" class="btn btn-outline-primary">{{\Auth::user()->contractNumberFormat($contract->id)}}</a> --}}
                                     </td>
@@ -93,6 +93,13 @@
                                                    data-bs-whatever="{{__('View Budget Planner')}}" data-bs-toggle="tooltip"
                                                    data-bs-original-title="{{__('View')}}"> <span class="text-white"> <i class="ti ti-eye"></i></span></a>
                                             </div>
+                                            @if($contract->close_date == null)
+                                                <div class="action-btn bg-info ms-2">
+                                                    <a href="{{ route('contract_status',\Crypt::encrypt($contract->id)) }}" class="mx-3 btn btn-sm d-inline-flex align-items-center"   data-bs-toggle="tooltip" title="{{__('Close Contract')}}" >
+                                                        <i class="ti ti-lock text-white"></i>
+                                                    </a>
+                                                </div>
+                                            @endif
                                         @endcan
                                         @can('edit contract')
                                             <div class="action-btn bg-info ms-2">

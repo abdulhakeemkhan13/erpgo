@@ -17,4 +17,11 @@ class Stage extends Model
             return Deal::select('deals.*')->join('user_deals', 'user_deals.deal_id', '=', 'deals.id')->where('user_deals.user_id', '=', \Auth::user()->id)->where('deals.stage_id', '=', $this->id)->orderBy('deals.order')->get();
         }
     }
+    public function new_deals(){
+        if(\Auth::user()->type == 'client'){
+            return Deal::select('deals.*')->join('client_deals','client_deals.deal_id','=','deals.id')->where('client_deals.client_id', '=', \Auth::user()->id)->where('deals.stage_id', '=', $this->id)->orderBy('deals.order')->get();
+        }else {
+            return Deal::select('deals.*')->join('user_deals', 'user_deals.deal_id', '=', 'deals.id')->where('deals.stage_id', '=', $this->id)->orderBy('deals.order')->get();
+        }
+    }
 }

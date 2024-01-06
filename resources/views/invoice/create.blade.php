@@ -382,7 +382,9 @@
                 success: function (data) {
                     console.log(data);
                     if (data != '') {
-
+                        // $('#sortable-table tbody:gt(0)').remove();
+                        $('tbody').remove();
+                    $('.btn-primary[data-repeater-create]').click();
                         // $('#company_detail').removeClass('d-block');
                         $('#contract').empty().append(`<option selected disabled value="">Select a Contract</option>`);
                         for(var i=0; i<data.data.length; i++){
@@ -409,17 +411,24 @@
                 },
                 cache: false,
                 success: function (data) {
+                    $('#sortable-table tbody:gt(0)').remove();
+                    $('.btn-primary[data-repeater-create]').click();
 
                     if (data.html !== undefined) {
                         $('#sortable-table tbody:gt(0)').remove();
                         $('.ui-sortable').empty().html(data.html);
                         $('.btn-primary[data-repeater-create]').click();
-                        if(data.html !== undefined || data.html !== ''){
+                        if(data.html2 !== undefined || data.html2 !== ''){
                             $('#sortable-table tbody:eq(1)').empty().html(data.html2);
                             $('.btn-primary[data-repeater-create]').click();
-                            $('#sortable-table tbody:gt(1)').remove();
+                            // $('#sortable-table tbody:gt(1)').remove();
+                        }
+                        if(data.html3 !== undefined || data.html3 !== ''){
+                            $('#sortable-table tbody:eq(2)').empty().html(data.html3);
+                            $('.btn-primary[data-repeater-create]').click();
+                            $('#sortable-table tbody:gt(2)').remove();
                         }else{
-                            $('#sortable-table tbody:gt(0)').remove();
+                            $('#sortable-table tbody:gt(1)').remove();
                         }
                     }
                     $('.quantity').trigger('keyup');
@@ -428,6 +437,25 @@
             });
         
         });
+
+        $('#addpropcheck').on('change', function() {
+        if ($(this).is(":checked")) {
+            // $('#companySelect').css('display', 'none');
+            $('.new_customer').addClass('d-none');
+            $('.companyText').removeClass('d-none');
+            // $('#companySelect').prop('required', false);
+            $('.req').prop('required', true);
+            $('.req_old').prop('required', false);
+        } else {
+            $('.new_customer').removeClass('d-none');
+            $('.companyText').addClass('d-none');
+            $('.req').prop('required', false);
+            $('.req_old').prop('required', true);
+            // $('#companySelect').prop('required', true);
+            // $('.companyText').addClass('d-none');
+            // $('#companySelect').css('display', 'block');
+        }
+    });
 
     </script>
 @endpush
@@ -447,29 +475,53 @@
                             </div>
 
                             <div id="customer_detail" class="d-none">
-                            </div>
+                            </div> 
                         </div> --}}
+                        
                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                            <div class="form-group" id="company-box">
-                                {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
-                                {{ Form::select('customer_id', $customers,$customerId, array('class' => 'form-control select','id'=>'company','required'=>'required')) }}
 
-                            </div>
-
-                            <div id="company_detail" >
-                                {{ Form::label('contract', __('Contract'),['class'=>'form-label']) }}
-                                {{-- {{ Form::select('contract_id', null,null, array('class' => 'form-control select','id'=>'contract','required'=>'required')) }} --}}
-                                <select name="contract_id" id="contract" class="form-control select">
-                                    <option selected disabled value="">Select a Contract</option>
-                                </select>
-
+                            <div class="form-group col-md-12 row">
+                                <div class="col-md-10">
+                                    {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}<span style="color: red"> *</span>
+                                </div>
+                                <div class="col-md-2 d-flex">
+                                    {{ Form::label('addpropcheck', __('New'), ['class' => 'form-check-label']) }}
+                                    {{ Form::checkbox('new', '1', false, ['class' => 'form-check-input', 'id' => 'addpropcheck']) }}
+                                </div>
+                                {{-- {{ Form::select('customer_id', $customers,$customerId, array('class' => 'form-control select','id'=>'company','required'=>'required')) }} --}}
+                                
+                                <div class=" new_customer" id="company-box">
+                                    {{-- {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }} --}}
+                                    {{ Form::select('customer_id', $customers,$customerId, array('class' => 'form-control select req_old','id'=>'company','required'=>'required')) }}
+                                </div>
+                                
+                                <div class="new_customer" id="company_detail" style="margin-top:20px;">
+                                    {{ Form::label('contract', __('Contract'),['class'=>'form-label']) }}
+                                    {{-- {{ Form::select('contract_id', null,null, array('class' => 'form-control select','id'=>'contract','required'=>'required')) }} --}}
+                                    <select name="contract_id" id="contract" class="form-control select">
+                                        <option selected disabled value="">Select a Contract</option>
+                                    </select>
+                                    
+                                </div>
+                                <div class="form-group col-md-12 d-none companyText">
+                                    {{ Form::text('newcustomer', '', ['class' => 'form-control d-none companyText req' ]) }}
+                                </div>
+                                <div class="form-group col-md-12 d-none companyText">
+                                    {{ Form::label('phone_no', __('Phone No'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
+                                    {{ Form::number('phone_no', '', ['class' => 'form-control req']) }}
+                                </div>
+                        
+                                <div class="form-group col-md-12 d-none companyText">
+                                    {{ Form::label('email', __('Email'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
+                                    {{ Form::email('email', '', ['class' => 'form-control req','placeholder' =>'123@gmail.com']) }}
+                                </div>
                             </div>
                         </div>
                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label']) }}
+                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         <div class="form-icon-user">
                                             {{Form::date('issue_date',null,array('class'=>'form-control','required'=>'required'))}}
 
@@ -478,7 +530,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('due_date', __('Due Date'),['class'=>'form-label']) }}
+                                        {{ Form::label('due_date', __('Due Date'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         <div class="form-icon-user">
                                             {{Form::date('due_date',null,array('class'=>'form-control','required'=>'required'))}}
 
@@ -487,7 +539,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}
+                                        {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         <div class="form-icon-user">
                                             <input type="text" class="form-control" value="{{$invoice_number}}" readonly>
                                         </div>
@@ -495,7 +547,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
+                                        {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         {{ Form::select('category_id', $category,null, array('class' => 'form-control select','required'=>'required')) }}
                                     </div>
                                 </div>

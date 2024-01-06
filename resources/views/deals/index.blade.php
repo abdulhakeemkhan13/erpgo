@@ -182,7 +182,8 @@
             @endphp
         <div class="row kanban-wrapper horizontal-scroll-cards" data-containers='{!! json_encode($json) !!}' data-plugin="dragula">
             @foreach($stages as $stage)
-                @php($deals = $stage->deals())
+                @php($deals = $stage->new_deals())
+                
                 <div class="col">
                     <div class="card">
                         <div class="card-header">

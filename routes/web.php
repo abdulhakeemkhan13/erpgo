@@ -1366,6 +1366,9 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/contract/copy/{id}', [ContractController::class, 'copycontract'])->name('contract.copy')->middleware(['auth', 'XSS']);
     Route::post('contract/copy/store', [ContractController::class, 'copycontractstore'])->name('contract.copy.store')->middleware(['auth', 'XSS']);
 
+    Route::get('contract_status/{id}', [ContractController::class, 'contract_status'])->name('contract_status')->middleware(['auth', 'XSS']);
+    Route::get('contract_clear/{id}', [ContractController::class, 'contract_clear'])->name('contract_clear')->middleware(['auth', 'XSS']);
+
 
     // Custom Landing Page
 

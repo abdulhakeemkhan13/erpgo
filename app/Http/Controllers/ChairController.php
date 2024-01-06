@@ -258,16 +258,19 @@ class ChairController extends Controller
     {
 
         $user = \Auth::user();
-        if(\Auth::user()->type == 'branch'){
-            $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->ownedId())->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
-        }else{
-
+        if(\Auth::user()->type == 'company'){
             $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
             $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
+            $assignchair = array_map('intval', $assignchair);
+        }else{
+
+            $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->ownedId())->get();
+            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
+            $assignchair = array_map('intval', $assignchair);
         }
         if($con != null){
             $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
+            $conchair = array_map('intval', $conchair);
             return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ,'conchair'=>$conchair ], 201);
         }
         // $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();

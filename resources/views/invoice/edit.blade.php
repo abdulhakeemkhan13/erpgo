@@ -523,7 +523,7 @@
                         </div> --}}
                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                             <div class="form-group" id="company-box">
-                                {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
+                                {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                 {{-- {{ Form::select('customer_id', $customers, null, array('class' => 'form-control select','id'=>'company','required'=>'required')) }} --}}
                                 {{-- <select class="form-control select" id="company" required="required" name="customer_id">
                                     @foreach ($customers as $customer)
@@ -548,7 +548,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label']) }}
+                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         <div class="form-icon-user">
                                             {{Form::date('issue_date',null,array('class'=>'form-control','required'=>'required'))}}
                                         </div>
@@ -556,7 +556,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('due_date', __('Due Date'),['class'=>'form-label']) }}
+                                        {{ Form::label('due_date', __('Due Date'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         <div class="form-icon-user">
                                             {{Form::date('due_date',null,array('class'=>'form-control','required'=>'required'))}}
                                         </div>
@@ -564,14 +564,14 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}
+                                        {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                         <div class="form-icon-user">
                                             <input type="text" class="form-control" value="{{$invoice_number}}" readonly>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
+                                    {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}<span style="color: red"> *</span>
                                     {{ Form::select('category_id', $category,null, array('class' => 'form-control select','required'=>'required')) }}
                                 </div>
                                 <div class="col-md-6">

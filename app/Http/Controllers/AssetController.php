@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\AssetDetail;
 use App\Models\Company;
 use App\Models\Employee;
 use Illuminate\Http\Request;
@@ -13,7 +14,11 @@ class AssetController extends Controller
     {
         if(\Auth::user()->can('manage assets'))
         {
-            $assets = Asset::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company'){
+                $assets = Asset::with('company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $assets = Asset::with('company')->where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
 
             return view('assets.index', compact('assets'));
         }
@@ -29,7 +34,11 @@ class AssetController extends Controller
         if(\Auth::user()->can('create assets'))
         {
             // $employee      = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'user_id');
-            $company      = Company::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'company'){
+                $company      = Company::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $company      = Company::where('created_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
 
             return view('assets.create',compact('company'));
         }
@@ -42,34 +51,46 @@ class AssetController extends Controller
 
     public function store(Request $request)
     {
-//        dd($request->all());
         if(\Auth::user()->can('create assets'))
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required',
-                                   'purchase_date' => 'required',
-                                   'supported_date' => 'required',
-                                   'amount' => 'required',
-                               ]
+                    'name' => 'required',
+                    'company_id' => 'required',
+                    'issue_date' => 'required',
+                    'quantity' => 'required',
+                ]
             );
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
-
                 return redirect()->back()->with('error', $messages->first());
             }
 
             $assets                 = new Asset();
-            $assets->employee_id         = !empty($request->employee_id) ? implode(',', $request->employee_id) : '';
-            $assets->name           = $request->name;
-            $assets->purchase_date  = $request->purchase_date;
-            $assets->supported_date = $request->supported_date;
-            $assets->amount         = $request->amount;
+            // $assets->employee_id         = !empty($request->employee_id) ? implode(',', $request->employee_id) : '';
+            $assets->company_id         = $request->company_id;
+            // $assets->name           = $request->name;
+            $assets->purchase_date  = $request->issue_date;
+            $assets->supported_date = $request->end_date;
+            // $assets->amount         = $request->amount;
             $assets->description    = $request->description;
+            $assets->owned_by     = \Auth::user()->ownedId();
             $assets->created_by     = \Auth::user()->creatorId();
             $assets->save();
 
+            if($request->name){
+                for ($i=0; $i < count($request->name) ; $i++) {
+                    AssetDetail::create(
+                        [
+                            'asset_id' => $assets->id,
+                            'name' => $request->name[$i],
+                            'quantity' => $request->quantity[$i],
+                        ]
+                    );
+                }
+            }
+            
             return redirect()->route('account-assets.index')->with('success', __('Assets successfully created.'));
         }
         else
@@ -89,13 +110,18 @@ class AssetController extends Controller
 
         if(\Auth::user()->can('edit assets'))
         {
-            $asset = Asset::find($id);
-            $employee      = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $asset->employee_id      = explode(',', $asset->employee_id);
+            if(\Auth::user()->type == 'company'){
+                $asset = Asset::with('assetdetail')->find($id);
+                $company      = Company::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $asset = Asset::with('assetdetail')->find($id);
+                $company      = Company::where('created_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
+            // $asset = Asset::find($id);
+            // $employee      = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            // $asset->employee_id      = explode(',', $asset->employee_id);
 
-
-
-            return view('assets.edit', compact('asset','employee'));
+            return view('assets.edit', compact('asset','company'));
         }
         else
         {
@@ -113,28 +139,52 @@ class AssetController extends Controller
             {
                 $validator = \Validator::make(
                     $request->all(), [
-                                       'name' => 'required',
-                                       'purchase_date' => 'required',
-                                       'supported_date' => 'required',
-                                       'amount' => 'required',
+                                        // 'name' => 'required',
+                                        'company_id' => 'required',
+                                        'issue_date' => 'required',
+                                        // 'quantity' => 'required',
                                    ]
                 );
                 if($validator->fails())
                 {
                     $messages = $validator->getMessageBag();
-
                     return redirect()->back()->with('error', $messages->first());
                 }
+                // $asset->name           = $request->name;
+                // $asset->employee_id         = !empty($request->employee_id) ? implode(',', $request->employee_id) : '';
+                // $asset->purchase_date  = $request->purchase_date;
+                // $asset->supported_date = $request->supported_date;
+                // $asset->amount         = $request->amount;
+                // $asset->description    = $request->description;
+                // $asset->save();
 
-                $asset->name           = $request->name;
-                $asset->employee_id         = !empty($request->employee_id) ? implode(',', $request->employee_id) : '';
-
-                $asset->purchase_date  = $request->purchase_date;
-                $asset->supported_date = $request->supported_date;
-                $asset->amount         = $request->amount;
+                $asset->company_id         = $request->company_id;
+                $asset->purchase_date  = $request->issue_date;
+                $asset->supported_date = $request->end_date;
                 $asset->description    = $request->description;
                 $asset->save();
+               
+                
+            // Determine which row you want to update and which ones you want to delete.
+            $existingRows = AssetDetail::where('asset_id', $asset->id)->get();
+            $deleteIds = $existingRows->pluck('id')->diff($request->input('ids'));
+            // Update the specific row(s).
+            for ($i=0; $i<count($request->input('ids')); $i++) {
+                AssetDetail::where('id', $request->input('ids')[$i])->update(['name' => $request->input('names')[$i],'quantity' => $request->quantitys[$i]]);
+            }
 
+            // Delete the other row(s).
+            AssetDetail::whereIn('id', $deleteIds)->delete();
+                
+            if($request->input('name')){
+                for ($j=0; $j<count($request->input('name')); $j++) {
+                    $section = AssetDetail::create([
+                        'asset_id' => $asset->id,
+                        'name' => $request->name[$j],
+                        'quantity' => $request->quantity[$j],
+                    ]);
+                }
+            }
                 return redirect()->route('account-assets.index')->with('success', __('Assets successfully updated.'));
             }
             else
