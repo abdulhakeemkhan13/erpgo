@@ -15,6 +15,7 @@ use App\Models\TaskFile;
 use App\Models\BugStatus;
 use App\Models\TaskStage;
 use App\Models\ActivityLog;
+use App\Models\Company;
 use App\Models\ProjectTask;
 use App\Models\TaskComment;
 use Illuminate\Http\Request;
@@ -58,17 +59,46 @@ class BookingController extends Controller
 
     public function create(Request $request)
     {
-        $space = Space::where('meeting','yes')->pluck('name', 'id');
+        if(\Auth::user()->type == ('company')){
+            $space = Space::where('meeting','yes')->where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
+        }else{
+            $space = Space::where('meeting','yes')->where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
+        }
+        // $space = Space::where('meeting','yes')->pluck('name', 'id');
         return view('booking.create',['space'=>$space]);        
     }
     public function bookingcreate($id = null)
     {
-        return view('booking.create',['space_id'=>$id]);
+        if(\Auth::user()->type == ('company')){
+            $comp= Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
+        }else{
+            $comp = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
+        }
+        if(\Auth::user()->type == ('clientuser')){
+            $comp= Company::where('id',\Auth::user()->company_id)->pluck('name', 'id');
+        }
+
+        return view('booking.create',['space_id'=>$id,'comp'=>$comp]);
         
     }
 
     public function store(Request $request)
     {
+
+        $validator = \Validator::make(
+            $request->all(),
+            [
+                'start_time' => 'required',
+                'end_time' => 'required',
+                'company' => 'required',
+                'space_id' => 'required',
+            ]
+        );
+        if ($validator->fails()) {
+            $messages = $validator->getMessageBag();
+            return redirect()->back()->with('error', $messages->first());
+        }
+
         $starttime = Carbon::parse(date("Y-m-d H:i:s", strtotime($request->start_time)));
         $endtime = Carbon::parse(date("Y-m-d H:i:s", strtotime($request->end_time)));
 
@@ -116,11 +146,11 @@ class BookingController extends Controller
             $starttime = Carbon::parse(date("Y-m-d H:i:s", strtotime($request->start_time)));
             $endtime = Carbon::parse(date("Y-m-d H:i:s", strtotime($request->end_time)));
             $post = $request->all();
-            $post['company_id'] = 1;
+            $post['company_id'] = $request->company;
             $post['space_id'] = $request->space_id;
             $post['user_id'] = \Auth::user()->id;
             $post['created_by'] = \Auth::user()->creatorId();
-            $post['owned_by'] = \Auth::user()->owned_by;
+            $post['owned_by'] = \Auth::user()->ownedId();
             $post['start_date'] = $starttime;
             $post['end_date'] = $endtime;
             $post['total_min'] = $endtime->diffInMinutes($starttime);

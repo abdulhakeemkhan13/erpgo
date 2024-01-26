@@ -27,4 +27,8 @@ class Booking extends Model
     {
         return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
+    public function space()
+    {
+        return $this->hasOne('App\Models\Space', 'id', 'space_id');
+    }
 }

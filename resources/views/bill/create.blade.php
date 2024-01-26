@@ -607,17 +607,17 @@
                             <tbody class="ui-sortable" data-repeater-item>
                             <tr>
                                 <td width="25%" class="form-group pt-0">
-                                     {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item ','data-url'=>route('bill.product'))) }}
+                                     {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item ','required','data-url'=>route('bill.product'))) }}
                                 </td>
                                 <td>
                                     <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('quantity','', array('class' => 'form-control quantity','placeholder'=>__('Qty'))) }}
+                                        {{ Form::text('quantity','', array('class' => 'form-control quantity','required'=>'required','placeholder'=>__('Qty'))) }}
                                         <span class="unit input-group-text bg-transparent"></span>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('price','', array('class' => 'form-control price','placeholder'=>__('Price'))) }}
+                                        {{ Form::text('price','', array('class' => 'form-control price','required'=>'required','placeholder'=>__('Price'))) }}
                                         <span class="input-group-text bg-transparent">{{\Auth::user()->currencySymbol()}}</span>
                                     </div>
                                 </td>

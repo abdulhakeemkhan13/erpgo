@@ -1,3 +1,4 @@
+
 {{Form::open(array('url'=>'roles','method'=>'post'))}}
 <div class="modal-body">
     <div class="row">
@@ -16,7 +17,7 @@
                     <a class="nav-link active" id="pills-staff-tab" data-bs-toggle="pill" href="#staff" role="tab" aria-controls="pills-home" aria-selected="true">{{__('Staff')}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="pills-crm-tab" data-bs-toggle="pill" href="#crm" role="tab" aria-controls="pills-profile" aria-selected="false">{{__('CRM')}}</a>
+                    <a class="nav-link" id="pills-crm-tab" data-bs-toggle="pill" href="#crm1" role="tab" aria-controls="pills-profile" aria-selected="false">{{__('CRM')}}</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="pills-project-tab" data-bs-toggle="pill" href="#project" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('Project')}}</a>
@@ -35,7 +36,7 @@
                 </li>
             </ul>
             <div class="tab-content" id="pills-tabContent">
-                <div class="tab-pane fade show active" id="staff" role="tabpanel" aria-labelledby="pills-home-tab">
+                <div class="tab-pane fade " id="staff" role="tabpanel" aria-labelledby="pills-home-tab">
                     @php
                         $modules=['user','role','client','product & service','constant unit','constant tax','constant category','company settings'];
                        if(\Auth::user()->type == 'company'){
@@ -257,7 +258,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="crm" role="tabpanel" aria-labelledby="pills-profile-tab">
+                <div class="tab-pane fade " id="crm1" role="tabpanel" aria-labelledby="pills-profile-tab">
                     @php
                         $modules=['crm dashboard','lead','pipeline','lead stage','source','label','deal','stage','task','form builder','form response','contract','contract type'];
                     @endphp
@@ -694,7 +695,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="hrmpermission" role="tabpanel" aria-labelledby="pills-contact-tab">
+                <div class="tab-pane fade " id="hrmpermission" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
                         $modules=['hrm dashboard','employee','employee profile','department','designation','branch','document type','document','payslip type','allowance','commission','allowance option','loan option','deduction option','loan','saturation deduction','other payment','overtime','set salary','pay slip','company policy','appraisal','goal tracking','goal type','indicator','event','meeting','training','trainer','training type','award','award type','resignation','travel','promotion','complaint','warning','termination','termination type','job application','job application note','job onBoard','job category','job','job stage','custom question','interview schedule','estimation','holiday','transfer','announcement','leave','leave type','attendance'];
                     @endphp
@@ -916,7 +917,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="account" role="tabpanel" aria-labelledby="pills-contact-tab">
+                <div class="tab-pane fade " id="account" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
                         $modules=['account dashboard','proposal','invoice','bill','revenue','payment','proposal product','invoice product','bill product','goal','credit note','debit note','bank account','bank transfer','transaction','customer','vender','constant custom field','assets','chart of account','journal entry','report'];
                     @endphp

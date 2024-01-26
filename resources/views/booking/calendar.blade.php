@@ -141,11 +141,7 @@
                                 timeGridWeek: "{{ __('Week') }}",
                                 dayGridMonth: "{{ __('Month') }}"
                             },
-                            // slotLabelFormat: {
-                            //     hour: '2-digit',
-                            //     minute: '2-digit',
-                            //     hour12: false,
-                            // },
+                        
                             themeSystem: 'bootstrap',
                             slotDuration: '00:15:00',
                             slotMinTime: '07:00:00', // Set your desired start time here

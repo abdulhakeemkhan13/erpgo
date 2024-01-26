@@ -2273,6 +2273,7 @@ class Utility extends Model
                     'type' => $type->id,
                     'sub_type' => $sub_type->id,
                     'is_enabled' => 1,
+                    'owned_by' => $user,
                     'created_by' => $user,
                 ]
             );
@@ -5291,4 +5292,170 @@ class Utility extends Model
     }
     //end trial balance sheet report
 
+    // chart of account for new company
+    public static function virtual_office($user)
+    {
+        $branch = SpaceType::create(
+            [
+                'name' => 'Virtual Office',
+                'owned_by' => $user,
+                'created_by' => $user,
+            ]
+        );
+        
+        $tax             = new Tax();
+        $tax->name       = 'gst';
+        $tax->rate       = '10';
+        $tax->owned_by   = $user;
+        $tax->created_by = $user;
+        $tax->save(); 
+
+        $types = ChartOfAccountType::where('created_by', '=', $user)->where('name','Income')->first();
+        if($types){
+            $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Sales Revenue')->first();
+        }
+
+        $account              = new ChartOfAccount();
+        $account->name        = $branch->name;
+        $account->code        = $branch->id;
+        $account->type        = @$types->id;
+        $account->sub_type    = @$sub_type->id;
+        $account->description = $branch->name.' Income ';
+        $account->is_enabled  = 1;
+        $account->owned_by    = $user;
+        $account->created_by  = $user;
+        $account->save();
+        
+        SpaceType::where('id',$branch->id)->update(
+            [
+                'tax_id' => $tax->id,
+                'account_head' => $account->id,
+                ]
+            );
+
+
+        // space virctual create
+        $branches = Space::create(
+            [
+                'name' => 'Virtual Office',
+                'type_id' => $branch->id,
+                'capacity' => '0',
+                'price' => '5000',
+                'window' => 'no',
+                'meeting' => 'no',
+                'description' => 'Virtual Office',
+                'owned_by' => $user,
+                'created_by' => $user,
+            ]
+        );
+        
+
+        $productService                      = new ProductService();
+        $productService->name                = $branches->name;
+        $productService->description         = $branches->description;
+        $productService->sku                 = $branches->id;
+        $productService->sale_price          = 0;
+        $productService->purchase_price      = 0;
+        $productService->tax_id              = $tax->id;
+        $productService->unit_id             = 0;
+        $productService->space_id            = $branches->id;
+        $productService->quantity            = 0;
+        $productService->type                = 'virtual office';
+        $productService->sale_chartaccount_id       = $account->id;
+        $productService->expense_chartaccount_id    = 0;
+        $productService->category_id                = 0;
+        $productService->owned_by       = $user;
+        $productService->created_by       = $user;
+        $productService->save();
+
+
+    }
+
+    public static function services($user)
+    {
+        
+        $tax             = new Tax();
+        $tax->name       = 'service gst';
+        $tax->rate       = '10';
+        $tax->owned_by   = $user;
+        $tax->created_by = $user;
+        $tax->save(); 
+
+        $types = ChartOfAccountType::where('created_by', '=', $user)->where('name','Income')->first();
+        if($types){
+            $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Sales Revenue')->first();
+        }
+        
+        $account              = new ChartOfAccount();
+        $account->name        = 'Service Charges';
+        $account->code        = '00'.$tax->id;
+        $account->type        = @$types->id;
+        $account->sub_type    = @$sub_type->id;
+        $account->description = 'Service Charges Income';
+        $account->is_enabled  = 1;
+        $account->owned_by    = $user;
+        $account->created_by  = $user;
+        $account->save();
+
+        $productService                      = new ProductService();
+        $productService->name                = 'Services';
+        $productService->description         = 'Services Charges';
+        $productService->sku                 = $account->id;
+        $productService->sale_price          = 0;
+        $productService->purchase_price      = 0;
+        $productService->tax_id              = $tax->id;
+        $productService->unit_id             = 0;
+        $productService->space_id            = 0;
+        $productService->quantity            = 0;
+        $productService->type                = 'services';
+        $productService->sale_chartaccount_id       = $account->id;
+        $productService->expense_chartaccount_id    = 0;
+        $productService->category_id                = 0;
+        $productService->owned_by       = $user;
+        $productService->created_by       = $user;
+        $productService->save();
+
+
+    }
+
+    public static function security_services($user)
+    {
+
+        $tax = Tax::where('created_by',$user)->orderBy('id','Desc')->first();
+
+        $types = ChartOfAccountType::where('created_by', '=', $user)->where('name','Liabilities')->first();
+        if($types){
+            $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Current Liabilities')->first();
+        }
+        
+        $account              = new ChartOfAccount();
+        $account->name        = 'Security Deposit';
+        $account->code        = '000'.$tax->id;
+        $account->type        = @$types->id;
+        $account->sub_type    = @$sub_type->id;
+        $account->description = 'Security Deposit Liability';
+        $account->is_enabled  = 1;
+        $account->owned_by    = $user;
+        $account->created_by  = $user;
+        $account->save();
+
+        $productService                      = new ProductService();
+        $productService->name                = 'Security Deposit';
+        $productService->description         = 'Security Deposit Charges';
+        $productService->sku                 = $account->id;
+        $productService->sale_price          = 0;
+        $productService->purchase_price      = 0;
+        $productService->tax_id              = $tax->id;
+        $productService->unit_id             = 0;
+        $productService->space_id            = 0;
+        $productService->quantity            = 0;
+        $productService->type                = 'security services';
+        $productService->sale_chartaccount_id       = $account->id;
+        $productService->expense_chartaccount_id    = 0;
+        $productService->category_id                = 0;
+        $productService->owned_by       = $user;
+        $productService->created_by       = $user;
+        $productService->save();
+
+    }
 }

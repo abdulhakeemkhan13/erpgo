@@ -1,4 +1,4 @@
-@php
+{{-- @php
     $users=\Auth::user();
     $profile=\App\Models\Utility::get_file('uploads/avatar/');
     $languages=\App\Models\Utility::languages();
@@ -6,7 +6,7 @@
     $lang = isset($users->lang)?$users->lang:'en';
     if ($lang == null) {
         $lang = 'en';
-    }
+    } 
     $LangName = \App\Models\Language::where('code',$lang)->first();
 
     $setting = \App\Models\Utility::colorset();
@@ -106,4 +106,4 @@
             </ul>
         </div>
     </div>
-    </header>
+    </header> --}}

@@ -64,9 +64,9 @@ class BankTransferController extends Controller
     {
         if(\Auth::user()->can('create bank transfer')){
             if (\Auth::user()->type == 'company') {
-                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }else{
-                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');                
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');                
             }
 
             return view('bank-transfer.create', compact('bankAccount'));
@@ -130,7 +130,11 @@ class BankTransferController extends Controller
         if(\Auth::user()->can('edit bank transfer'))
         {
             $transfer = BankTransfer::where('id',$id)->first();
-            $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');                
+            }
 
             return view('bank-transfer.edit', compact('bankAccount', 'transfer'));
         }

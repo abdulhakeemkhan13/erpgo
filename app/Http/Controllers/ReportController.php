@@ -2011,7 +2011,7 @@ class ReportController extends Controller
         //     }
         // }
         // else
-        {
+        // {
         $leads = Lead::where('created_by', '=', \Auth::user()->creatorId())->get();
 
             $lead_pipeline = Pipeline::where('created_by', \Auth::user()->id)->get();
@@ -2029,7 +2029,7 @@ class ReportController extends Controller
     }
 
     public function dealreport(Request $request)
-    {
+    { 
         $user = \Auth::user();
         $deals = Deal::orderBy('id');
         $deals->where('created_by', \Auth::user()->creatorId());

@@ -11,6 +11,7 @@ use App\Models\Bill;
 use App\Models\Bug;
 use App\Models\BugStatus;
 use App\Models\Contract;
+use App\Models\ContractSpaceHoure;
 use App\Models\Deal;
 use App\Models\DealTask;
 use App\Models\Employee;
@@ -18,6 +19,8 @@ use App\Models\Event;
 use App\Models\Expense;
 use App\Models\Goal;
 use App\Models\Invoice;
+use App\Models\IsVisitor;
+use App\Models\IsMail;
 use App\Models\Job;
 use App\Models\LandingPageSection;
 use App\Models\Lead;
@@ -339,7 +342,7 @@ class DashboardController extends Controller
 
                 $user = Auth::user();
 
-                if ($user->type != 'client' && $user->type != 'company') {
+                if ($user->type != 'client' && $user->type != 'company' && $user->type != 'branch') {
                     $emp = Employee::where('user_id', '=', $user->id)->first();
 
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->leftjoin('announcement_employees', 'announcements.id', '=', 'announcement_employees.announcement_id')->where('announcement_employees.employee_id', '=', $emp->id)->orWhere(function ($q) {
@@ -585,27 +588,24 @@ class DashboardController extends Controller
                         $arrEvents[] = $arr;
                     }
 
-
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->where('created_by', '=', \Auth::user()->creatorId())->get();
 
-
-                    $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countEmployee = count($emp);
-
-                    $users      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countUser = count($users);
+                    // $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    // $countEmployee = count($emp);
 
                     $currentDate = date('Y-m-d');
 
-                    $employees   = User::where('type', '=', 'client')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countClient = count($employees);
-                    $notClockIn  = AttendanceEmployee::where('date', '=', $currentDate)->get()->pluck('employee_id');
-
-                    $notClockIns = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id', $notClockIn)->get();
+                    // $employees   = User::where('type', '=', 'client')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    // $countClient = count($employees);
 
                     $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
-                  
-                    return view('dashboard.client_user_dashboard', compact('arrEvents','user', 'announcements', 'employees', 'meetings', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    $visitors = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id','Desc')->limit(5)->get();
+                    $hours = ContractSpaceHoure::where('contract_id', '=', \Auth::user()->company_id)->sum('assign_hour');
+                    $employees = User::where('owned_by', '=', \Auth::user()->ownedId())->where('company_id',\Auth::user()->company_id)->count();
+                    $mail = IsMail::where('owned_by', '=', \Auth::user()->ownedId())->whereMonth('date',date('m'))->whereYear('date',date('Y'))->count();
+                    $visit = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->whereMonth('date_time',date('m'))->whereYear('date_time',date('Y'))->count();
+    
+                    return view('dashboard.client_user_dashboard', compact('arrEvents','user', 'announcements', 'employees', 'meetings', 'hours', 'mail', 'visitors', 'visit'));
                 }
             // } else {
 

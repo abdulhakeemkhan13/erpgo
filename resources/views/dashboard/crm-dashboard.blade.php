@@ -8,13 +8,13 @@
     </script>
 @endpush
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('CRM')}}</li>
+    <li class="breadcrumb-item"><a href="{{route('dashboard')}}" class="text-primary">{{__('Dashboard')}}</a></li>
+    <li class="breadcrumb-item text-primary">{{__('CRM')}}</li>
 @endsection
 @section('content')
     <div class="row">
         <div class="col-lg-4 col-md-12 dashboard-card">
-            <div class="card">
+            <div class="card  hover-border-primary">
                 <div class="card-body">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-auto mb-3 mb-sm-0">
@@ -36,7 +36,7 @@
             </div>
         </div>
         <div class="col-lg-4 col-md-12 dashboard-card">
-            <div class="card">
+            <div class="card  hover-border-primary">
                 <div class="card-body">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-auto mb-3 mb-sm-0">
@@ -58,7 +58,7 @@
             </div>
         </div>
         <div class="col-lg-4 col-md-12 dashboard-card">
-            <div class="card">
+            <div class="card  hover-border-primary">
                 <div class="card-body">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-auto mb-3 mb-sm-0">
@@ -81,7 +81,7 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="card">
+            <div class="card  hover-border-primary">
                 <div class="card-header">
                     <h5>{{__('Lead Status')}}</h5>
                 </div>
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card">
+            <div class="card  hover-border-primary">
                 <div class="card-header">
                     <h5>{{__('Deal Status')}}</h5>
                 </div>
@@ -130,7 +130,7 @@
         </div>
 
         <div class="col-xxl-12">
-            <div class="card">
+            <div class="card  hover-border-primary">
                 <div class="card-header">
                     <h5 class="mt-1 mb-0">{{__('Latest Contract')}}</h5>
                 </div>
