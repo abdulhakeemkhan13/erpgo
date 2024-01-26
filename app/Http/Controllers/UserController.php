@@ -79,6 +79,8 @@ class UserController extends Controller
 
             if(\Auth::user()->type == 'super admin')
             {
+                DB::beginTransaction();
+                try {
                 $validator = \Validator::make(
                     $request->all(), [
                                     'name' => 'required|max:120',
@@ -130,6 +132,17 @@ class UserController extends Controller
                 ExperienceCertificate::defaultExpCertificatRegister($user->id);
                 JoiningLetter::defaultJoiningLetterRegister($user->id);
                 NOC::defaultNocCertificateRegister($user->id);
+                
+                Utility::virtual_office($user->id);
+                Utility::services($user->id);
+                Utility::security_services($user->id);
+                DB::commit();
+
+                } catch (\Exception $e) {
+                    DB::rollback();
+                    dd($e);
+                    return redirect()->back()->with('error', $e);
+                }
             }
             else
             {

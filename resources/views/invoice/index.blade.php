@@ -40,6 +40,11 @@
                 <i class="ti ti-plus"></i>
             </a>
         @endcan
+        @can('create invoice')
+            <a href="{{ route('invoice.bulk_create') }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Create Bulk Invoices')}}">
+                <i class="ti ti-plus">      Bulk Invoices</i>
+            </a>
+        @endcan
     </div>
 @endsection
 

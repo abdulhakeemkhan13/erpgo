@@ -23,7 +23,8 @@
 
 @endphp
     <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{$SITE_RTL == 'on' ? 'rtl' : '' }}">
+{{-- <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{$SITE_RTL == 'on' ? 'rtl' : '' }}"> --}}
+<html lang="' . str_replace('_', '-', app()->getLocale()) . '" dir="' . ($SITE_RTL == 'on' ? 'rtl' : '') . '" data-footer="true" data-placement="vertical" data-behaviour="unpinned" data-layout="boxed" data-radius="rounded" data-color="light-teal" data-navcolor="default" data-show="true" data-dimension="desktop" data-menu-animate="hidden">
 
 
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
@@ -78,11 +79,72 @@
     <!--bootstrap switch-->
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/bootstrap-switch-button.min.css') }}">
 
+
+    {{-- acron codes css links Start --}}
+    
+    {{-- <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet" /> --}}
+    <!-- Font Tags Start -->
+    <link rel="stylesheet" href="{{ asset('public/acron/style.css')}}" />
+    <!-- Font Tags End -->
+    <!-- Vendor Styles Start -->
+    <link rel="stylesheet" href="{{ asset('public/acron/bootstrap.min.css')}}" />
+    <link rel="stylesheet" href="{{ asset('public/acron/OverlayScrollbars.min.css')}}" />
+
+    <link rel="stylesheet" href="{{ asset('public/acron/glide.core.min.css')}}" />
+    
+    <link rel="stylesheet" href="{{ asset('public/acron/fullcalendar.min.css')}}" />
+    <!-- Vendor Styles End -->
+    <!-- Template Base Styles Start -->
+    <link rel="stylesheet" href="{{ asset('public/acron/styles.css')}}" />
+    <!-- Template Base Styles End -->
+
+    <link rel="stylesheet" href="{{ asset('public/acron/main.css')}}" />
+    {{-- <script src="{{ asset('acron/loader.js')}}"></script>  --}}
+
+    
+    <!-- Vendor Scripts Start -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script src="{{ asset('public/acron/jquery-3.5.1.min.js')}}"></script>
+    <script src="{{ asset('public/acron/bootstrap.bundle.min.js')}}"></script>
+    <script src="{{ asset('public/acron/OverlayScrollbars.min.js')}}"></script>
+    <script src="{{ asset('public/acron/autoComplete.min.js')}}"></script>
+    <script src="{{ asset('public/acron/clamp.min.js')}}"></script>
+    <script src="{{ asset('public/acron/acorn-icons.js')}}"></script>
+    <script src="{{ asset('public/acron/acorn-icons-interface.js')}}"></script>
+    <script src="{{ asset('public/acron/acorn-icons-medical.js')}}"></script>
+
+    <script src="{{ asset('public/acron/glide.min.js')}}"></script>
+
+    <!-- Vendor Scripts End -->
+
+    <!-- Template Base Scripts Start -->
+    <script src="{{ asset('public/acron/helpers.js')}}"></script>
+    <script src="{{ asset('public/acron/globals.js')}}"></script>
+    <script src="{{ asset('public/acron/nav.js')}}"></script>
+    <script src="{{ asset('public/acron/search.js')}}"></script>
+    <script src="{{ asset('public/acron/settings.js')}}"></script>
+    <!-- Template Base Scripts End -->
+    <!-- Page Specific Scripts Start -->
+
+    <script src="{{ asset('public/acron/glide.custom.js')}}"></script>
+
+    <script src="{{ asset('public/acron/dashboards.patient.js')}}"></script>
+
+    <script src="{{ asset('public/acron/common.js')}}"></script>
+    <script src="{{ asset('public/acron/scripts.js')}}"></script>
+
+    {{-- acron codes css links End--}}
+
     <!-- vendor css -->
     @if ($SITE_RTL == 'on')
         <link rel="stylesheet" href="{{ asset('assets/css/style-rtl.css') }}">
 
-    @endif
+    @endif  
+
 
     @if($setting['cust_darklayout'] == 'on')
         <link rel="stylesheet" href="{{ asset('assets/css/style-dark.css') }}" id="main-style">
@@ -100,7 +162,8 @@
 
     @stack('css-page')
 </head>
-<body class="{{ $color }}">
+{{-- <body class="{{ $color }}" class="rtl" data-bs-padding="21px"> --}}
+<body class="{{ $color }}" class="rtl" data-bs-padding="21px">
 
 
 <!-- [ Pre-loader ] start -->
@@ -209,6 +272,7 @@
 <!-- [ Header ] end -->
 
 <!-- [ Main Content ] start -->
+<main>
 <div class="dash-container">
     <div class="dash-content">
         <div class="page-header">
@@ -232,6 +296,7 @@
     <!-- [ Main Content ] end -->
     </div>
 </div>
+</main>
 <div class="modal fade" id="commonModal" tabindex="-1" role="dialog"
      aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -263,7 +328,7 @@
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 99999">
     <div id="liveToast" class="toast text-white fade" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
-            <div class="toast-body"></div>
+            <div class="toast-body text-white"></div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                     aria-label="Close"></button>
         </div>

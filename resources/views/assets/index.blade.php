@@ -30,11 +30,11 @@
                         <table class="table datatable">
                             <thead>
                             <tr>
-                                <th>{{__('Name')}}</th>
-                                <th>{{__('Users')}}</th>
-                                <th>{{__('Purchase Date')}}</th>
+                                {{-- <th>{{__('Name')}}</th> --}}
+                                <th>{{__('Company')}}</th>
+                                <th>{{__('Issue Date')}}</th>
                                 <th>{{__('Supported Date')}}</th>
-                                <th>{{__('Amount')}}</th>
+                                {{-- <th>{{__('Amount')}}</th> --}}
                                 <th>{{__('Description')}}</th>
                                 <th>{{__('Action')}}</th>
                             </tr>
@@ -42,8 +42,9 @@
                             <tbody>
                             @foreach ($assets as $asset)
                                 <tr>
-                                    <td class="font-style">{{ $asset->name }}</td>
-                                    <td>
+                                    {{-- <td class="font-style">{{ $asset->name }}</td> --}}
+                                    <td class="font-style">{{ @$asset->company->name }}</td>
+                                    {{-- <td>
                                         <div class="avatar-group">
                                             @foreach($asset->users($asset->employee_id) as $user)
                                                 <a href="#" class="avatar rounded-circle avatar-sm avatar-group">
@@ -55,11 +56,11 @@
                                             @endforeach
                                         </div>
 
-                                    </td>
+                                    </td> --}}
 
                                     <td class="font-style">{{ \Auth::user()->dateFormat($asset->purchase_date) }}</td>
                                     <td class="font-style">{{ \Auth::user()->dateFormat($asset->supported_date) }}</td>
-                                    <td class="font-style">{{ \Auth::user()->priceFormat($asset->amount) }}</td>
+                                    {{-- <td class="font-style">{{ \Auth::user()->priceFormat($asset->amount) }}</td> --}}
                                     <td class="font-style">{{ !empty($asset->description)?$asset->description:'-' }}</td>
                                     <td class="Action">
                                         <span>

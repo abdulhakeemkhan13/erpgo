@@ -390,6 +390,7 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('print-setting', [SystemController::class, 'printIndex'])->name('print.setting');
         Route::get('settings', [SystemController::class, 'companyIndex'])->name('settings');
         Route::post('business-setting', [SystemController::class, 'saveBusinessSettings'])->name('business.setting');
+        Route::post('save-setting', [SystemController::class, 'saveSettings'])->name('save.setting');
         Route::post('company-payment-setting', [SystemController::class, 'saveCompanyPaymentSettings'])->name('company.payment.settings');
 
         Route::get('test-mail', [SystemController::class, 'testMail'])->name('test.mail');
@@ -516,11 +517,15 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('invoice/create/{cid}', [InvoiceController::class, 'create'])->name('invoice.create');
         Route::post('company_contract', [InvoiceController::class, 'companycontract'])->name('company_contract');
         Route::post('company_contract_detail', [InvoiceController::class, 'companycontractdetail'])->name('company_contract_detail');
+        Route::get('invoice_next/{id}', [InvoiceController::class, 'next'])->name('invoice_next');
+        Route::get('invoice_back/{id}', [InvoiceController::class, 'back'])->name('invoice_back');
     }
     );
 
     Route::get('/invoices/preview/{template}/{color}', [InvoiceController::class, 'previewInvoice'])->name('invoice.preview');
     Route::post('/invoices/template/setting', [InvoiceController::class, 'saveTemplateSettings'])->name('template.setting');
+
+    Route::get('/invoices/bulk_create', [InvoiceController::class, 'bulk_invoice'])->name('invoice.bulk_create');
 
     Route::group(
         [
@@ -1366,6 +1371,9 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/contract/copy/{id}', [ContractController::class, 'copycontract'])->name('contract.copy')->middleware(['auth', 'XSS']);
     Route::post('contract/copy/store', [ContractController::class, 'copycontractstore'])->name('contract.copy.store')->middleware(['auth', 'XSS']);
 
+    Route::get('contract_status/{id}', [ContractController::class, 'contract_status'])->name('contract_status')->middleware(['auth', 'XSS']);
+    Route::get('contract_clear/{id}', [ContractController::class, 'contract_clear'])->name('contract_clear')->middleware(['auth', 'XSS']);
+
 
     // Custom Landing Page
 
@@ -1794,3 +1802,7 @@ Route::group(['middleware' => ['verified']], function () {
 
 Route::any('/cookie-consent', [SystemController::class,'CookieConsent'])->name('cookie-consent');
 
+Route::get('/clear', function() {
+    Artisan::call('optimize:clear');
+    return redirect()->back('sss');
+});

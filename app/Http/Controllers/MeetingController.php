@@ -123,7 +123,7 @@ class MeetingController extends Controller
             $branch = Branch::find($request->branch_id);
             $meetingNotificationArr = [
                 'meeting_title' =>  $request->title,
-                'branch_name' =>  $branch->name,
+                'branch_name' =>  @$branch->name,
                 'meeting_date' =>  $request->date,
                 'meeting_time' =>  $request->time,
             ];

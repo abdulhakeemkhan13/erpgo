@@ -82,6 +82,19 @@ class LeaveController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
+            if(\Auth::user()->type != "Employee")
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                'employee_id' => 'required',
+                            ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+                    return redirect()->back()->with('error', $messages->first());
+                }
+            }
 
             $employee = Employee::where('user_id', '=', Auth::user()->id)->first();
             $leave_type = LeaveType::find($request->leave_type_id);

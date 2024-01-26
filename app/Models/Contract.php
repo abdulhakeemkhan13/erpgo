@@ -22,6 +22,9 @@ class Contract extends Model
         'company_id',
         'service_id',
         'service_price',
+        'security_deposit_id',
+        'security_deposit_price',
+        'close_date',
         'owned_by',
         'created_by',
     ];

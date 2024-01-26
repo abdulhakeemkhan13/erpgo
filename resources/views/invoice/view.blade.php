@@ -235,9 +235,15 @@
     @can('send invoice')
         @if($invoice->status!=4)
             <div class="row">
-                <div class="col-12">
+                <div class="col-1 mb-4 d-flex justify-content-center align-items-center" style="background-color: white; border-radius: 10px">
+                   
+                    <a href="{{ route('invoice_back',\Crypt::encrypt($invoice->id)) }}" class="text-primary" data-bs-toggle="tooltip" data-original-title="{{__('Back')}}"><svg class="text-primary" fill="#000000" width="40px" height="200px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m19.2 2.43-2.422-2.43-11.978 12 11.978 12 2.422-2.43-9.547-9.57z"  fill="#008ECC"/></svg></a>
+                      
+                </div>
+                <div class="col-10">
                     <div class="card ">
                     <div class="card-body">
+                        
                         <div class="row timeline-wrapper">
                             <div class="col-md-6 col-lg-4 col-xl-4">
                                 <div class="timeline-icons"><span class="timeline-dots"></span>
@@ -253,7 +259,7 @@
                                 <div class="timeline-icons"><span class="timeline-dots"></span>
                                     <i class="ti ti-mail text-warning"></i>
                                 </div>
-                                <h6 class="text-warning my-3">{{__('Send Invoice')}}</h6>
+                                <h6 class="text-warning my-3">{{__('Verify & ')}}{{__('Send Invoice')}}</h6>
                                 <p class="text-muted text-sm mb-3">
                                     @if($invoice->status!=0)
                                         <i class="ti ti-clock mr-2"></i>{{__('Sent on')}} {{\Auth::user()->dateFormat($invoice->send_date)}}
@@ -286,6 +292,9 @@
                         </div>
                     </div>
                 </div>
+                </div>
+                <div class="col-1 mb-4 d-flex justify-content-center align-items-center" style="background-color: white; border-radius: 10px">
+                    <a href="{{ route('invoice_next',\Crypt::encrypt($invoice->id)) }}" data-bs-toggle="tooltip" data-original-title="{{__('Next')}}"><svg fill="#000000" width="40px" height="200px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m4.8 21.57 2.422 2.43 11.978-12-11.978-12-2.422 2.43 9.547 9.57z"  fill="#008ECC"/></svg></a>
                 </div>
             </div>
         @endif

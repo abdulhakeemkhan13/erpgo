@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\ChartOfAccount;
+use App\Models\ChartOfAccountType;
 use App\Models\Invoice;
 use App\Models\ProductService;
 use App\Models\ProductServiceCategory;
@@ -187,36 +188,41 @@ class ProductServiceCategoryController extends Controller
 
     public function getAccount(Request $request)
     {
-
         $chart_accounts = [];
         if ($request->type == 'income') {
+            $types = ChartOfAccountType::where('created_by', \Auth::user()->creatorId())->where('name', 'Income')->first();
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 4)
+                ->where('type', $types->id)
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
         } elseif ($request->type == 'expense') {
+            $types = ChartOfAccountType::where('created_by', \Auth::user()->creatorId())->where('name', 'Expenses')->first();
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 6)
+                ->where('type', $types->id)
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
         } elseif ($request->type == 'asset') {
+            $types = ChartOfAccountType::where('created_by', \Auth::user()->creatorId())->where('name', 'Assets')->first();
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 1)
+                ->where('type', $types->id)
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
         } elseif ($request->type == 'liability') {
+            $types = ChartOfAccountType::where('created_by', \Auth::user()->creatorId())->where('name', 'Liabilities')->first();
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 2)
+                ->where('type', $types->id)
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
         } elseif ($request->type == 'equity') {
+            $types = ChartOfAccountType::where('created_by', \Auth::user()->creatorId())->where('name', 'Equity')->first();
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 3)
+                ->where('type', $types->id)
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
         } elseif ($request->type == 'costs of good sold') {
+            $types = ChartOfAccountType::where('created_by', \Auth::user()->creatorId())->where('name', 'Costs of Goods Sold')->first();
             $chart_accounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 5)
+                ->where('type', $types->id)
                 ->where('created_by', \Auth::user()->creatorId())->get()
                 ->pluck('code_name', 'id');
         } else {

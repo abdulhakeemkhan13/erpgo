@@ -29,35 +29,12 @@
     display: inline;
 }
 
-.dash-sidebar .main-logo {
-    justify-content: center;
-    /*height: 100%;*/
-    min-height: 80px;
-    max-height: 80px;
-    width: 100%;
-    min-width: 255px;
-    /*max-width: 255px;*/
-}
+
 /*a.b-brand {*/
 /*    height: 100%;*/
 /*    width: 100%;*/
 /*}*/
-.dash-sidebar .main-logo a img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    width: auto !important;
-    height: auto;
-    max-width: -webkit-fill-available !important;
-    max-height: -webkit-fill-available !important;
-    max-width: -moz-available;
-    max-height: -moz-available;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
-}
+
 
 .price-card {
     text-align: center;
@@ -509,35 +486,12 @@
     left: -5px;
 }
 
-.dash-sidebar .main-logo {
-    justify-content: center;
-    /*height: 100%;*/
-    min-height: 80px;
-    max-height: 80px;
-    width: 100%;
-    min-width: 255px;
-    /*max-width: 255px;*/
-}
+
 a.b-brand {
     height: 100%;
     width: 100%;
 }
-.dash-sidebar .main-logo a img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    width: auto !important;
-    height: auto;
-    max-width: -webkit-fill-available !important;
-    max-height: -webkit-fill-available !important;
-    max-width: -moz-available;
-    max-height: -moz-available;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
-}
+
 .m-view-btn {
     width: 105px;
     padding: 8px 10px;
@@ -1668,9 +1622,6 @@ body.theme-10 .cat-list-btn .cat-active .btn-primary {
     color: #FFFFFF;
 }
 
-.ps--active-y  {
-    height: 100vh !important;
-}
 
 
 /*start - date:19-jun-2023*/
@@ -1687,21 +1638,11 @@ body.no-scroll{
 .auth-wrapper .navbar .navbar-brand img{
     width: 100%;
 }
-@media (max-width: 1024px) {
-    .ps {
-        height: 100vh !important;
-    }
-}
 
-.ps {
-    overflow: hidden !important;
-    overflow-anchor: none;
-    touch-action: auto;
-}
 
-.dash-sidebar .navbar-content{
-    height: calc(100vh - 70px);
-}
+
+
+
 /*end- date:19-jun-2023*/
 
 

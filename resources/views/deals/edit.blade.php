@@ -1,7 +1,7 @@
 {{ Form::model($deal, array('route' => array('deals.update', $deal->id), 'method' => 'PUT')) }}
 <div class="modal-body">
     {{-- start for ai module--}}
-    @php
+    {{-- @php
         $plan= \App\Models\Utility::getChatGPTSettings();
     @endphp
     @if($plan->chatgpt == 1)
@@ -11,15 +11,15 @@
             <i class="fas fa-robot"></i> <span>{{__('Generate with AI')}}</span>
         </a>
     </div>
-    @endif
+    @endif --}}
     {{-- end for ai module--}}
     <div class="row">
         <div class="col-6 form-group">
-            {{ Form::label('name', __('Deal Name'),['class'=>'form-label']) }}
+            {{ Form::label('name', __('Deal Name'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::text('name', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
         <div class="col-6 form-group">
-            {{ Form::label('phone', __('Phone'),['class'=>'form-label']) }}
+            {{ Form::label('phone', __('Phone'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::text('phone', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
         <div class="col-6 form-group">
@@ -27,21 +27,21 @@
             {{ Form::number('price', null, array('class' => 'form-control')) }}
         </div>
         <div class="col-6 form-group">
-            {{ Form::label('pipeline_id', __('Pipeline'),['class'=>'form-label']) }}
+            {{ Form::label('sources', __('Sources'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
+            {{ Form::select('sources[]', $sources,null, array('class' => 'form-control select2','multiple'=>'','id'=>'choices-multiple3','required'=>'required')) }}
+        </div>
+        <div class="col-6 form-group">
+            {{ Form::label('pipeline_id', __('Pipeline'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::select('pipeline_id', $pipelines,null, array('class' => 'form-control ','required'=>'required')) }}
         </div>
         <div class="col-6 form-group">
-            {{ Form::label('stage_id', __('Stage'),['class'=>'form-label']) }}
+            {{ Form::label('stage_id', __('Stage'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::select('stage_id', [''=>__('Select Stage')],null, array('class' => 'form-control ','required'=>'required')) }}
         </div>
-        <div class="col-12 form-group">
-            {{ Form::label('sources', __('Sources'),['class'=>'form-label']) }}
-            {{ Form::select('sources[]', $sources,null, array('class' => 'form-control select2','multiple'=>'','id'=>'choices-multiple3','required'=>'required')) }}
-        </div>
-        <div class="col-12 form-group">
+        {{-- <div class="col-12 form-group">
             {{ Form::label('products', __('Products'),['class'=>'form-label']) }}
             {{ Form::select('products[]', $products,null, array('class' => 'form-control select2','multiple'=>'','id'=>'choices-multiple4','required'=>'required')) }}
-        </div>
+        </div> --}}
         <div class="col-12 form-group">
             {{ Form::label('notes', __('Notes'),['class'=>'form-label']) }}
             {{ Form::textarea('notes',null, array('class' => 'summernote-simple')) }}

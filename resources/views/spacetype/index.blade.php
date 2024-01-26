@@ -42,6 +42,7 @@
                                         </td>
                                         @if(Gate::check('edit spacetype') || Gate::check('delete spacetype'))
                                             <td>
+                                                @if($type->name != 'Virtual Office')
                                                     @can('edit spacetype')
                                                     <div class="action-btn bg-primary ms-2">
                                                       
@@ -58,10 +59,9 @@
                                                         {!! Form::close() !!}
                                                     </div>
                                                     @endcan
-                                                {{-- @else
-    
+                                                @else
                                                     <i class="ti ti-lock"></i>
-                                                @endif --}}
+                                                @endif
                                             </td>
                                         @endif
                                     </tr>
