@@ -127,7 +127,7 @@ class IsMailController extends Controller
                     ]
                 );
 
-                return redirect()->route('ismail.index')->with('success', __('Mail successfully created.'));
+                return redirect()->back()->with('success', __('Mail successfully created.'));
 
         }
         else

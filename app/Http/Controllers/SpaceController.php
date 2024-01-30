@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chair;
+use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\Plan;
 use App\Models\ProductService;
+use App\Models\Roomassign;
 use App\Models\SpaceType;
 use App\Models\Space;
 use Illuminate\Http\Request;
@@ -339,6 +341,31 @@ class SpaceController extends Controller
         {
             return redirect()->back()->with('error', __('Invalid Space.'));
         }
+    }
+
+    public function space_details($type)
+    {
+        if(\Auth::user()->type == 'company'){
+            $user    = \Auth::user();
+            // $spaces = Space::where('created_by', '=', $user->creatorId())->get();
+            $a = Company::where('created_by', '=', $user->creatorId())->pluck('id');
+            $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+            if($type == 'used'){
+                $spaces = Space::where('created_by', '=', $user->creatorId())->whereIN('id',$b)->get();
+            }else{
+                $spaces = Space::where('created_by', '=', $user->creatorId())->whereNotIn('id',$b)->get();
+            }
+        }else{
+            $user    = \Auth::user();
+            $a = Company::where('owned_by', '=', $user->ownedId())->pluck('id');
+            $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+            if($type == 'used'){
+                $spaces = Space::where('owned_by', '=', $user->ownedId())->whereIN('id',$b)->get();
+            }else{
+                $spaces = Space::where('owned_by', '=', $user->ownedId())->whereNotIn('id',$b)->get();
+            }
+        }
+            return view('space.details', compact('spaces','type'));
     }
 
 

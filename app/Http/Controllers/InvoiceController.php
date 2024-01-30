@@ -1202,7 +1202,7 @@ class InvoiceController extends Controller
     {
         $customers      = Customer::find($request->id);
 
-        $item = Contract::where('company_id', $customers->company_id)->get();
+        $item = Contract::where('company_id', $customers->company_id)->where('close_date', Null)->get();
         $items = [
             'data' => $item,
         ];

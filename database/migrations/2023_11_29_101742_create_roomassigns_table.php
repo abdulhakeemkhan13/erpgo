@@ -22,7 +22,8 @@ return new class extends Migration
             $table->unsignedInteger('space_id')->nullable();
             $table->foreign('space_id')->references('id')->on('spaces')->onDelete('cascade');   
             $table->unsignedInteger('chair_id')->nullable();
-            $table->foreign('chair_id')->references('id')->on('chairs')->onDelete('cascade');      
+            $table->foreign('chair_id')->references('id')->on('chairs')->onDelete('cascade');    
+            $table->enum('status', ['assign', 'close']);
             $table->timestamps();
         });
         Schema::table('contracts', function (Blueprint $table) {

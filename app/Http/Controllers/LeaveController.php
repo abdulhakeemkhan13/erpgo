@@ -43,7 +43,7 @@ class LeaveController extends Controller
         if(\Auth::user()->can('create leave'))
         {
             if(\Auth::user()->type == 'company'){
-                $employees = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }
             else if(\Auth::user()->type == 'Employee'){
                 $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');

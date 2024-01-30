@@ -260,12 +260,12 @@ class ChairController extends Controller
         $user = \Auth::user();
         if(\Auth::user()->type == 'company'){
             $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
+            $assignchair = Roomassign::where('space_id',$id)->where('status','assign')->pluck('chair_id')->toArray();
             $assignchair = array_map('intval', $assignchair);
         }else{
 
             $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->ownedId())->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
+            $assignchair = Roomassign::where('space_id',$id)->where('status','assign')->pluck('chair_id')->toArray();
             $assignchair = array_map('intval', $assignchair);
         }
         if($con != null){

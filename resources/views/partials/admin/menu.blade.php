@@ -483,6 +483,13 @@
                                     @endcan
                                 @endif
 
+                                @if (\Auth::user()->type != 'clientuser')
+                                    <li
+                                        class="dash-item {{ Request::route()->getName() == 'workspace.dashboard' ? ' active' : '' }}">
+                                        <a class="dash-link"
+                                            href="{{ route('workspace.dashboard') }}">{{ __('Workspace') }}</a>
+                                    </li>
+                                @endif
 
                                 @if (\Auth::user()->show_project() == 1)
                                     @can('show project dashboard')
@@ -493,6 +500,7 @@
                                         </li>
                                     @endcan
                                 @endif
+                               
                                 @can('show clientuser dashboard')
                                     <li
                                         class="dash-item {{ Request::route()->getName() == 'clientuser.dashboard' ? ' active' : '' }}">

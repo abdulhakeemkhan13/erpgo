@@ -46,6 +46,9 @@ use App\Models\TimeTracker;
 use App\Models\Trainer;
 use App\Models\Training;
 use App\Models\User;
+use App\Models\Space;
+use App\Models\Company;
+use App\Models\Roomassign;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -625,6 +628,64 @@ class DashboardController extends Controller
                     return redirect('login');
                 }
             }
+        }
+    }
+
+    public function workspace_dashboard_index()
+    {
+        
+        if (Auth::check()) {
+            
+            // if (\Auth::user()->can('show hrm dashboard')) {
+                
+                $user = Auth::user();
+                
+                if ($user->type == 'company') {
+                    $space = Space::where('created_by', '=', \Auth::user()->creatorId())->count();
+                    $mail = IsMail::where('created_by', '=', \Auth::user()->creatorId())->count();
+                    $visit = IsVisitor::where('created_by', '=', \Auth::user()->creatorId())->count();
+                    $spaces = Space::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                    $a = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('id');
+                    $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+                    $use_space = Space::where('created_by', '=', \Auth::user()->creatorId())->whereIN('id',$b)->count();
+                    $free_space = Space::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id',$b)->count();
+
+
+                    $mails = IsMail::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id','Desc')->limit(12)->get();
+                    $visitors = IsVisitor::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id','Desc')->limit(12)->get();
+                    return view('dashboard.workspace_dashboard', compact('user','space','spaces','use_space','free_space', 'mail', 'mails', 'visitors', 'visit'));
+
+                } else {
+                    $space = Space::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                    $mail = IsMail::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                    $visit = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                    $spaces = Space::where('owned_by', '=', \Auth::user()->ownedId())->get();
+
+                    $a = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('id');
+                    $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+                    $use_space = Space::where('owned_by', '=', \Auth::user()->ownedId())->whereIN('id',$b)->count();
+                    $free_space = Space::where('owned_by', '=', \Auth::user()->ownedId())->whereNotIn('id',$b)->count();
+
+
+                    $mails = IsMail::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id','Desc')->limit(12)->get();
+                    $visitors = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id','Desc')->limit(12)->get();
+                    return view('dashboard.workspace_dashboard', compact('user','space','spaces','use_space','free_space', 'mail', 'mails', 'visitors', 'visit'));
+                }
+        // } else {
+        //     if (!file_exists(storage_path() . "/installed")) {
+        //         header('location:install');
+        //         die;
+        //     } else {
+        //         $settings = Utility::settings();
+        //         if ($settings['display_landing_page'] == 'on') {
+        //             $plans = Plan::get();
+
+        //             return view('layouts.landing', compact('plans'));
+        //         } else {
+        //             return redirect('login');
+        //         }
+        //     }
         }
     }
 

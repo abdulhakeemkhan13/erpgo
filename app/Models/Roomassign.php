@@ -18,4 +18,8 @@ class Roomassign extends Model
     {
         return $this->hasOne('App\Models\Space', 'id', 'space_id');
     }
+    public function company()
+    {
+        return $this->hasOne('App\Models\Company', 'id', 'company_id');
+    }
 }

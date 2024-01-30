@@ -324,6 +324,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/hrm-dashboard', [DashboardController::class, 'hrm_dashboard_index'])->name('hrm.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/crm-dashboard', [DashboardController::class, 'crm_dashboard_index'])->name('crm.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/pos-dashboard', [DashboardController::class, 'pos_dashboard_index'])->name('pos.dashboard')->middleware(['auth','XSS', 'revalidate']);
+    Route::get('/workspace-dashboard', [DashboardController::class, 'workspace_dashboard_index'])->name('workspace.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/clientuser-dashboard', [DashboardController::class, 'clientuser_dashboard_index'])->name('clientuser.dashboard')->middleware(['auth','XSS', 'revalidate']);
 
 
@@ -736,6 +737,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::resource('space', SpaceController::class)->middleware(['auth', 'XSS']);
     Route::resource('chair', ChairController::class)->middleware(['auth', 'XSS']);
     Route::get('space_chair/{id}/{con?}', [ChairController::class, 'space_chair'])->name('space_chair');
+    Route::get('space_details/{type}', [SpaceController::class, 'space_details'])->name('space_details');
 
     // Branch Module
     Route::resource('clientuser', ClientUserController::class)->middleware(['auth', 'XSS']);

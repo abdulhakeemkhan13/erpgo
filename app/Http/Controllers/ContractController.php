@@ -981,6 +981,12 @@ class ContractController extends Controller
         $contract  = Contract::findOrFail($id);
         $contract->close_date = date('Y-m-d H:i:s');
         $contract->save();
+
+        Roomassign::where('contract_id', $id)->update(
+            [
+                'status' => 'close',
+            ]); 
+
         return redirect()->back()->with('success', __('Contract successfully Close!'));
         // return view('contract.template', compact('contract'));
     }
