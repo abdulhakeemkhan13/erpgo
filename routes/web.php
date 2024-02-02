@@ -1340,6 +1340,8 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('contract/{id}/description', [ContractController::class, 'description'])->name('contract.description');
         Route::get('contract/grid', [ContractController::class, 'grid'])->name('contract.grid');
         Route::resource('contract', ContractController::class);
+        Route::post('branch_company', [ContractController::class, 'branchCompany'])->name('branch.company');
+
     }
     );
     // for virtule office contract

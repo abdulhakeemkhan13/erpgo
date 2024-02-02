@@ -26,6 +26,10 @@ return new class extends Migration
             $table->integer('owned_by')->after('contract_id');      
 
         });
+        Schema::table('contracts', function (Blueprint $table) {
+            $table->unsignedInteger('company_id')->default(0)->nullable()->after('company_signature');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');  
+        });
     }
 
     /**
@@ -46,6 +50,11 @@ return new class extends Migration
 
             $table->dropColumn('contract_id');
             $table->dropColumn('owned_by');
+        });
+
+        Schema::table('contracts', function (Blueprint $table) {
+            $table->dropForeign('companies_company_id_foreign');
+            $table->dropColumn('company_id');
         });
     }
 };

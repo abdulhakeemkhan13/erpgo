@@ -35,19 +35,28 @@ class SpaceTypeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('view spacetype'))
         {
             if(\Auth::user()->type == 'company'){
             $user    = \Auth::user();
-            $spacetype = SpaceType::where('created_by', '=', $user->creatorId())->get();
+            $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+            $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+            $branches->prepend('Select Branch', '');
+            $query = SpaceType::where('created_by', '=', $user->creatorId());
 
         }else{
             $user    = \Auth::user();
-            $spacetype = SpaceType::where('owned_by', '=', $user->ownedId())->get();
+            $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $branches->prepend('Select Branch', '');
+            $query = SpaceType::where('owned_by', '=', $user->ownedId());
             }
-            return view('spacetype.index', compact('spacetype'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $spacetype = $query->get();
+            return view('spacetype.index', compact('spacetype','branches'));
         }
         else
         {

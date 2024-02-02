@@ -885,7 +885,36 @@ class Utility extends Model
             $accountType = ChartOfAccountType::create(
                 [
                     'name' => $type,
+                    'owned_by' => $company_id,
                     'created_by' => $company_id,
+                ]
+            );
+
+            $chartOfAccountSubTypes = Self::$chartOfAccountSubType;
+
+            foreach($chartOfAccountSubTypes[$k] as $subType)
+            {
+                ChartOfAccountSubType::create(
+                    [
+                        'name' => $subType,
+                        'type' => $accountType->id,
+                    ]
+                );
+            }
+        }
+    }
+
+    public static function chartOfAccountTypeDataBranch($company_id,$created_by)
+    {
+        $chartOfAccountTypes = Self::$chartOfAccountType;
+        foreach($chartOfAccountTypes as $k => $type)
+        {
+
+            $accountType = ChartOfAccountType::create(
+                [
+                    'name' => $type,
+                    'owned_by' => $company_id,
+                    'created_by' => $created_by,
                 ]
             );
 
@@ -2281,6 +2310,32 @@ class Utility extends Model
         }
     }
 
+// chart of account for new Branch
+    public static function chartOfAccountData1Branch($user,$created_by)
+    {
+        $chartOfAccounts = Self::$chartOfAccount1;
+
+        foreach($chartOfAccounts as $account)
+        {
+
+            $type=ChartOfAccountType::where('owned_by',$user)->where('name',$account['type'])->first();
+            $sub_type=ChartOfAccountSubType::where('type',$type->id)->where('name',$account['sub_type'])->first();
+
+            ChartOfAccount::create(
+                [
+                    'code' => $account['code'],
+                    'name' => $account['name'],
+                    'type' => $type->id,
+                    'sub_type' => $sub_type->id,
+                    'is_enabled' => 1,
+                    'owned_by' => $user,
+                    'created_by' => $created_by,
+                ]
+            );
+
+        }
+    }
+
     public static function chartOfAccountData($user)
     {
         $chartOfAccounts = Self::$chartOfAccount;
@@ -2293,6 +2348,7 @@ class Utility extends Model
                     'type' => $account['type'],
                     'sub_type' => $account['sub_type'],
                     'is_enabled' => 1,
+                    'owned_by' => $user->id,
                     'created_by' => $user->id,
                 ]
             );
@@ -2928,7 +2984,6 @@ class Utility extends Model
         $stages = [
             'Websites',
             'Facebook',
-            'Naukari.com',
             'Phone',
             'LinkedIn',
         ];
@@ -5371,6 +5426,86 @@ class Utility extends Model
 
     }
 
+    // Data for new Branch
+    public static function virtual_office_branch($user,$created_by)
+    {
+        $branch = SpaceType::create(
+            [
+                'name' => 'Virtual Office',
+                'owned_by' => $user,
+                'created_by' => $created_by,
+            ]
+        );
+        
+        $tax             = new Tax();
+        $tax->name       = 'gst';
+        $tax->rate       = '10';
+        $tax->owned_by   = $user;
+        $tax->created_by = $created_by;
+        $tax->save(); 
+
+        $types = ChartOfAccountType::where('owned_by', '=', $user)->where('name','Income')->first();
+        if($types){
+            $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Sales Revenue')->first();
+        }
+
+        $account              = new ChartOfAccount();
+        $account->name        = $branch->name;
+        $account->code        = $branch->id;
+        $account->type        = @$types->id;
+        $account->sub_type    = @$sub_type->id;
+        $account->description = $branch->name.' Income ';
+        $account->is_enabled  = 1;
+        $account->owned_by    = $user;
+        $account->created_by  = $created_by;
+        $account->save();
+        
+        SpaceType::where('id',$branch->id)->update(
+            [
+                'tax_id' => $tax->id,
+                'account_head' => $account->id,
+                ]
+            );
+
+
+        // space virctual create
+        $branches = Space::create(
+            [
+                'name' => 'Virtual Office',
+                'type_id' => $branch->id,
+                'capacity' => '0',
+                'price' => '5000',
+                'window' => 'no',
+                'meeting' => 'no',
+                'description' => 'Virtual Office',
+                'owned_by' => $user,
+                'created_by' => $created_by,
+            ]
+        );
+        
+
+        $productService                      = new ProductService();
+        $productService->name                = $branches->name;
+        $productService->description         = $branches->description;
+        $productService->sku                 = $branches->id;
+        $productService->sale_price          = 0;
+        $productService->purchase_price      = 0;
+        $productService->tax_id              = $tax->id;
+        $productService->unit_id             = 0;
+        $productService->space_id            = $branches->id;
+        $productService->quantity            = 0;
+        $productService->type                = 'virtual office';
+        $productService->sale_chartaccount_id       = $account->id;
+        $productService->expense_chartaccount_id    = 0;
+        $productService->category_id                = 0;
+        $productService->owned_by       = $user;
+        $productService->created_by       = $created_by;
+        $productService->save();
+
+
+    }
+
+    // Data for new Company
     public static function services($user)
     {
         
@@ -5418,6 +5553,55 @@ class Utility extends Model
 
     }
 
+    // Data for new Branch
+    public static function services_branch($user,$created_by)
+    {
+        
+        $tax             = new Tax();
+        $tax->name       = 'service gst';
+        $tax->rate       = '10';
+        $tax->owned_by   = $user;
+        $tax->created_by = $created_by;
+        $tax->save(); 
+
+        $types = ChartOfAccountType::where('owned_by', '=', $user)->where('name','Income')->first();
+        if($types){
+            $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Sales Revenue')->first();
+        }
+        
+        $account              = new ChartOfAccount();
+        $account->name        = 'Service Charges';
+        $account->code        = '00'.$tax->id;
+        $account->type        = @$types->id;
+        $account->sub_type    = @$sub_type->id;
+        $account->description = 'Service Charges Income';
+        $account->is_enabled  = 1;
+        $account->owned_by    = $user;
+        $account->created_by  = $created_by;
+        $account->save();
+
+        $productService                      = new ProductService();
+        $productService->name                = 'Services';
+        $productService->description         = 'Services Charges';
+        $productService->sku                 = $account->id;
+        $productService->sale_price          = 0;
+        $productService->purchase_price      = 0;
+        $productService->tax_id              = $tax->id;
+        $productService->unit_id             = 0;
+        $productService->space_id            = 0;
+        $productService->quantity            = 0;
+        $productService->type                = 'services';
+        $productService->sale_chartaccount_id       = $account->id;
+        $productService->expense_chartaccount_id    = 0;
+        $productService->category_id                = 0;
+        $productService->owned_by       = $user;
+        $productService->created_by       = $created_by;
+        $productService->save();
+
+
+    }
+
+    // Data for new Company
     public static function security_services($user)
     {
 
@@ -5455,6 +5639,48 @@ class Utility extends Model
         $productService->category_id                = 0;
         $productService->owned_by       = $user;
         $productService->created_by       = $user;
+        $productService->save();
+
+    }
+
+    // Data for new Branch
+    public static function security_services_branch($user,$created_by)
+    {
+
+        $tax = Tax::where('owned_by',$user)->orderBy('id','Desc')->first();
+
+        $types = ChartOfAccountType::where('owned_by', '=', $user)->where('name','Liabilities')->first();
+        if($types){
+            $sub_type = ChartOfAccountSubType::where('type', $types->id)->where('name','Current Liabilities')->first();
+        }
+        
+        $account              = new ChartOfAccount();
+        $account->name        = 'Security Deposit';
+        $account->code        = '000'.$tax->id;
+        $account->type        = @$types->id;
+        $account->sub_type    = @$sub_type->id;
+        $account->description = 'Security Deposit Liability';
+        $account->is_enabled  = 1;
+        $account->owned_by    = $user;
+        $account->created_by  = $created_by;
+        $account->save();
+
+        $productService                      = new ProductService();
+        $productService->name                = 'Security Deposit';
+        $productService->description         = 'Security Deposit Charges';
+        $productService->sku                 = $account->id;
+        $productService->sale_price          = 0;
+        $productService->purchase_price      = 0;
+        $productService->tax_id              = $tax->id;
+        $productService->unit_id             = 0;
+        $productService->space_id            = 0;
+        $productService->quantity            = 0;
+        $productService->type                = 'security services';
+        $productService->sale_chartaccount_id       = $account->id;
+        $productService->expense_chartaccount_id    = 0;
+        $productService->category_id                = 0;
+        $productService->owned_by       = $user;
+        $productService->created_by       = $created_by;
         $productService->save();
 
     }

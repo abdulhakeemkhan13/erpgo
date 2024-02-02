@@ -18,7 +18,6 @@ return new class extends Migration
             $table->unsignedInteger('asset_id')->nullable();
             $table->string('name',255)->nullable();
             $table->integer('quantity')->nullable();
-            $table->foreign('company_id')->references('id')->on('assets')->onDelete('cascade'); 
             $table->timestamps();
         });
     }

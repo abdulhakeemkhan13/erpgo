@@ -10,6 +10,7 @@ use App\Models\ProductService;
 use App\Models\Roomassign;
 use App\Models\SpaceType;
 use App\Models\Space;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -35,19 +36,28 @@ class SpaceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('view space'))
         {
             if(\Auth::user()->type == 'company'){
             $user    = \Auth::user();
-            $spaces = Space::where('created_by', '=', $user->creatorId())->get();
-
+            $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+            $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+            $branches->prepend('Select Branch', '');
+            $query = Space::where('created_by', '=', \Auth::user()->creatorId());
         }else{
             $user    = \Auth::user();
-            $spaces = Space::where('owned_by', '=', $user->ownedId())->get();
+            $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $branches->prepend('Select Branch', '');
+            $query = Space::where('owned_by', '=', \Auth::user()->ownedId());
             }
-            return view('space.index', compact('spaces'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            
+            $spaces = $query->get();
+            return view('space.index', compact('spaces','branches',));
         }
         else
         {

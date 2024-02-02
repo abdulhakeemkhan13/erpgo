@@ -111,7 +111,7 @@ class UserController extends Controller
                 $user->save();
                 $role_r = Role::findByName('company');
                 $user->assignRole($role_r);
-//                $user->userDefaultData();
+                //$user->userDefaultData();
                 $user->userDefaultDataRegister($user->id);
                 $user->userWarehouseRegister($user->id);
 

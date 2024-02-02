@@ -654,7 +654,7 @@
                                                     for="cust-theme-bg">{{ __('Transparent layout') }}</label>
                                             </div>
                                         </div>
-                                        <div class="col-lg-4 col-xl-4 col-md-4">
+                                        {{-- <div class="col-lg-4 col-xl-4 col-md-4">
                                             <h6 class="mt-1">
                                                 <i data-feather="sun" class="me-2"></i>{{ __('Layout settings') }}
                                             </h6>
@@ -666,7 +666,7 @@
                                                 <label class="form-check-label f-w-600 pl-1"
                                                     for="cust-darklayout">{{ __('Dark Layout') }}</label>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
                             </div>

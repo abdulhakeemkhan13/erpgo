@@ -32,11 +32,17 @@ use Illuminate\Support\Facades\Crypt;
 class ContractController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if (\Auth::user()->can('manage contract')) {
 
             if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $company = Company::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');       
+                $company->prepend('Select Company', '');
+                $branches->prepend('Select Branch', ''); 
+                $query = Contract::where('created_by', '=', \Auth::user()->creatorId());
 
                 $contracts   = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
                 $curr_month  = Contract::where('created_by', '=', \Auth::user()->creatorId())->whereMonth('start_date', '=', date('m'))->get();
@@ -56,9 +62,14 @@ class ContractController extends Controller
                 $cnt_contract['this_week']   = \App\Models\Contract::getContractSummary($curr_week);
                 $cnt_contract['last_30days'] = \App\Models\Contract::getContractSummary($last_30days);
 
-                return view('contract.index', compact('contracts', 'cnt_contract'));
-            } elseif (\Auth::user()->type == 'branch') {
+                // return view('contract.index', compact('contracts', 'cnt_contract'));
+            } else {
                 $contracts   = Contract::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $company->prepend('Select Company', '');
+                $query = Contract::where('owned_by', '=', \Auth::user()->ownedId());   
                 $curr_month  = Contract::where('owned_by', '=', \Auth::user()->ownedId())->whereMonth('start_date', '=', date('m'))->get();
                 $curr_week   = Contract::where('owned_by', '=', \Auth::user()->ownedId())->whereBetween(
                     'start_date',
@@ -76,17 +87,59 @@ class ContractController extends Controller
                 $cnt_contract['this_week']   = \App\Models\Contract::getContractSummary($curr_week);
                 $cnt_contract['last_30days'] = \App\Models\Contract::getContractSummary($last_30days);
 
-                return view('contract.index', compact('contracts', 'cnt_contract'));
+                // return view('contract.index', compact('contracts', 'cnt_contract'));
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+                $company = Company::where('owned_by', '=', $request->branches)->get()->pluck('name', 'id');
+                $company->prepend('Select Company', '');
+            }
+            
+            if (!empty($request->company)) {
+                $query->where('company_id', '=', $request->company);
+            }
+            if (count(explode('to', $request->issue_date)) > 1) {
+                $date_range = explode(' to ', $request->issue_date);
+                $query->whereBetween('start_date', $date_range);
+            } elseif (!empty($request->issue_date)) {
+                $date_range = [$request->issue_date, $request->issue_date];
+                $query->whereBetween('start_date', $date_range);
+            }
+            if (!empty($request->status)) {
+                if($request->status == 'open'){
+                    $query->where('close_date', '=', null);
+                }else{
+                    $query->where('close_date', '!=', null);
+                }
+            }
+            $contracts = $query->get();
 
-            $contracts   = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
-
-            return view('contract.index', compact('contracts'));
+            return view('contract.index', compact('contracts','cnt_contract','company','branches'));
+            // return view('contract.index', compact('contracts'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 
+    
+    public function branchCompany(Request $request)
+    {
+        $company = Company::where('owned_by', '=', $request->id)->get();
+        // dd($request->id);
+        if($company == null){
+            $result = [
+                'status' => 'error',
+                'company' => 'null',   
+            ];
+            return response()->json($result);
+        }else{
+            $result = [
+                'status' => 'success',
+                'company' => $company,
+            ];
+            return response()->json($result);
+        }
+    }
 
     public function create()
     {

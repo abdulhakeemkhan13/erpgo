@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer('service_price')->after('service_id')->default(0);  
             $table->integer('security_deposit_id')->after('service_price')->nullable();           
             $table->integer('security_deposit_price')->after('security_deposit_id')->default(0);  
-            $table->integer('owned_by')->after('security_deposit_price');  
         });
     }
 
@@ -37,8 +36,7 @@ return new class extends Migration
             $table->dropColumn('service_id');          
             $table->dropColumn('service_price'); 
             $table->dropColumn('security_deposit_id');          
-            $table->dropColumn('security_deposit_price'); 
-            $table->dropColumn('owned_by'); 
+            $table->dropColumn('security_deposit_price'); ; 
         });
     }
 };

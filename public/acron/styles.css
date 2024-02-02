@@ -9757,7 +9757,8 @@ body.spinner #root {
 
 .fc {
   min-height: 675px;
-  max-height: 900px;
+  /*  max-height: 900px;  */
+
 }
 .fc .fc-scrollgrid {
   border: initial;
