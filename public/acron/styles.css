@@ -3394,7 +3394,7 @@ html[data-radius=flat] {
 * Theme variables.
 *
 */
-html[data-color=dark-blue] {
+html[data-color=dark-teal] {
   --primary: #1b98d0;
   --secondary: #61c6d8;
   --tertiary: #54cdb4;
@@ -3774,7 +3774,7 @@ html[data-color=dark-pink] {
 * Theme variables.
 *
 */
-html[data-color=dark-teal] {
+html[data-color=dark-] {
   --primary: #0db0b6;
   --secondary: #38a3e1;
   --tertiary: #384be1;
@@ -4002,7 +4002,7 @@ html[data-color=dark-sky] {
 * Theme variables.
 *
 */
-html[data-color=light-blue] {
+html[data-color=light-teal] {
   --primary: #1ea8e7;
   --secondary: #6cdbef;
   --tertiary: #5de3c8;
@@ -4382,7 +4382,7 @@ html[data-color=light-pink] {
 * Theme variables.
 *
 */
-html[data-color=light-teal] {
+html[data-color=light-blue] {
   --primary: #0ec4cb;
   --secondary: #3eb6fb;
   --tertiary: #3e54fb;
@@ -7872,7 +7872,8 @@ textarea.form-control {
 .form-control:disabled,
 .form-control[readonly] {
   background: rgba(var(--separator-rgb), 0.5) !important;
-  border-color: rgba(var(--separator-rgb), 0.5) !important;
+  /* border-color: rgba(var(--separator-rgb), 0.5) !important; */
+  border-color: var(--primary) !important;
   color: var(--muted);
   -webkit-text-fill-color: var(--muted) !important;
 }
@@ -8387,7 +8388,8 @@ textarea {
 }
 
 .form-check .form-check-input {
-  border-color: var(--muted) !important;
+  /* border-color: var(--muted) !important; */
+  border-color: var(--primary) !important;
   background-color: initial;
   margin-top: 0.2em;
   margin-left: -1.75em;
@@ -9156,6 +9158,18 @@ input[type=file]::file-selector-button {
   font-size: 0.85em;
   margin-bottom: 0.25rem;
 }
+.breadcrumb:hover svg {
+  /* Change the fill color of the SVG when breadcrumb is hovered */
+  fill: var(--secondary)/* Your hover color */;
+}
+
+/* Optional: Add transition for smooth color change */
+.breadcrumb svg {
+  margin-top: 1.2%;
+
+  transition: fill 0.3s ease;
+}
+
 .breadcrumb .breadcrumb-item + .breadcrumb-item::before {
   content: "|";
   color: var(--alternate);
@@ -14484,7 +14498,7 @@ html[data-placement=horizontal] .nav-container .logo img,
 html[data-placement=horizontal] .nav-container .logo .img,
 html[data-placement=vertical] .nav-container .logo img,
 html[data-placement=vertical] .nav-container .logo .img {
-  width: 100px;
+  width: 225px;
   min-height: 33px;
   object-position: left;
   object-fit: cover;
@@ -14790,7 +14804,7 @@ html[data-placement=horizontal] .nav-container.mobile-side-ready .nav-content .l
 html[data-placement=vertical] .nav-container.mobile-side-ready .nav-content .logo a {
   overflow: hidden;
   display: inline-block;
-  width: 100px;
+  width: 225px;
 }
 html[data-placement=vertical] .nav-container .nav-content .language-switch-container,
 html[data-placement=horizontal] .nav-container.mobile-side-ready .nav-content .language-switch-container,
@@ -16033,4 +16047,9 @@ html[data-radius=standard] #settings .figure {
 
 html[data-show=true] .settings-button {
   opacity: 1;
+}
+
+
+.filter_change{
+  padding: 1.25rem !important;
 }

@@ -12,6 +12,7 @@ class Complaint extends Model
         'title',
         'complaint_date',
         'description',
+        'owned_by',
         'created_by',
     ];
 

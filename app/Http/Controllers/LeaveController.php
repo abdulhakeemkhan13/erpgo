@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Leave;
 use App\Models\LeaveType;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,25 +13,37 @@ use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
 
         if(\Auth::user()->can('manage leave'))
         {
             if(\Auth::user()->type == 'company'){
-                $leaves = Leave::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Leave::where('created_by', '=', \Auth::user()->creatorId());
             }else if(\Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
-                $leaves   = Leave::where('employee_id', '=', $employee->id)->get();
+                $leaves   = Leave::where('employee_id', '=', $employee->id);
             }
             else
             {
-                $leaves = Leave::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Leave::where('owned_by', '=', \Auth::user()->ownedId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $leaves = $query->get();
 
-            return view('leave.index', compact('leaves'));
+
+            return view('leave.index', compact('leaves','branches'));
         }
         else
         {
@@ -43,16 +56,18 @@ class LeaveController extends Controller
         if(\Auth::user()->can('create leave'))
         {
             if(\Auth::user()->type == 'company'){
-                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $leavetypes  = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }
             else if(\Auth::user()->type == 'Employee'){
-                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+                $leavetypes      = LeaveType::where('owned_by', '=', \Auth::user()->ownedId())->get();
             }else {
                 $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $leavetypes      = LeaveType::where('owned_by', '=', \Auth::user()->ownedId())->get();
             }
-            $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
            
-//            $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            //    $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
 
             return view('leave.create', compact('employees', 'leavetypes'));
         }
@@ -121,6 +136,7 @@ class LeaveController extends Controller
             $leave->leave_reason     = $request->leave_reason;
             $leave->remark           = $request->remark;
             $leave->status           = 'Pending';
+            $leave->owned_by       = \Auth::user()->ownedId();
             $leave->created_by       = \Auth::user()->creatorId();
 
             $leave->save();
@@ -145,8 +161,13 @@ class LeaveController extends Controller
         {
             if($leave->created_by == \Auth::user()->creatorId())
             {
-                $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $leavetypes = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+                if(\Auth::user()->type == 'company'){
+                    $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                    $leavetypes = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+                }else {
+                    $employees  = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                    $leavetypes = LeaveType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('title', 'id');
+                }
 
                 return view('leave.edit', compact('leave', 'employees', 'leavetypes'));
             }

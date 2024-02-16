@@ -55,8 +55,8 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('create project'))
         {
-          $users   = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '!=', 'client')->get()->pluck('name', 'id');
-          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+          $users   = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '!=', 'clientuser')->get()->pluck('name', 'id');
+          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'clientuser')->get()->pluck('name', 'id');
           $clients->prepend('Select Client', '');
           $users->prepend('Select User', '');
             return view('projects.create', compact('clients','users'));
@@ -376,7 +376,7 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('edit project'))
         {
-          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'clientuser')->get()->pluck('name', 'id');
           $project = Project::findOrfail($project->id);
           if($project->created_by == \Auth::user()->creatorId())
           {

@@ -3,17 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\LoanOption;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class LoanOptionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage loan option'))
         {
-            $loanoptions = LoanOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = LoanOption::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = LoanOption::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $loanoptions = $query->get();
 
-            return view('loanoption.index', compact('loanoptions'));
+            return view('loanoption.index', compact('loanoptions','branches'));
         }
         else
         {
@@ -51,6 +65,7 @@ class LoanOptionController extends Controller
             }
             $loanoption             = new LoanOption();
             $loanoption->name       = $request->name;
+            $loanoption->owned_by = \Auth::user()->ownedId();
             $loanoption->created_by = \Auth::user()->creatorId();
             $loanoption->save();
 

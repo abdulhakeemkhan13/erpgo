@@ -35,23 +35,34 @@ class IsVisitorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage vistor'))
         {
             if(\Auth::user()->type == 'company'){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
                 $user    = \Auth::user();
-                $isvisitors = IsVisitor::where('created_by', '=', $user->creatorId())->get();
+                $query = IsVisitor::where('created_by', '=', $user->creatorId());
             }
             else if(\Auth ::user()->type == 'clientuser')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $user    = \Auth::user();
-                $isvisitors = IsVisitor::where('company_id', '=', $user->company_id)->get();
+                $query = IsVisitor::where('company_id', '=', $user->company_id);
             }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $user    = \Auth::user();
-                $isvisitors = IsVisitor::where('owned_by', '=', $user->ownedId())->get();
+                $query = IsVisitor::where('owned_by', '=', $user->ownedId());
             }
-            return view('isvisitor.index', compact('isvisitors'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $isvisitors = $query->get();
+            return view('isvisitor.index', compact('isvisitors','branches'));
         }
         else
         {

@@ -26,7 +26,7 @@
             <div class="mt-2 " id="multiCollapseExample1">
                 <div class="card">
                     <div class="card-body">
-                        {{ Form::open(['route' => ['space.index'], 'method' => 'GET', 'id' => 'space_submit']) }}
+                        {{ Form::open(['route' => ['spacetype.index'], 'method' => 'GET', 'id' => 'spacetype_submit']) }}
                         <div class="row d-flex justify-content-end ">
         
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
@@ -38,11 +38,11 @@
 
                             <div class="col-auto float-end ms-2 mt-4">
                                 <a href="#" class="btn btn-sm btn-primary"
-                                    onclick="document.getElementById('space_submit').submit(); return false;"
+                                    onclick="document.getElementById('spacetype_submit').submit(); return false;"
                                     data-toggle="tooltip" data-original-title="{{ __('apply') }}">
                                     <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                 </a>
-                                <a href="{{ route('space.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
+                                <a href="{{ route('spacetype.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
                                     data-original-title="{{ __('Reset') }}">
                                     <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off"></i></span>
                                 </a>

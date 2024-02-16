@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Travel;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,21 +13,34 @@ use Illuminate\Support\Facades\Mail;
 
 class TravelController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage travel'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Travel::where('created_by', '=', \Auth::user()->creatorId());
+            }elseif(Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $emp     = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $travels = Travel::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+                $query = Travel::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id);
             }
             else
             {
-                $travels = Travel::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Travel::where('owned_by', '=', \Auth::user()->ownedId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $travels = $query->get();
 
-            return view('travel.index', compact('travels'));
+            return view('travel.index', compact('travels','branches'));
         }
         else
         {
@@ -38,8 +52,11 @@ class TravelController extends Controller
     {
         if(\Auth::user()->can('create travel'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if (\Auth::user()->type == 'company') {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             return view('travel.create', compact('employees'));
         }
         else
@@ -74,6 +91,7 @@ class TravelController extends Controller
             $travel->purpose_of_visit = $request->purpose_of_visit;
             $travel->place_of_visit   = $request->place_of_visit;
             $travel->description      = $request->description;
+            $travel->owned_by       = \Auth::user()->ownedId();
             $travel->created_by       = \Auth::user()->creatorId();
             $travel->save();
 
@@ -117,7 +135,11 @@ class TravelController extends Controller
 
         if(\Auth::user()->can('edit travel'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             if($travel->created_by == \Auth::user()->creatorId())
             {
                 return view('travel.edit', compact('travel', 'employees'));

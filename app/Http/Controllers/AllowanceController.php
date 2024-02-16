@@ -12,8 +12,11 @@ class AllowanceController extends Controller
 
     public function allowanceCreate($id)
     {
-
-        $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'company' ){
+            $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $allowance_options = AllowanceOption::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
         $employee          = Employee::find($id);
         $Allowancetypes = Allowance::$Allowancetype;
 
@@ -47,6 +50,7 @@ class AllowanceController extends Controller
             $allowance->title            = $request->title;
             $allowance->type             = $request->type;
             $allowance->amount           = $request->amount;
+            $allowance->owned_by       = \Auth::user()->ownedId();
             $allowance->created_by       = \Auth::user()->creatorId();
             $allowance->save();
 

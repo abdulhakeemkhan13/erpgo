@@ -13,6 +13,7 @@ class Event extends Model
         'end_date',
         'color',
         'description',
+        'owned_by',
         'created_by',
     ];
 }

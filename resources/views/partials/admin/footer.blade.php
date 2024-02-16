@@ -7,8 +7,8 @@
 <footer class="dash-footer">
     <div class="footer-wrapper">
         <div class="py-1">
-            <p class="mb-0 text-muted"> &copy;
-                {{ date('Y') }} {{ Utility::getValByName('footer_text') ? Utility::getValByName('footer_text') : config('app.name', 'ERPGo') }}
+            <p class="mb-0 text-primary"> &copy;
+                {{ date('Y') }} {{ Utility::getValByName('footer_text') ? Utility::getValByName('footer_text') : config('app.name', 'Workspace') }}
             </p>
         </div>
     </div>

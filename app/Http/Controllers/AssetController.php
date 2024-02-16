@@ -6,21 +6,31 @@ use App\Models\Asset;
 use App\Models\AssetDetail;
 use App\Models\Company;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AssetController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage assets'))
         {
             if(\Auth::user()->type == 'company'){
-                $assets = Asset::with('company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Asset::with('company')->where('created_by', '=', \Auth::user()->creatorId());
             }else{
-                $assets = Asset::with('company')->where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Asset::with('company')->where('owned_by', '=', \Auth::user()->ownedId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $assets = $query->get();
 
-            return view('assets.index', compact('assets'));
+            return view('assets.index', compact('assets','branches'));
         }
         else
         {
@@ -37,7 +47,7 @@ class AssetController extends Controller
             if(\Auth::user()->type == 'company'){
                 $company      = Company::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }else{
-                $company      = Company::where('created_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $company      = Company::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
             }
 
             return view('assets.create',compact('company'));
@@ -115,7 +125,7 @@ class AssetController extends Controller
                 $company      = Company::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }else{
                 $asset = Asset::with('assetdetail')->find($id);
-                $company      = Company::where('created_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $company      = Company::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
             }
             // $asset = Asset::find($id);
             // $employee      = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');

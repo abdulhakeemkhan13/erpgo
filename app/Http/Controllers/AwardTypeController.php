@@ -3,17 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\AwardType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AwardTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage award type'))
         {
-            $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = AwardType::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = AwardType::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $awardtypes = $query->get();
 
-            return view('awardtype.index', compact('awardtypes'));
+            return view('awardtype.index', compact('awardtypes','branches'));
         }
         else
         {
@@ -53,6 +67,7 @@ class AwardTypeController extends Controller
 
             $awardtype             = new AwardType();
             $awardtype->name       = $request->name;
+            $awardtype->owned_by = \Auth::user()->ownedId();
             $awardtype->created_by = \Auth::user()->creatorId();
             $awardtype->save();
 

@@ -49,6 +49,14 @@
 {{--                                    </div>--}}
 {{--                                </div>--}}
 {{--                            @endif--}}
+                            @if(\Auth::user()->type == 'company')
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 me-2">
+                                <div class="btn-box">
+                                    {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' , 'onchange' => 'branchtype(this.value)']) }}
+                                </div>                               
+                            </div>
+                            @endif
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 me-2">
                                 <div class="btn-box">
                                     {{ Form::label('issue_date', __('Date'),['class'=>'form-label']) }}

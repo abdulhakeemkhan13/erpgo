@@ -9,6 +9,7 @@ class CustomQuestion extends Model
     protected $fillable = [
         'question',
         'is_required',
+        'owned_by',
         'created_by',
     ];
 

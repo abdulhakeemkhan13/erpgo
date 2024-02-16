@@ -12,7 +12,11 @@ class LoanController extends Controller
     public function loanCreate($id)
     {
         $employee = Employee::find($id);
-        $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'company' ){
+            $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $loan_options      = LoanOption::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
         $loan =loan::$Loantypes;
 
         return view('loan.create', compact('employee','loan_options','loan'));
@@ -48,6 +52,7 @@ class LoanController extends Controller
 //            $loan->start_date  = $request->start_date;
 //            $loan->end_date    = $request->end_date;
             $loan->reason      = $request->reason;
+            $loan->owned_by  = \Auth::user()->ownedId();
             $loan->created_by  = \Auth::user()->creatorId();
             $loan->save();
 
@@ -69,7 +74,7 @@ class LoanController extends Controller
         $loan = Loan::find($loan);
         if(\Auth::user()->can('edit loan'))
         {
-            if($loan->created_by == \Auth::user()->creatorId())
+            if($loan->created_by == \Auth::user()->creatorId() )
             {
                 $loan_options = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $loans =loan::$Loantypes;

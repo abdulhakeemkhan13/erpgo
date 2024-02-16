@@ -3,17 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Goal;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class GoalController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage goal'))
         {
-            $golas = Goal::where('created_by', '=', \Auth::user()->creatorId())->get();
-
+            if(\Auth::user()->type == 'company'){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Goal::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Goal::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $assets = $query->get();
             return view('goal.index', compact('golas'));
         }
         else

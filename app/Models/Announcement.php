@@ -13,6 +13,7 @@ class Announcement extends Model
         'branch_id',
         'department_id',
         'description',
+        'owned_by',
         'created_by',
     ];
 }

@@ -9,6 +9,7 @@ class LeaveType extends Model
     protected $fillable = [
         'title',
         'days',
+        'owned_by',
         'created_by',
     ];
 }

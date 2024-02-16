@@ -17,6 +17,46 @@
             show_toastr('success', 'Url copied to clipboard', 'success');
         }
     </script>
+     <script>
+        function branchcustomer(id) {
+            var customer = $('#customerselect').val();
+            $.ajax({
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                    url: "{{ route('branch.customer') }}",
+                    type: "POST",
+                    data: {id: id},
+                    dataType: 'json',
+                    success: function (result)
+                    {
+                        console.log(result);
+                        if(result.status == 'success'){
+                            $('#customerselect').empty();
+                            $('#customerselect').append($('<option>', {
+                                value: '',
+                                text: 'select Customer'
+                            }));
+                            // console.log(result);
+                            for (var i = 0; i < result.customer.length; i++) {
+                                var customer = result.customer[i];
+                                $('#customerselect').append($('<option>', {
+                                    value: customer.id,
+                                    text: customer.name
+                                }));
+                            }
+                        } 
+                        if(result.status == 'error'){
+                        }
+                        
+                    }
+                });
+            // Add more code as needed
+        }
+    
+        document.getElementById('branchcustomer').addEventListener('change', function() {
+            var id = this.value;
+            branchcustomer(id);
+        });
+    </script>
 @endpush
 
 
@@ -64,13 +104,22 @@
                                     {{ Form::date('issue_date', isset($_GET['issue_date'])?$_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
                                 </div>
                             </div>
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                    <div class="btn-box">
-                                        {{ Form::label('customer', __('Customer'),['class'=>'form-label'])}}
-                                        {{ Form::select('customer', $customer, isset($_GET['customer']) ? $_GET['customer'] : '', ['class' => 'form-control select']) }}
-                                    </div>
+                            @if(\Auth::user()->type == 'company')
+                            <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12 mr-2">
+                                <div class="btn-box">
+                                    {{ Form::label('branches', __('Branches'), ['class' => 'form-label']) }}
+                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select', 'onchange' => 'branchcustomer(this.value)']) }}
                                 </div>
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                
+                            </div>
+                            @endif
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                <div class="btn-box">
+                                    {{ Form::label('customer', __('Customer'),['class'=>'form-label'])}}
+                                    {{ Form::select('customer', $customer, isset($_GET['customer']) ? $_GET['customer'] : '', ['class' => 'form-control select', 'id' => 'customerselect']) }}
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12">
                                 <div class="btn-box">
                                     {{ Form::label('status', __('Status'),['class'=>'form-label'])}}
                                     {{ Form::select('status', [''=>'Select Status'] + $status,isset($_GET['status'])?$_GET['status']:'', array('class' => 'form-control select')) }}

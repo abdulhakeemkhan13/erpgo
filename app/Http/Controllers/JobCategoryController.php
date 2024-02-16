@@ -3,18 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobCategory;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class JobCategoryController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage job category'))
         {
-            $categories = JobCategory::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = JobCategory::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = JobCategory::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $categories = $query->get();
 
-            return view('jobCategory.index', compact('categories'));
+            return view('jobCategory.index', compact('categories','branches'));
         }
         else
         {
@@ -49,6 +63,7 @@ class JobCategoryController extends Controller
 
             $jobCategory             = new JobCategory();
             $jobCategory->title      = $request->title;
+            $jobCategory->owned_by = \Auth::user()->ownedId();
             $jobCategory->created_by = \Auth::user()->creatorId();
             $jobCategory->save();
 

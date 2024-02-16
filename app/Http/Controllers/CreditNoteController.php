@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CreditNote;
 use App\Models\Invoice;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 
@@ -14,16 +15,25 @@ class CreditNoteController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
 
         if(\Auth::user()->can('manage credit note')){
             if(\Auth::user()->type == 'company' ){
-                $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Invoice::where('created_by', \Auth::user()->creatorId());
             }else{
-                $invoices = Invoice::where('owned_by', \Auth::user()->ownedId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Invoice::where('owned_by', \Auth::user()->ownedId());
             }
-            return view('creditNote.index', compact('invoices'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+                $invoices = $query->get(); 
+            return view('creditNote.index', compact('invoices','branches'));
         }
         else
         {
@@ -176,9 +186,11 @@ class CreditNoteController extends Controller
     {
         if(\Auth::user()->can('create credit note'))
         {
-
-            $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get()->pluck('invoice_id', 'id');
-
+            if(\Auth::user()->type == 'company'){
+                $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get()->pluck('invoice_id', 'id');
+            }else{
+                $invoices = Invoice::where('owned_by', \Auth::user()->ownedId())->get()->pluck('invoice_id', 'id');
+            }
             return view('creditNote.custom_create', compact('invoices'));
         }
         else

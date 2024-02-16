@@ -32,11 +32,11 @@
                     <a class="nav-link" id="pills-account-tab" data-bs-toggle="pill" href="#pos" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('POS')}}</a>
                 </li> --}}
                 <li class="nav-item">
-                    <a class="nav-link" id="pills-account-tab" data-bs-toggle="pill" href="#workspace" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('WorkSpace')}}</a>
+                    <a class="nav-link" id="pills-workspace-tab" data-bs-toggle="pill" href="#workspace" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('WorkSpace')}}</a>
                 </li>
             </ul>
             <div class="tab-content" id="pills-tabContent">
-                <div class="tab-pane fade " id="staff" role="tabpanel" aria-labelledby="pills-home-tab">
+                <div class="tab-pane fade active" id="staff" role="tabpanel" aria-labelledby="pills-home-tab">
                     @php
                         $modules=['user','role','client','product & service','constant unit','constant tax','constant category','company settings'];
                        if(\Auth::user()->type == 'company'){

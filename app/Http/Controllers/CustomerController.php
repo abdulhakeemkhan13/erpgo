@@ -31,17 +31,25 @@ class CustomerController extends Controller
         return view('customer.dashboard', $data);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage customer'))
         {
             if(\Auth::user()->type == 'company'){
-                $customers = Customer::where('created_by', \Auth::user()->creatorId())->get();
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Customer::where('created_by', \Auth::user()->creatorId());
             }else{
-                $customers = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Customer::where('owned_by', '=', \Auth::user()->ownedId());
             }
-
-            return view('customer.index', compact('customers'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $customers = $query->get();
+            return view('customer.index', compact('customers','branches'));
         }
         else
         {

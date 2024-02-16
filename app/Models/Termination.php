@@ -12,6 +12,7 @@ class Termination extends Model
         'termination_date',
         'termination_type',
         'description',
+        'owned_by',
         'created_by',
     ];
 

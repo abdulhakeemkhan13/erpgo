@@ -24,8 +24,7 @@
 @endphp
     <!DOCTYPE html>
 {{-- <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{$SITE_RTL == 'on' ? 'rtl' : '' }}"> --}}
-<html lang="' . str_replace('_', '-', app()->getLocale()) . '" dir="' . ($SITE_RTL == 'on' ? 'rtl' : '') . '" data-footer="true" data-placement="vertical" data-behaviour="unpinned" data-layout="boxed" data-radius="rounded" data-color="light-teal" data-navcolor="default" data-show="true" data-dimension="desktop" data-menu-animate="hidden">
-
+<html lang="' . str_replace('_', '-', app()->getLocale()) . '" dir="' . ($SITE_RTL == 'on' ? 'rtl' : '') . '" data-footer="true" data-placement="vertical" data-behaviour="pinned" data-layout="fluid" data-radius="rounded" data-color="light-teal" data-navcolor="default" data-show="true" data-dimension="desktop" >
 
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
 <head>
@@ -282,6 +281,9 @@
                         <div class="page-header-title">
                             <h4 class="m-b-10">@yield('page-title')</h4>
                         </div>
+                        {{-- <ul class="breadcrumb">
+                            <svg width="64px" height="64px" viewBox="-307.2 -307.2 1638.40 1638.40" class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#1b98d0" stroke="#1b98d0"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M768 903.232l-50.432 56.768L256 512l461.568-448 50.432 56.768L364.928 512z" fill="#1b98d0"></path></g></svg> @yield('breadcrumb')
+                        </ul> --}}
                         <ul class="breadcrumb">
                             @yield('breadcrumb')
                         </ul>

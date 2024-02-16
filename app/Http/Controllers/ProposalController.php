@@ -37,14 +37,26 @@ class ProposalController extends Controller
     {
         if(\Auth::user()->can('manage proposal'))
         {
-
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customer->prepend('All', '');
-
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('All', '');
+                $query = Proposal::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $customer = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $customer->prepend('All', '');
+                $query = Proposal::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            
             $status = Proposal::$statues;
 
-            $query = Proposal::where('created_by', '=', \Auth::user()->creatorId());
-
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
             if(!empty($request->customer))
             {
                 $query->where('id', '=', $request->customer);
@@ -61,7 +73,7 @@ class ProposalController extends Controller
             }
             $proposals = $query->get();
 
-            return view('proposal.index', compact('proposals', 'customer', 'status'));
+            return view('proposal.index', compact('proposals', 'customer', 'status','branches'));
         }
         else
         {
@@ -75,12 +87,21 @@ class ProposalController extends Controller
         {
             $customFields    = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'proposal')->get();
             $proposal_number = \Auth::user()->proposalNumberFormat($this->proposalNumber());
-            $customers       = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customers->prepend('Select Customer', '');
-            $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 'income')->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $product_services->prepend('--', '');
+            if (\Auth::user()->type == 'company') {
+                $customers       = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customers->prepend('Select Customer', '');
+                $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 'income')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+                $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $product_services->prepend('--', '');
+            }else{
+                $customers       = Customer::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $customers->prepend('Select Customer', '');
+                $category = ProductServiceCategory::where('owned_by', \Auth::user()->ownedId())->where('type', 'income')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+                $product_services = ProductService::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $product_services->prepend('--', '');
+            }
 
             return view('proposal.create', compact('customers', 'proposal_number', 'product_services', 'category', 'customFields', 'customerId'));
         }
@@ -143,6 +164,7 @@ class ProposalController extends Controller
             $proposal->issue_date     = $request->issue_date;
             $proposal->category_id    = $request->category_id;
 //            $proposal->discount_apply = isset($request->discount_apply) ? 1 : 0;
+            $proposal->owned_by     = \Auth::user()->ownedId();
             $proposal->created_by     = \Auth::user()->creatorId();
             $proposal->save();
             CustomField::saveData($proposal, $request->customField);

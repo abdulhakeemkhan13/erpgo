@@ -9,30 +9,46 @@ use App\Models\Employee;
 use App\Models\Indicator;
 use App\Models\Performance_Type;
 use App\Models\PerformanceType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AppraisalController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage appraisal'))
         {
             $user = \Auth::user();
             if($user->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $employee   = Employee::where('user_id', $user->id)->first();
-                $competencyCount = Competencies::where('created_by', '=', $user->creatorId())->count();
-                $appraisals = Appraisal::where('created_by', '=', \Auth::user()->creatorId())->where('branch', $employee->branch_id)->where('employee', $employee->id)->get();
+                $competencyCount = Competencies::where('owned_by', '=', $user->ownedId())->count();
+                $query = Appraisal::where('owned_by', '=', \Auth::user()->creatorId())->where('branch', $employee->branch_id)->where('employee', $employee->id);
             }
-            else
+            elseif($user->type == 'company')
             {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
                 $competencyCount = Competencies::where('created_by', '=', $user->creatorId())->count();
 
-                $appraisals = Appraisal::where('created_by', '=', \Auth::user()->creatorId())->get();
-            }
+                $query = Appraisal::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $competencyCount = Competencies::where('owned_by', '=', $user->ownedId())->count();
 
-            return view('appraisal.index', compact('appraisals','competencyCount'));
+                $query = Appraisal::where('owned_by', '=', $user->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $appraisals = $query->get();
+
+            return view('appraisal.index', compact('appraisals','competencyCount','branches'));
         }
         else
         {
@@ -44,9 +60,13 @@ class AppraisalController extends Controller
     {
         if(\Auth::user()->can('create appraisal'))
         {
-
-            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company'){
+                $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $performance     = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $brances = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
             return view('appraisal.create', compact( 'brances', 'performance'));
         }
         else
@@ -79,6 +99,7 @@ class AppraisalController extends Controller
             $appraisal->appraisal_date = $request->appraisal_date;
             $appraisal->rating         = json_encode($request->rating, true);
             $appraisal->remark         = $request->remark;
+            $appraisal->owned_by     = \Auth::user()->ownedId();
             $appraisal->created_by     = \Auth::user()->creatorId();
             $appraisal->save();
 
@@ -106,10 +127,15 @@ class AppraisalController extends Controller
     {
         if(\Auth::user()->can('edit appraisal'))
         {
-
-            $performance_types     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $ratings = json_decode($appraisal->rating,true);
+            if(\Auth::user()->type == 'company'){
+                $performance_types     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $ratings = json_decode($appraisal->rating,true);
+            }else{
+                $performance_types     = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $brances = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $ratings = json_decode($appraisal->rating,true);
+            }
 
 
             return view('appraisal.edit', compact( 'brances', 'appraisal', 'performance_types','ratings'));

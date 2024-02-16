@@ -123,12 +123,8 @@
                         {{ Form::open(array('route' => array('report.income.summary'),'method' => 'GET','id'=>'report_income_summary')) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-xl-10">
-                                <div class="row">
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box">
-                                        </div>
-                                    </div>
-
+                                <div class="row justify-content-end">
+                                   
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
                                             {{ Form::label('year', __('Year'),['class'=>'form-label'])}}

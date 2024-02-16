@@ -15,6 +15,7 @@ class Indicator extends Model
         'professionalism',
         'integrity',
         'attendance',
+        'owned_by',
         'created_by',
         'created_user',
         'rating',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Award;
 use App\Models\AwardType;
 use App\Models\Employee;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,25 +13,39 @@ use Illuminate\Support\Facades\Mail;
 
 class AwardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $usr = \Auth::user();
         if($usr->can('manage award'))
         {
-            $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
-
-            if(Auth::user()->type == 'Employee')
-            {
-                $emp    = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $awards = Award::where('employee_id', '=', $emp->id)->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $query = Award::where('created_by', '=', \Auth::user()->creatorId());
+            } else {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $employees  = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $awardtypes = AwardType::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                if(Auth::user()->type == 'Employee')
+                {
+                    $emp    = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $query = Award::where('employee_id', '=', $emp->id);
+                }
+                else
+                {
+                    $query = Award::where('owned_by', '=', \Auth::user()->ownedId());
+                }
             }
-            else
-            {
-                $awards = Award::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
             }
+            $awards = $query->get();
 
-            return view('award.index', compact('awards', 'employees', 'awardtypes'));
+            return view('award.index', compact('awards', 'employees', 'awardtypes','branches'));
         }
         else
         {
@@ -42,8 +57,13 @@ class AwardController extends Controller
     {
         if(\Auth::user()->can('create award'))
         {
-            $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees  = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $awardtypes = AwardType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');    
+            }
 
             return view('award.create', compact('employees', 'awardtypes'));
         }
@@ -80,6 +100,7 @@ class AwardController extends Controller
             $award->date        = $request->date;
             $award->gift        = $request->gift;
             $award->description = $request->description;
+            $award->owned_by  = \Auth::user()->ownedId();
             $award->created_by  = \Auth::user()->creatorId();
             $award->save();
 
@@ -157,8 +178,13 @@ class AwardController extends Controller
         {
             if($award->created_by == \Auth::user()->creatorId())
             {
-                $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                if (\Auth::user()->type == 'company') {
+                    $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                    $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                }else{
+                    $employees  = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                    $awardtypes = AwardType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');    
+                }
 
                 return view('award.edit', compact('award', 'awardtypes', 'employees'));
             }

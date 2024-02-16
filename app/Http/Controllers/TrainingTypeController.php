@@ -3,18 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\TrainingType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TrainingTypeController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage training type'))
         {
-            $trainingtypes = TrainingType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = TrainingType::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = TrainingType::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $trainingtypes = $query->get();
 
-            return view('trainingtype.index', compact('trainingtypes'));
+            return view('trainingtype.index', compact('trainingtypes','branches'));
         }
         else
         {
@@ -55,6 +69,7 @@ class TrainingTypeController extends Controller
 
             $trainingtype             = new TrainingType();
             $trainingtype->name       = $request->name;
+            $trainingtype->owned_by = \Auth::user()->ownedId();
             $trainingtype->created_by = \Auth::user()->creatorId();
             $trainingtype->save();
 

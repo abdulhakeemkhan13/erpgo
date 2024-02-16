@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Designation;
 use App\Models\Employee;
 use App\Models\Promotion;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,21 +13,34 @@ use Illuminate\Support\Facades\Mail;
 
 class PromotionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage promotion'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Promotion::where('created_by', '=', \Auth::user()->creatorId());
+            }elseif(Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $emp        = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $promotions = Promotion::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+                $query = Promotion::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id);
             }
             else
             {
-                $promotions = Promotion::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Promotion::where('created_by', '=', \Auth::user()->creatorId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $promotions = $query->get();
 
-            return view('promotion.index', compact('promotions'));
+            return view('promotion.index', compact('promotions','branches'));
         }
         else
         {
@@ -38,9 +52,13 @@ class PromotionController extends Controller
     {
         if(\Auth::user()->can('create promotion'))
         {
-            $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if (\Auth::user()->type == 'company') {
+                $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $designations = Designation::where('owned_by', Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $employees    = Employee::where('owned_by', Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             return view('promotion.create', compact('employees', 'designations'));
         }
         else
@@ -75,6 +93,7 @@ class PromotionController extends Controller
             $promotion->promotion_title = $request->promotion_title;
             $promotion->promotion_date  = $request->promotion_date;
             $promotion->description     = $request->description;
+            $promotion->owned_by      = \Auth::user()->ownedId();
             $promotion->created_by      = \Auth::user()->creatorId();
             $promotion->save();
 
@@ -114,8 +133,13 @@ class PromotionController extends Controller
 
     public function edit(Promotion $promotion)
     {
-        $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if (\Auth::user()->type == 'company') {
+            $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $designations = Designation::where('owned_by', Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $employees    = Employee::where('owned_by', Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
         if(\Auth::user()->can('edit promotion'))
         {
             if($promotion->created_by == \Auth::user()->creatorId())

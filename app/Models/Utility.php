@@ -3010,7 +3010,7 @@ class Utility extends Model
         return $latest->employee_id + 1;
     }
 
-    public static function employeeDetails($user_id, $created_by)
+    public static function employeeDetails($user_id,$owned_by ,$created_by)
     {
         $user = User::where('id', $user_id)->first();
 
@@ -3021,6 +3021,7 @@ class Utility extends Model
                 'email' => $user->email,
                 'password' => $user->password,
                 'employee_id' => Utility::employeeNumber($created_by),
+                'owned_by' => $owned_by,
                 'created_by' => $created_by,
             ]
         );

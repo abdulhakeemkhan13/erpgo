@@ -8,6 +8,7 @@ use App\Models\InvoicePayment;
 use App\Models\ProductServiceCategory;
 use App\Models\Revenue;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -20,6 +21,10 @@ class RevenueController extends Controller
 
         if(\Auth::user()->can('manage revenue')){
             if(\Auth::user()->type == ('company')){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+
                 $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $customer->prepend('Select Customer', '');
 
@@ -31,6 +36,9 @@ class RevenueController extends Controller
 
                 $query = Revenue::where('created_by', '=', \Auth::user()->creatorId());
             }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                
                 $customer = Customer::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
                 $customer->prepend('Select Customer', '');
 
@@ -43,6 +51,15 @@ class RevenueController extends Controller
                 $query = Revenue::where('owned_by', '=', \Auth::user()->ownedId());
             }
 
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+                $account = BankAccount::where('owned_by', '=', $request->branches)->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $customer = Customer::where('owned_by', '=', $request->branches)->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+                $category = ProductServiceCategory::where('owned_by', '=', $request->branches)->where('type', '=', 'income')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+            }
 
             if(count(explode('to', $request->date)) > 1)
             {
@@ -75,7 +92,7 @@ class RevenueController extends Controller
 
             $revenues = $query->get();
 
-            return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
+            return view('revenue.index', compact('revenues', 'customer', 'account', 'category','branches'));
         }
         else
         {
@@ -387,5 +404,20 @@ class RevenueController extends Controller
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
+    }
+
+    public function branch_revenue_data(Request $request)
+    {
+        $account = BankAccount::where('owned_by', '=', $request->id)->get();
+        $customer = Customer::where('owned_by', '=', $request->id)->get();
+        $category = ProductServiceCategory::where('owned_by', '=', $request->id)->where('type', '=', 'income')->get();
+
+            $result = [
+                'status' => 'success',
+                'account' => $account,
+                'customer' => $customer,
+                'category' => $category,
+            ];
+            return response()->json($result);
     }
 }

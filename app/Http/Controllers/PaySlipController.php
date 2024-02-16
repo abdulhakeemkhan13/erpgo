@@ -23,13 +23,12 @@ class PaySlipController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->can('manage pay slip') || \Auth::user()->type != 'client' || \Auth::user()->type != 'company')
+        if(\Auth::user()->can('manage pay slip') || \Auth::user()->type != 'client' || \Auth::user()->type != 'company' || \Auth::user()->type != 'branch')
         {
             $employees = Employee::where(
                 [
                     'created_by' => \Auth::user()->creatorId(),
-                ]
-            )->first();
+                ])->first();
 
             $month = [
                 '01' => 'JAN',
@@ -47,9 +46,6 @@ class PaySlipController extends Controller
             ];
 
             $year = [
-//                '2020' => '2020',
-//                '2021' => '2021',
-//                '2022' => '2022',
                 '2023' => '2023',
                 '2024' => '2024',
                 '2025' => '2025',
@@ -58,6 +54,9 @@ class PaySlipController extends Controller
                 '2028' => '2028',
                 '2029' => '2029',
                 '2030' => '2030',
+                '2031' => '2031',
+                '2032' => '2032',
+                '2033' => '2033',
             ];
 
             return view('payslip.index', compact('employees', 'month', 'year'));
@@ -97,6 +96,7 @@ class PaySlipController extends Controller
         $formate_month_year = $year . '-' . $month;
         $validatePaysilp    = PaySlip::where('salary_month', '=', $formate_month_year)->where('created_by', \Auth::user()->creatorId())->pluck('employee_id');
         $payslip_employee   = Employee::where('created_by', \Auth::user()->creatorId())->where('company_doj', '<=', date($year . '-' . $month . '-t'))->count();
+        
         if($payslip_employee > count($validatePaysilp))
         {
             $employees = Employee::where('created_by', \Auth::user()->creatorId())->where('company_doj', '<=', date($year . '-' . $month . '-t'))->whereNotIn('employee_id', $validatePaysilp)->get();

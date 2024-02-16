@@ -18,6 +18,7 @@ use App\Models\Project;
 use App\Models\StockReport;
 use App\Models\Utility;
 use App\Models\ActivityLog;
+use App\Models\User;
 use App\Models\Vender;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -87,6 +88,9 @@ class ExpenseController extends Controller
 
         if(\Auth::user()->can('manage bill')){
             if(\Auth::user()->type == ('company')){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
                 $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $vender->prepend('Select Vendor', '');
 
@@ -100,6 +104,8 @@ class ExpenseController extends Controller
                 $query = Bill::where('type', '=', 'Expense')
                 ->where('created_by', '=', \Auth::user()->creatorId());
             }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $vender = Vender::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
                 $vender->prepend('Select Vendor', '');
 
@@ -127,6 +133,9 @@ class ExpenseController extends Controller
                 $date_range = [$request->date , $request->bill_date];
                 $query->whereBetween('bill_date', $date_range);
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
 
             if(!empty($request->category))
             {
@@ -135,7 +144,7 @@ class ExpenseController extends Controller
 
             $expenses = $query->get();
 
-            return view('expense.index', compact('expenses', 'vender', 'status','category'));
+            return view('expense.index', compact('expenses', 'vender', 'status','category','branches'));
         }
         else
         {
@@ -281,7 +290,6 @@ class ExpenseController extends Controller
                 $expense->category_id    = !empty($request->category_id) ? $request->category_id :0;
                 $expense->order_number   = 0;
                 $expense->owned_by     = \Auth::user()->ownedId();
-
                 $expense->created_by     = \Auth::user()->creatorId();
                 $expense->save();
 
@@ -925,5 +933,23 @@ class ExpenseController extends Controller
             return redirect()->back()->with('error', __('Permission denied.'));
         }
 
+    }
+    public function branch_category(Request $request)
+    {
+        $category     = ProductServiceCategory::where('owned_by', $request->id)
+        ->whereNotIn('type', ['product & service', 'income',])->get();
+        if($category == null){
+            $result = [
+                'status' => 'error',
+                'company' => 'null',   
+            ];
+            return response()->json($result);
+        }else{
+            $result = [
+                'status' => 'success',
+                'category' => $category,
+            ];
+            return response()->json($result);
+        }
     }
 }

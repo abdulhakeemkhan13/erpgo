@@ -14,6 +14,7 @@ class Loan extends Model
         'start_date',
         'end_date',
         'reason',
+        'owned_by',
         'created_by',
     ];
 

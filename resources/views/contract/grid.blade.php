@@ -13,9 +13,12 @@
         <a href="{{ route('contract.index') }}" data-bs-toggle="tooltip" title="{{__('List View')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-list"></i>
         </a>
-        @if(\Auth::user()->type == 'company')
-            <a href="#" data-size="md" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+        @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'branch')
+            <a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
+                New Contract<i class="ti ti-plus"></i>
+            </a>
+            <a href="#" data-size="lg" data-url="{{ route('createvirtualoffice') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Virtual Office Contract')}}" class="btn btn-sm btn-primary">
+                Virtual Contract<i class="ti ti-plus"></i>
             </a>
         @endif
     </div>
@@ -28,16 +31,16 @@
                 <div class="card">
                     <div class="card-header">
                         <a href="{{route('contract.show',$contract->id)}}" class="mb-0">{{ $contract->subject}}</a>
-                    @if(\Auth::user()->type == 'company')
+                    @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'branch')
                             <div class="card-header-right">
                                 <div class="btn-group card-option">
-                                    <button type="button" class="btn dropdown-toggle"
+                                    <button type="button" class="btn dropdown-toggle "
                                             data-bs-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                        <i class="ti ti-dots-vertical"></i>
+                                        <i class="ti ti-dots-vertical" style="color: var(--primary);"></i>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end">
-                                        <a href="#!" data-size="md" data-url="{{ route('contract.edit',$contract->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit User')}}">
+                                        <a href="#!" data-size="lg" data-url="{{ route('contract.edit',$contract->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit User')}}">
                                             <i class="ti ti-pencil"></i>
                                             <span>{{__('Edit')}}</span>
                                         </a>
@@ -79,14 +82,14 @@
                                     </div>
                                 </div>
                             </li>
-                            @if(\Auth::user()->type!='client')
+                            @if(\Auth::user()->type !='client')
                                 <li class="list-group-item px-0">
                                     <div class="row align-items-center">
                                         <div class="col-6">
-                                            <span class="form-label">{{__('Client')}}:</span>
+                                            <span class="form-label">{{__('Company')}}:</span>
                                         </div>
                                         <div class="col-6 text-end">
-                                            {{ !empty($contract->clients)?$contract->clients->name:'' }}
+                                            {{ !empty($contract->company_id)?$contract->company->name:'' }}
                                         </div>
                                     </div>
                                 </li>

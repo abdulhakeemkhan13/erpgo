@@ -11,23 +11,50 @@ use Spatie\GoogleCalendar\Event as GoogleEvent;
 use App\Models\EventEmployee;
 use App\Models\Projects;
 use App\Models\Tasks;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage event'))
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $events    = LocalEvent::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Employee::where('created_by', '=', \Auth::user()->creatorId());
+                $query1    = LocalEvent::where('created_by', '=', \Auth::user()->creatorId());
+            } else {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Employee::where('owned_by', '=', \Auth::user()->ownedId());
+                $query1    = LocalEvent::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+                $query1->where('owned_by', '=', $request->branches);
+            }
+            $employees = $query->get();
+            $events = $query1->get();
 
             $transdate = date('Y-m-d', time());
             $today_date = date('m');
-            $current_month_event = LocalEvent::select('id','start_date','end_date', 'title', 'created_at','color')
-                ->whereRaw('MONTH(start_date)=' . $today_date)->whereRaw('MONTH(end_date)=' . $today_date)->get();
+            if (\Auth::user()->type == 'company') {
+                $current_month_event = LocalEvent::select('id','start_date','end_date', 'title', 'created_at','color')
+                    ->whereRaw('MONTH(start_date)=' . $today_date)->whereRaw('MONTH(end_date)=' . $today_date)->where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $current_month_event = LocalEvent::select('id','start_date','end_date', 'title', 'created_at','color')
+                    ->whereRaw('MONTH(start_date)=' . $today_date)->whereRaw('MONTH(end_date)=' . $today_date)->where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            // dd();
+            if (!empty($request->branches)) {
+                $current_month_event->where('owned_by', '=', $request->branches);
+            }
+            $current_month_event = $current_month_event->get();
 
             $arrEvents = [];
             foreach($events as $event)
@@ -41,7 +68,7 @@ class EventController extends Controller
             }
             $arrEvents = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrEvents)));
 
-            return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event'));
+            return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event','branches'));
         }
         else
         {
@@ -53,9 +80,15 @@ class EventController extends Controller
     {
         if(\Auth::user()->can('create event'))
         {
-            $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $employees   = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branch      = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
             $settings = Utility::settings();
 
             return view('event.create', compact('employees', 'branch', 'departments','settings'));
@@ -99,6 +132,7 @@ class EventController extends Controller
             $event->end_date      = $request->end_date;
             $event->color         = $request->color;
             $event->description   = $request->description;
+            $event->owned_by      = \Auth::user()->ownedId();
             $event->created_by    = \Auth::user()->creatorId();
             $event->save();
             
@@ -117,6 +151,7 @@ class EventController extends Controller
                 $eventEmployee              = new EventEmployee();
                 $eventEmployee->event_id    = $event->id;
                 $eventEmployee->employee_id = $employee;
+                $eventEmployee->owned_by  = Auth::user()->ownedId();
                 $eventEmployee->created_by  = Auth::user()->creatorId();
                 $eventEmployee->save();
             }
@@ -125,8 +160,11 @@ class EventController extends Controller
 
             if($request->branch_id == 0)
             {
-                $branch = Branch::all()->pluck('name');
-
+                if (\Auth::user()->type == 'company') {
+                    $branch = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name');
+                }else{
+                    $branch = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name');
+                }
                 $result = '';
                 $separator = ',';
                 foreach ($branch as $value) {
@@ -208,8 +246,11 @@ class EventController extends Controller
             $event = LocalEvent::find($event);
             if($event->created_by == Auth::user()->creatorId())
             {
-                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+                if (\Auth::user()->type == 'company') {
+                    $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                }else{
+                    $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                }
                 return view('event.edit', compact('event', 'employees'));
             }
             else
@@ -296,11 +337,19 @@ class EventController extends Controller
 
         if($request->branch_id == 0)
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
-        }
+            if (\Auth::user()->type == 'company') {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            }else{
+                $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id')->toArray();
+            }
+            }
         else
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+            if (\Auth::user()->type == 'company') {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+            }else{
+                $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+            }
         }
 
         return response()->json($departments);
@@ -311,12 +360,20 @@ class EventController extends Controller
         $employees=[];
         if(in_array('0',$request->department_id))
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
-
+            if (\Auth::user()->type == 'company') {
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            }else{
+                $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id')->toArray();
+            }
+            
         }
         else if(!empty($request->department_id))
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereIn('department_id',$request->department_id)->get()->pluck('name', 'id')->toArray();
+            if (\Auth::user()->type == 'company') {
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereIn('department_id',$request->department_id)->get()->pluck('name', 'id')->toArray();
+            }else{
+                $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->whereIn('department_id',$request->department_id)->get()->pluck('name', 'id')->toArray();
+            }
         }
         return response()->json($employees);
     }
@@ -331,7 +388,16 @@ class EventController extends Controller
         }
         else
         {
-            $data =LocalEvent::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $query =LocalEvent::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $query =LocalEvent::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branch)) {
+                $query->where('owned_by', '=', $request->branch);
+            }
+            $data = $query->get();
+
             foreach($data as $val)
             {
                 $end_date=date_create($val->end_date);

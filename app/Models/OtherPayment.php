@@ -10,6 +10,7 @@ class OtherPayment extends Model
         'employee_id',
         'title',
         'amount',
+        'owned_by',
         'created_by',
     ];
 

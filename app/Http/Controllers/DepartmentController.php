@@ -4,17 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage department'))
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Department::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Department::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $departments = $query->get();
 
-            return view('department.index', compact('departments'));
+            return view('department.index', compact('departments','branches'));
         }
         else
         {
@@ -26,8 +40,11 @@ class DepartmentController extends Controller
     {
         if(\Auth::user()->can('create department'))
         {
-            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if (\Auth::user()->type == 'company') {
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $branch = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             return view('department.create', compact('branch'));
         }
         else
@@ -57,6 +74,7 @@ class DepartmentController extends Controller
             $department             = new Department();
             $department->branch_id  = $request->branch_id;
             $department->name       = $request->name;
+            $department->owned_by = \Auth::user()->ownedId();
             $department->created_by = \Auth::user()->creatorId();
             $department->save();
 

@@ -57,10 +57,10 @@
         </a>
         @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'branch')
             <a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+                New Contract<i class="ti ti-plus"></i>
             </a>
             <a href="#" data-size="lg" data-url="{{ route('createvirtualoffice') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Virtual Office Contract')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+                Virtual Contract<i class="ti ti-plus"></i>
             </a>
         @endif
     </div>

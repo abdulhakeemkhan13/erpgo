@@ -11,6 +11,7 @@ class Resignation extends Model
         'notice_date',
         'resignation_date',
         'description',
+        'owned_by',
         'created_by',
     ];
 

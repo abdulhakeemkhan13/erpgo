@@ -3,17 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\AllowanceOption;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AllowanceOptionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage allowance option'))
         {
-            $allowanceoptions = AllowanceOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = AllowanceOption::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = AllowanceOption::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $allowanceoptions = $query->get();
 
-            return view('allowanceoption.index', compact('allowanceoptions'));
+            return view('allowanceoption.index', compact('allowanceoptions','branches'));
         }
         else
         {
@@ -52,6 +66,7 @@ class AllowanceOptionController extends Controller
 
             $allowanceoption             = new AllowanceOption();
             $allowanceoption->name       = $request->name;
+            $allowanceoption->owned_by = \Auth::user()->ownedId();
             $allowanceoption->created_by = \Auth::user()->creatorId();
             $allowanceoption->save();
 

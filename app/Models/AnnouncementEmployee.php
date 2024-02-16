@@ -9,6 +9,7 @@ class AnnouncementEmployee extends Model
     protected $fillable = [
         'announcement_id',
         'employee_id',
+        'owned_by',
         'created_by',
     ];
 }

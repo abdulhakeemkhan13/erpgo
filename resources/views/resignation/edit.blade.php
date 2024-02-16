@@ -1,18 +1,5 @@
 {{Form::model($resignation,array('route' => array('resignation.update', $resignation->id), 'method' => 'PUT')) }}
     <div class="modal-body">
-        {{-- start for ai module--}}
-        @php
-            $plan= \App\Models\Utility::getChatGPTSettings();
-        @endphp
-        @if($plan->chatgpt == 1)
-        <div class="text-end">
-            <a href="#" data-size="md" class="btn  btn-primary btn-icon btn-sm" data-ajax-popup-over="true" data-url="{{ route('generate',['resignation']) }}"
-               data-bs-placement="top" data-title="{{ __('Generate content with AI') }}">
-                <i class="fas fa-robot"></i> <span>{{__('Generate with AI')}}</span>
-            </a>
-        </div>
-        @endif
-        {{-- end for ai module--}}
     <div class="row">
         @if(\Auth::user()->type!='Employee')
             <div class="form-group col-lg-12">

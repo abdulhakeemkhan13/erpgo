@@ -15,11 +15,11 @@ class CustomFieldController extends Controller
     public function index()
     {
         if(\Auth::user()->can('manage constant custom field')){
-            if (\Auth::user()->type == 'company') {
+            // if (\Auth::user()->type == 'company') {
             $custom_fields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->get();
-            }else{
-            $custom_fields = CustomField::where('owned_by', '=', \Auth::user()->ownedId())->get();
-            }
+            // }else{
+            // $custom_fields = CustomField::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            // }
             return view('customFields.index', compact('custom_fields'));
         }
         else

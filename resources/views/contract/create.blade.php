@@ -223,7 +223,7 @@
             type: 'GET',
             success: function(data) {
                 if (data.success == 'true') {
-                    var s = ` {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
+                    var s = ` {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
                 <select name="chair[]"  class="form-control select chair_select" id="chair"   multiple="multiple">
                 <option value="" disabled >Select Chairs</option> `;
                     $("#ch").empty();

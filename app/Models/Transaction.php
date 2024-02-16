@@ -35,6 +35,7 @@ class Transaction extends Model
         $transaction->amount      = $request->amount;
         $transaction->description = $request->description;
         $transaction->date        = $request->date;
+        $transaction->owned_by    = $request->owned_by;
         $transaction->created_by  = $request->created_by;
         $transaction->payment_id  = $request->payment_id;
         $transaction->category    = $request->category;

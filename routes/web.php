@@ -90,6 +90,7 @@ use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\DucumentUploadController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\AttendanceEmployeeController;
+use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskStageController;
@@ -145,6 +146,7 @@ use App\Http\Controllers\IsMailController;
 use App\Http\Controllers\ClientUserController;
 use App\Http\Controllers\IsVisitorController;
 use App\Http\Controllers\PaytrController;
+use App\Http\Controllers\TrainingTypeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -520,6 +522,7 @@ Route::group(['middleware' => ['verified']], function () {
         Route::post('company_contract_detail', [InvoiceController::class, 'companycontractdetail'])->name('company_contract_detail');
         Route::get('invoice_next/{id}', [InvoiceController::class, 'next'])->name('invoice_next');
         Route::get('invoice_back/{id}', [InvoiceController::class, 'back'])->name('invoice_back');
+        Route::post('branch_customer', [InvoiceController::class, 'branchCustomer'])->name('branch.customer');
     }
     );
 
@@ -576,6 +579,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('revenue/index', [RevenueController::class, 'index'])->name('revenue.index')->middleware(['auth', 'XSS', 'revalidate']);
 
     Route::resource('revenue', RevenueController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::post('branch_revenue_data', [RevenueController::class, 'branch_revenue_data'])->name('branch.revenue_data')->middleware(['auth','XSS', 'revalidate']);
 
     Route::get('bill/pdf/{id}', [BillController::class, 'bill'])->name('bill.pdf')->middleware(['XSS', 'revalidate']);
 
@@ -605,8 +609,9 @@ Route::group(['middleware' => ['verified']], function () {
     );
 
     Route::get('payment/index', [PaymentController::class, 'index'])->name('payment.index')->middleware(['auth', 'XSS', 'revalidate']);
-
+    
     Route::resource('payment', PaymentController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::post('branch_payment_data', [PaymentController::class, 'branch_payment_data'])->name('branch.payment_data')->middleware(['auth', 'XSS', 'revalidate']);
 
     Route::group(
         [
@@ -1797,6 +1802,7 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('expense/items', [ExpenseController::class, 'items'])->name('expense.items');
 
         Route::resource('expense', ExpenseController::class);
+        Route::post('branch_category', [ExpenseController::class, 'branch_category'])->name('branch.category');
         Route::get('expense/create/{cid}', [ExpenseController::class, 'create'])->name('expense.create');
 
     }
@@ -1808,5 +1814,5 @@ Route::any('/cookie-consent', [SystemController::class,'CookieConsent'])->name('
 
 Route::get('/clear', function() {
     Artisan::call('optimize:clear');
-    return redirect()->back('sss');
+    return redirect()->back()->with('message', 'Caches cleared successfully.');
 });

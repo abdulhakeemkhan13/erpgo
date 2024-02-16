@@ -9,6 +9,7 @@ class MeetingEmployee extends Model
     protected $fillable = [
         'meeting_id',
         'employee_id',
+        'owned_by',
         'created_by',
     ];
 }

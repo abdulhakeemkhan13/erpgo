@@ -103,7 +103,7 @@ class UserController extends Controller
                 $user['default_pipeline'] = 1;
                 $user['plan'] = 1;
                 $user['lang']       = !empty($default_language) ? $default_language->value : 'en';
-                $user['owned_by'] = \Auth::user()->ownedId();
+                $user['owned_by']   = \Auth::user()->ownedId();
                 $user['created_by'] = \Auth::user()->creatorId();
                 $user['plan']       = Plan::first()->id;
                 $user['email_verified_at'] = date('Y-m-d H:i:s');
@@ -173,14 +173,15 @@ class UserController extends Controller
                     $request['password']   = Hash::make($request->password);
                     $request['type']       = $role_r->name;
                     $request['lang']       = !empty($default_language) ? $default_language->value : 'en';
-                    $request['owned_by'] = \Auth::user()->ownedId();
+                    $request['owned_by']   = \Auth::user()->ownedId();
                     $request['created_by'] = \Auth::user()->creatorId();
                     $request['email_verified_at'] = date('Y-m-d H:i:s');
 
                     $user = User::create($request->all());
                     $user->assignRole($role_r);
-                    if($request['type'] != 'client')
-                    \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
+                    if($request['type'] != 'client'){
+                        \App\Models\Utility::employeeDetails($user->id,\Auth::user()->ownedId(),\Auth::user()->creatorId());
+                    }
                 }
                 else
                 {

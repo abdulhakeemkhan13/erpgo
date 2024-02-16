@@ -34,14 +34,23 @@ class BillController extends Controller
             if(\Auth::user()->type == ('company')){
                 $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $vender->prepend('Select Vendor', '');
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
                 $query = Bill::where('type', '=', 'Bill')->where('created_by', '=', \Auth::user()->creatorId());
             }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $vender = Vender::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
                 $vender->prepend('Select Vendor', '');
                 $query = Bill::where('type', '=', 'Bill')->where('owned_by', '=', \Auth::user()->ownedId());
             }
 
             $status = Bill::$statues;
+
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
 
             if(!empty($request->vender))
             {
@@ -70,7 +79,7 @@ class BillController extends Controller
             }
             $bills = $query->get();
 
-            return view('bill.index', compact('bills', 'vender', 'status'));
+            return view('bill.index', compact('bills', 'vender', 'status','branches'));
         }
         else
         {

@@ -49,7 +49,7 @@
                                     <ul class="list-group sortable">
                                         @foreach ($pipeline['labels'] as $label)
                                             <li class="list-group-item" data-id="{{$label->id}}">
-                                                <span class="text-sm text-dark">{{$label->name}}</span>
+                                                <span class="text text-dark">{{$label->name}}</span>
                                                 <span class="float-end">
 
                                                 @can('edit label')

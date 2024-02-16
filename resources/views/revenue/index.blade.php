@@ -2,6 +2,70 @@
 @section('page-title')
     {{__('Manage Revenues')}}
 @endsection
+@push('script-page')
+     <script>
+        function branchcustomer(id) {
+            var customer = $('#customerselect').val();
+            $.ajax({
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                    url: "{{ route('branch.revenue_data') }}",
+                    type: "POST",
+                    data: {id: id},
+                    dataType: 'json',
+                    success: function (result)
+                    {
+                        console.log(result);
+                        if(result.status == 'success'){
+                            $('#customerselect').empty();
+                            $('#customerselect').append($('<option>', {
+                                value: '',
+                                text: 'select Customer'
+                            }));
+                            $('#accountselect').empty().append($('<option>', {
+                                value: '',
+                                text: 'select Account'
+                            }));
+                            $('#categoryselect').empty().append($('<option>', {
+                                value: '',
+                                text: 'select Category'
+                            }));
+                            // console.log(result);
+                            for (var i = 0; i < result.account.length; i++) {
+                                var account = result.account[i];
+                                $('#accountselect').append($('<option>', {
+                                    value: account.id,
+                                    text: account.holder_name
+                                }));
+                            }
+                            for (var i = 0; i < result.customer.length; i++) {
+                                var customer = result.customer[i];
+                                $('#customerselect').append($('<option>', {
+                                    value: customer.id,
+                                    text: customer.name
+                                }));
+                            }
+                            for (var i = 0; i < result.category.length; i++) {
+                                var category = result.category[i];
+                                $('#categoryselect').append($('<option>', {
+                                    value: category.id,
+                                    text: category.name
+                                }));
+                            }
+                        } 
+                        if(result.status == 'error'){
+                        }
+                        
+                    }
+                });
+            // Add more code as needed
+        }
+    
+        document.getElementById('branchcustomer').addEventListener('change', function() {
+            var id = this.value;
+            branchcustomer(id);
+        });
+    </script>
+@endpush
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
@@ -32,31 +96,46 @@
                         {{ Form::open(array('route' => array('revenue.index'),'method' => 'GET','id'=>'revenue_form')) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-xl-10">
-                                <div class="row">
+                                <div class="row justify-content-end">
 
-                                    <div class="col-3">
+                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         {{Form::label('date',__('Date'),['class'=>'form-label'])}}
                                         {{ Form::text('date', isset($_GET['date'])?$_GET['date']:null, array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1','readonly')) }}
 
                                     </div>
-
+                                    @if(\Auth::user()->type == 'company')                            
+                                    <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12 month">
+                                        <div class="btn-box">
+                                            {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                            {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' , 'onchange' => 'branchcustomer(this.value)']) }}
+                                        </div>      
+                                    </div>
+                                    @endif
+                                    @if(\Auth::user()->type == 'company') 
+                                    <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12 month">
+                                    @else
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
+                                    @endif
                                         <div class="btn-box">
                                             {{Form::label('account',__('Account'),['class'=>'form-label'])}}
-                                            {{ Form::select('account',$account,isset($_GET['account'])?$_GET['account']:'', array('class' => 'form-control select')) }}
+                                            {{ Form::select('account',$account,isset($_GET['account'])?$_GET['account']:'', array('class' => 'form-control select','id' => 'accountselect')) }}
                                         </div>
                                     </div>
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 date">
                                         <div class="btn-box">
                                             {{ Form::label('customer', __('Customer'),['class'=>'form-label'])}}
-                                            {{ Form::select('customer',$customer,isset($_GET['customer'])?$_GET['customer']:'', array('class' => 'form-control select')) }}
+                                            {{ Form::select('customer',$customer,isset($_GET['customer'])?$_GET['customer']:'', array('class' => 'form-control select','id' => 'customerselect')) }}
                                         </div>
                                     </div>
 
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    @if(\Auth::user()->type == 'company') 
+                                    <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12 month">
+                                    @else
+                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
+                                    @endif
                                         <div class="btn-box">
                                             {{ Form::label('category', __('Category'),['class'=>'form-label'])}}
-                                            {{ Form::select('category',$category,isset($_GET['category'])?$_GET['category']:'', array('class' => 'form-control select')) }}
+                                            {{ Form::select('category',$category,isset($_GET['category'])?$_GET['category']:'', array('class' => 'form-control select','id' => 'categoryselect')) }}
                                         </div>
                                     </div>
 

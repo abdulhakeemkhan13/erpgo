@@ -22,6 +22,7 @@
 @endsection
 
 @section('content')
+    @if(\Auth::user()->type == 'company')
     <div class="row">
         <div class="col-sm-12">
             <div class="mt-2 " id="multiCollapseExample1">
@@ -29,24 +30,14 @@
                     <div class="card-body">
                         {{ Form::open(['route' => ['account-assets.index'], 'method' => 'GET', 'id' => 'account-assets_submit']) }}
                         <div class="row d-flex justify-content-end ">
-                            <div class="col-xl-4 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                <div class="btn-box">
-                                    {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label'])}}
-                                    {{ Form::date('issue_date', isset($_GET['issue_date'])?$_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
-                                </div>
-                            </div>
+        
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                 <div class="btn-box">
                                     {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
-                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' , 'onchange' => 'branchcustomer(this.value)']) }}
+                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' ]) }}
                                 </div>                               
-                            </div> 
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                <div class="btn-box">
-                                    {{ Form::label('company', __('Company'),['class'=>'form-label'])}}
-                                    {{ Form::select('company', $company, isset($_GET['company']) ? $_GET['company'] : '', ['class' => 'form-control select' , 'id' => 'companyselect']) }}
-                                </div>
                             </div>
+
                             <div class="col-auto float-end ms-2 mt-4">
                                 <a href="#" class="btn btn-sm btn-primary"
                                     onclick="document.getElementById('account-assets_submit').submit(); return false;"
@@ -65,6 +56,7 @@
             </div>
         </div>
     </div>
+    @endif
     <div class="row">
         <div class="col-md-12">
             <div class="card">

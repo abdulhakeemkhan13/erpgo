@@ -144,18 +144,19 @@
                                 <tr>
                                     <td class="text-dark">{{$productService->name}}</td>
                                     @foreach($monthList as $month)
+                                    {{-- @dd($budget['income_data'],$productService->id); --}}
                                         @php
-                                            $budgetAmount= ($budget['income_data'][$productService->id][$month])?$budget['income_data'][$productService->id][$month]:0;
+                                            $budgetAmount= (@$budget['income_data'][$productService->id][$month])?$budget['income_data'][$productService->id][$month]:0;
                                             $actualAmount=$incomeArr[$productService->id][$month];
                                             $overBudgetAmount=$actualAmount-$budgetAmount;
                                             $overBudgetTotal[$productService->id][$month]=$overBudgetAmount;
                                         @endphp
-                                        <td class="income_data {{$month}}_income">{{!empty (\Auth::user()->priceFormat($budget['income_data'][$productService->id][$month]))?\Auth::user()->priceFormat($budget['income_data'][$productService->id][$month]):0}}</td>
-                                        <td>{{\Auth::user()->priceFormat($incomeArr[$productService->id][$month])}}
-                                            <p>{{($budget['income_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$incomeArr[$productService->id][$month])!=0) ? '('.(\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$incomeArr[$productService->id][$month]).'%)') :'':''}}</p>
+                                        <td class="income_data {{$month}}_income">{{!empty (\Auth::user()->priceFormat(@$budget['income_data'][$productService->id][$month]))?\Auth::user()->priceFormat(@$budget['income_data'][$productService->id][$month]):0}}</td>
+                                        <td>{{\Auth::user()->priceFormat(@$incomeArr[$productService->id][$month])}}
+                                            <p>{{(@$budget['income_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$incomeArr[$productService->id][$month])!=0) ? '('.(\App\Models\Budget::percentage(@$budget['income_data'][$productService->id][$month],$incomeArr[$productService->id][$month]).'%)') :'':''}}</p>
                                         </td>
                                         <td>{{\Auth::user()->priceFormat($overBudgetAmount)}}
-                                            <p class="{{($budget['income_data'][$productService->id][$month] < $overBudgetAmount)? 'green-text':''}} {{($budget['income_data'][$productService->id][$month] > $overBudgetAmount)? 'red-text':''}}" >{{($budget['income_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$overBudgetAmount) !=0) ?'('.(\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$overBudgetAmount).'%)') :'':''}}</p>
+                                            <p class="{{(@$budget['income_data'][$productService->id][$month] < $overBudgetAmount)? 'green-text':''}} {{(@$budget['income_data'][$productService->id][$month] > $overBudgetAmount)? 'red-text':''}}" >{{(@$budget['income_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$overBudgetAmount) !=0) ?'('.(\App\Models\Budget::percentage($budget['income_data'][$productService->id][$month],$overBudgetAmount).'%)') :'':''}}</p>
 
                                         </td>
                                     @endforeach
@@ -206,18 +207,18 @@
                                     <td class="text-dark">{{$productService->name}}</td>
                                     @foreach($monthList as $month)
                                         @php
-                                            $budgetAmount= ($budget['expense_data'][$productService->id][$month])?$budget['expense_data'][$productService->id][$month]:0;
+                                            $budgetAmount= (@$budget['expense_data'][$productService->id][$month])?$budget['expense_data'][$productService->id][$month]:0;
                                             $actualAmount=$expenseArr[$productService->id][$month];
                                             $overBudgetAmount=$actualAmount-$budgetAmount;
                                             $overExpenseBudgetTotal[$productService->id][$month]=$overBudgetAmount;
                                         @endphp
-                                        <td class="expense_data {{$month}}_expense">{{\Auth::user()->priceFormat(!empty($budget['expense_data'][$productService->id][$month]))?\Auth::user()->priceFormat($budget['expense_data'][$productService->id][$month]):0}}</td>
+                                        <td class="expense_data {{$month}}_expense">{{\Auth::user()->priceFormat(!empty(@$budget['expense_data'][$productService->id][$month]))?\Auth::user()->priceFormat(@$budget['expense_data'][$productService->id][$month]):0}}</td>
                                         <td>{{\Auth::user()->priceFormat($expenseArr[$productService->id][$month])}}
-                                            <p>{{($budget['expense_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage($budget['expense_data'][$productService->id][$month],$expenseArr[$productService->id][$month])!=0) ? '('.(\App\Models\Budget::percentage($budget['expense_data'][$productService->id][$month],$expenseArr[$productService->id][$month]).'%)') :'':''}}</p>
+                                            <p>{{(@$budget['expense_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage(@$budget['expense_data'][$productService->id][$month],$expenseArr[$productService->id][$month])!=0) ? '('.(\App\Models\Budget::percentage(@$budget['expense_data'][$productService->id][$month],$expenseArr[$productService->id][$month]).'%)') :'':''}}</p>
 
                                         </td>
                                         <td>{{\Auth::user()->priceFormat($overBudgetAmount)}}
-                                            <p class="{{($budget['expense_data'][$productService->id][$month] < $overBudgetAmount)? 'green-text':''}} {{($budget['expense_data'][$productService->id][$month] > $overBudgetAmount)? 'red-text':''}}" >{{($budget['expense_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage($budget['expense_data'][$productService->id][$month],$overBudgetAmount) !=0) ?'('.(\App\Models\Budget::percentage($budget['expense_data'][$productService->id][$month],$overBudgetAmount).'%)') :'':''}}</p>
+                                            <p class="{{(@$budget['expense_data'][$productService->id][$month] < $overBudgetAmount)? 'green-text':''}} {{(@$budget['expense_data'][$productService->id][$month] > $overBudgetAmount)? 'red-text':''}}" >{{(@$budget['expense_data'][$productService->id][$month] !=0)? (\App\Models\Budget::percentage(@$budget['expense_data'][$productService->id][$month],$overBudgetAmount) !=0) ?'('.(\App\Models\Budget::percentage(@$budget['expense_data'][$productService->id][$month],$overBudgetAmount).'%)') :'':''}}</p>
 
                                         </td>
                                     @endforeach

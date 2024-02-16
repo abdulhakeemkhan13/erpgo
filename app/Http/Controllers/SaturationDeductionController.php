@@ -12,7 +12,11 @@ class SaturationDeductionController extends Controller
     public function saturationdeductionCreate($id)
     {
         $employee          = Employee::find($id);
-        $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'company' ){
+            $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $deduction_options = DeductionOption::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
         $saturationdeduc = SaturationDeduction::$saturationDeductiontype;
         return view('saturationdeduction.create', compact('employee', 'deduction_options','saturationdeduc'));
     }
@@ -42,6 +46,7 @@ class SaturationDeductionController extends Controller
             $saturationdeduction->title            = $request->title;
             $saturationdeduction->type            = $request->type;
             $saturationdeduction->amount           = $request->amount;
+            $saturationdeduction->owned_by       = \Auth::user()->ownedId();
             $saturationdeduction->created_by       = \Auth::user()->creatorId();
             $saturationdeduction->save();
 

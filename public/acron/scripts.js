@@ -99,7 +99,7 @@ class Scripts {
   // Settings initialization
   _initSettings() {
     if (typeof Settings !== 'undefined') {
-      const settings = new Settings({attributes: {placement: 'vertical', layout: 'boxed', color: 'light-teal' }, showSettings: true, storagePrefix: 'acorn-medical-assistant-'});
+      const settings = new Settings({attributes: {placement: 'vertical', layout: 'fluid', color: 'light-blue' }, showSettings: true, storagePrefix: 'acorn-medical-assistant-'});
     }
   }
 

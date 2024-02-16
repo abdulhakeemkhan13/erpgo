@@ -4,18 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Trainer;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TrainerController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage trainer'))
         {
-            $trainers = Trainer::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Trainer::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Trainer::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $trainers = $query->get();
 
-            return view('trainer.index', compact('trainers'));
+            return view('trainer.index', compact('trainers','branches'));
         }
         else
         {
@@ -28,7 +42,11 @@ class TrainerController extends Controller
     {
         if(\Auth::user()->can('create trainer'))
         {
-            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $branches = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
 
             return view('trainer.create', compact('branches'));
         }
@@ -68,6 +86,7 @@ class TrainerController extends Controller
             $trainer->email      = $request->email;
             $trainer->address    = $request->address;
             $trainer->expertise  = $request->expertise;
+            $trainer->owned_by   = \Auth::user()->ownedId();
             $trainer->created_by = \Auth::user()->creatorId();
             $trainer->save();
 
@@ -90,7 +109,11 @@ class TrainerController extends Controller
     {
         if(\Auth::user()->can('edit trainer'))
         {
-            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $branches = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
 
             return view('trainer.edit', compact('branches', 'trainer'));
         }

@@ -26,10 +26,7 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <h5>{{ __('Calendar') }}</h5>
-                            {{-- <a href="{{route('booking.create')}}">Booking</a>
-                            <a href="#" data-size="lg" data-url="{{ route('booking.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Booking')}}" data-title="{{__('Create Booking')}}" class="btn btn-sm btn-primary">
-                                <i class="ti ti-plus"></i>
-                            </a> --}}
+                  
                         </div>                        
                         <div class="col-lg-6">
                             <a href="#" data-size="md" data-url="{{ route('bookings.create') }}" style="float: right; margin:1%" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Booking')}}" data-title="{{__('Create Booking')}}"  id="createBookingLink" class="btn btn-sm btn-primary">
@@ -60,34 +57,6 @@
             </div>
         </div>
 
-        {{-- <div class="col-lg-4">
-            <div class="card">
-                <div class="card-body task-calendar-scroll">
-                    <h4 class="mb-4">{{__('Tasks')}}</h4>
-                    <ul class="event-cards list-group list-group-flush mt-3 w-100">
-                        @forelse($arrTasks as $task)
-                            <li class="list-group-item card mb-3">
-                                <div class="row align-items-center justify-content-between">
-                                    <div class="col-auto mb-3 mb-sm-0">
-                                        <div class="d-flex align-items-center">
-                                            <div class="theme-avtar bg-primary">
-                                                <i class="ti ti-calendar-event"></i>
-                                            </div>
-                                            <div class="ms-3 fc-event-title-container">
-                                                <h6 class="m-0 text-sm fc-event-title text-primary">{{$task['title']}}</h6>
-                                                <small class="text-muted">{{$task['start']}}  to {{$task['end']}}</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        @empty
-                            <p class="text-dark text-center">{{__('No Data Found')}}</p>
-                        @endforelse
-                    </ul>
-                </div>
-            </div>
-        </div> --}}
     </div>
 
 @endsection

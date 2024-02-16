@@ -17,6 +17,7 @@ class Appraisal extends Model
         'integrity',
         'attendance',
         'remark',
+        'owned_by',
         'created_by',
         'rating',
     ];

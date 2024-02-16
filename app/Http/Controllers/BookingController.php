@@ -822,7 +822,7 @@ class BookingController extends Controller
     {
         if (\Auth::user()->can('view project task')) {
             $task = ProjectTask::find($task_id);
-//            dd($task->taskProgress()['color']);
+        //            dd($task->taskProgress()['color']);
 
             $html = '';
             $html .= '<div class="card-body"><div class="row align-items-center mb-2">';
@@ -830,13 +830,13 @@ class BookingController extends Controller
             $html .= '<span class="badge badge-pill badge-xs badge-' . ProjectTask::$priority_color[$task->priority] . '">' . ProjectTask::$priority[$task->priority] . '</span>';
             $html .= '</div>';
             $html .= '<div class="col-6 text-end">';
-//            if(str_replace('%', '', $task->taskProgress()['percentage']) > 0)
-//            {
-//                $html .= '<span class="text-sm">' . $task->taskProgress()['percentage'] . '</span> <div class="progress">
-//                                                    <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar"
-//                                                         style="width: {{ $task->taskProgress()['percentage'] }};"></div>
-//                                                </div>';
-//            }
+            //            if(str_replace('%', '', $task->taskProgress()['percentage']) > 0)
+            //            {
+            //                $html .= '<span class="text-sm">' . $task->taskProgress()['percentage'] . '</span> <div class="progress">
+            //                                                    <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar"
+            //                                                         style="width: {{ $task->taskProgress()['percentage'] }};"></div>
+            //                                                </div>';
+            //            }
             if (\Auth::user()->can('view project task') || \Auth::user()->can('edit project task') || \Auth::user()->can('delete project task')) {
                 $html .= '<div class="dropdown action-item">
                                                             <a href="#" class="action-item" data-toggle="dropdown"><i class="ti ti-ellipsis-h"></i></a>
@@ -957,68 +957,72 @@ class BookingController extends Controller
     public function calendarView($task_by, $project_id = NULL)
     {
         $usr = Auth::user();
-        $transdate = date('Y-m-d', time());
+        // $transdate = date('Y-m-d', time());
 
         if ($usr->type != 'admin') {
-            if (\Auth::user()->type == 'client') {
-                $user_projects = Project::where('client_id', \Auth::user()->id)->pluck('id', 'id')->toArray();
-            } else {
-                $user_projects = $usr->projects()->pluck('project_id', 'project_id')->toArray();
-            }
-            $user_projects = (!empty($project_id) && $project_id > 0) ? [$project_id] : $user_projects;
+        //     if (\Auth::user()->type == 'client') {
+        //         $user_projects = Project::where('client_id', \Auth::user()->id)->pluck('id', 'id')->toArray();
+        //     } else {
+        //         $user_projects = $usr->projects()->pluck('project_id', 'project_id')->toArray();
+        //     }
+        //     $user_projects = (!empty($project_id) && $project_id > 0) ? [$project_id] : $user_projects;
 
-            if (\Auth::user()->type == 'company') {
-                $tasks = ProjectTask::whereIn('project_id', $user_projects);
-            } elseif (\Auth::user()->type != 'company') {
-                if (\Auth::user()->type == 'client') {
+        //     if (\Auth::user()->type == 'company') {
+        //         $tasks = ProjectTask::whereIn('project_id', $user_projects);
+        //     } elseif (\Auth::user()->type != 'company') {
+        //         if (\Auth::user()->type == 'client') {
 
-                    $tasks = ProjectTask::whereIn('project_id', $user_projects);
-                } else {
-                    $tasks = ProjectTask::whereIn('project_id', $user_projects)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)");
-                }
-            }
-            if (\Auth::user()->type == 'client') {
-                if ($task_by == 'all') {
-                    $tasks->where('created_by', \Auth::user()->creatorId());
-                }
-            } else {
-                if ($task_by == 'my') {
-                    $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
-                }
-            }
-            $tasks = $tasks->get();
-            $arrTasks = [];
+        //             $tasks = ProjectTask::whereIn('project_id', $user_projects);
+        //         } else {
+        //             $tasks = ProjectTask::whereIn('project_id', $user_projects)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)");
+        //         }
+        //     }
+        //     if (\Auth::user()->type == 'client') {
+        //         if ($task_by == 'all') {
+        //             $tasks->where('created_by', \Auth::user()->creatorId());
+        //         }
+        //     } else {
+        //         if ($task_by == 'my') {
+        //             $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
+        //         }
+        //     }
+        //     $tasks = $tasks->get();
+        //     $arrTasks = [];
 
-            foreach ($tasks as $task) {
-                $arTasks = [];
-                if ((!empty($task->start_date) && $task->start_date != '0000-00-00') || !empty($task->end_date) && $task->end_date != '0000-00-00') {
-                    $arTasks['id'] = $task->id;
-                    $arTasks['title'] = $task->name;
+        //     foreach ($tasks as $task) {
+        //         $arTasks = [];
+        //         if ((!empty($task->start_date) && $task->start_date != '0000-00-00') || !empty($task->end_date) && $task->end_date != '0000-00-00') {
+        //             $arTasks['id'] = $task->id;
+        //             $arTasks['title'] = $task->name;
 
-                    if (!empty($task->start_date) && $task->start_date != '0000-00-00') {
-                        $arTasks['start'] = $task->start_date;
-                    } elseif (!empty($task->end_date) && $task->end_date != '0000-00-00') {
-                        $arTasks['start'] = $task->end_date;
-                    }
-                    if (!empty($task->end_date) && $task->end_date != '0000-00-00') {
-                        $arTasks['end'] = $task->end_date;
-                    } elseif (!empty($task->start_date) && $task->start_date != '0000-00-00') {
-                        $arTasks['end'] = $task->start_date;
-                    }
-                    $arTasks['allDay'] = !0;
-                    $arTasks['className'] = 'event-' . ProjectTask::$priority_color[$task->priority];
-                    $arTasks['description'] = $task->description;
-                    $arTasks['url'] = route('booking.calendar.show', $task->id);
-                    $arTasks['resize_url'] = route('booking.calendar.drag', $task->id);
-                    $arrTasks[] = $arTasks;
+        //             if (!empty($task->start_date) && $task->start_date != '0000-00-00') {
+        //                 $arTasks['start'] = $task->start_date;
+        //             } elseif (!empty($task->end_date) && $task->end_date != '0000-00-00') {
+        //                 $arTasks['start'] = $task->end_date;
+        //             }
+        //             if (!empty($task->end_date) && $task->end_date != '0000-00-00') {
+        //                 $arTasks['end'] = $task->end_date;
+        //             } elseif (!empty($task->start_date) && $task->start_date != '0000-00-00') {
+        //                 $arTasks['end'] = $task->start_date;
+        //             }
+        //             $arTasks['allDay'] = !0;
+        //             $arTasks['className'] = 'event-' . ProjectTask::$priority_color[$task->priority];
+        //             $arTasks['description'] = $task->description;
+        //             $arTasks['url'] = route('booking.calendar.show', $task->id);
+        //             $arTasks['resize_url'] = route('booking.calendar.drag', $task->id);
+        //             $arrTasks[] = $arTasks;
 
 
-                }
-            }
+        //         }
+        //     }
 
-            $spaces = Space::get();
-
-            return view('booking.calendar', compact('arrTasks', 'project_id', 'task_by', 'transdate','spaces'));
+        if (\Auth::user()->type == 'company') {
+            $spaces = Space::where('created_by', '=', \Auth::user()->creatorId())->where('meeting','yes')->get();
+        }else{
+            $spaces = Space::where('owned_by', '=', \Auth::user()->ownedId())->where('meeting','yes')->get();
+        }
+            // return view('booking.calendar', compact('arrTasks', 'project_id', 'task_by', 'transdate','spaces'));
+            return view('booking.calendar', compact('spaces'));
         } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
@@ -1027,7 +1031,6 @@ class BookingController extends Controller
     // Calendar Show
     public function calendarShow($id)
     {
-        // $task = ProjectTask::find($id);
         $task = Booking::find($id);
 
         return view('booking.calendar_show', compact('task'));
@@ -1049,28 +1052,9 @@ class BookingController extends Controller
     //for Google Calendar second auto hit
     public function get_task_data(Request $request)
     {
-        // if ($request->get('calender_type') == 'goggle_calender') {
-        //     $type = 'task';
-        //     $arrayJson = Utility::getCalendarData($type);
-        // } else {
-        //     if (Auth::user()->type == 'client') {
-        //         $user_projects = Project::where('client_id', \Auth::user()->id)->pluck('id', 'id')->toArray();
-        //         $data = ProjectTask::whereIn('project_id', $user_projects)->get();
-        //     } else {
-        //         if (Auth::user()->type == 'company') {
-        //             $data = ProjectTask::where('created_by', \Auth::user()->creatorId())->get();
-        //         } else {
-        //             $usr = Auth::user();
-        //             $user_projects = $usr->projects()->pluck('project_id', 'project_id')->toArray();
-        //             $data = ProjectTask::whereIn('project_id', $user_projects)
-        //                 ->where('created_by', \Auth::user()->creatorId())
-        //                 ->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)")->get();
-        //         }
-
-        //     }
+      
             $data = Booking::with('company','user')->where('space_id', $request->space_id)->get();
 
-//            $data = ProjectTask::where('created_by', \Auth::user()->creatorId())->get();
             $arrayJson = [];
             foreach ($data as $val) {
                 // $end_date = date_create($val->end_date);

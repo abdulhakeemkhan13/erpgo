@@ -1,20 +1,7 @@
 {{Form::model($leave,array('route' => array('leave.update', $leave->id), 'method' => 'PUT')) }}
 <div class="modal-body">
-    {{-- start for ai module--}}
-    @php
-        $plan= \App\Models\Utility::getChatGPTSettings();
-    @endphp
-    @if($plan->chatgpt == 1)
-    <div class="text-end">
-        <a href="#" data-size="md" class="btn  btn-primary btn-icon btn-sm" data-ajax-popup-over="true" data-url="{{ route('generate',['leave']) }}"
-           data-bs-placement="top" data-title="{{ __('Generate content with AI') }}">
-            <i class="fas fa-robot"></i> <span>{{__('Generate with AI')}}</span>
-        </a>
-    </div>
-    @endif
-    {{-- end for ai module--}}
 
-    @if(\Auth::user()->type =='company' || \Auth::user()->type =='HR')
+    @if(\Auth::user()->type =='company' || \Auth::user()->type =='branch' || \Auth::user()->type =='HR')
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">

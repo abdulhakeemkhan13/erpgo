@@ -126,16 +126,13 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="mt-2 " id="multiCollapseExample1">
-                <div class="card">
+                <div class="card hover-border-primary">
                     <div class="card-body">
                     {{ Form::open(array('route' => array('report.expense.summary'),'method' => 'GET','id'=>'report_expense_summary')) }}
-                        <div class="row align-items-center justify-content-end">
+                        <div class="row align-items-center justify-content-end ">
                             <div class="col-xl-10">
-                                <div class="row">
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box">
-                                        </div>
-                                    </div>
+                                <div class="row justify-content-end">
+                                 
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
                                             {{ Form::label('year', __('Year'),['class'=>'form-label'])}}
@@ -182,14 +179,14 @@
                 <input type="hidden" value="{{$filter['category'].' '.__('Expense Summary').' '.'Report of'.' '.$filter['startDateRange'].' to '.$filter['endDateRange']}}" id="filename">
                 <div class="card p-4 mb-4">
                     <h7 class="report-text gray-text mb-0">{{__('Report')}} :</h7>
-                    <h6 class="report-text mb-0">{{__('Expense Summary')}}</h6>
+                    <h6 class="text-primary mb-0">{{__('Expense Summary')}}</h6>
                 </div>
             </div>
             @if($filter['category']!= __('All'))
                 <div class="col">
                     <div class="card p-4 mb-4">
                         <h7 class="report-text gray-text mb-0">{{__('Category')}} :</h7>
-                        <h6 class="report-text mb-0">{{$filter['category'] }}</h6>
+                        <h6 class="text-primary mb-0">{{$filter['category'] }}</h6>
                     </div>
                 </div>
             @endif
@@ -197,14 +194,14 @@
                 <div class="col">
                     <div class="card p-4 mb-4">
                         <h7 class="report-text gray-text mb-0">{{__('Vendor')}} :</h7>
-                        <h6 class="report-text mb-0">{{$filter['vender'] }}</h6>
+                        <h6 class="text-primary mb-0">{{$filter['vender'] }}</h6>
                     </div>
                 </div>
             @endif
             <div class="col">
                 <div class="card p-4 mb-4">
                     <h7 class="report-text gray-text mb-0">{{__('Duration')}} :</h7>
-                    <h6 class="report-text mb-0">{{$filter['startDateRange'].' to '.$filter['endDateRange']}}</h6>
+                    <h6 class="text-primary mb-0">{{$filter['startDateRange'].' to '.$filter['endDateRange']}}</h6>
                 </div>
             </div>
         </div>
@@ -212,7 +209,7 @@
 
     <div class="row">
             <div class="col-12" id="chart-container">
-                <div class="card">
+                <div class="card hover-border-primary">
                     <div class="card-body">
                         <div class="scrollbar-inner">
                         <div id="chart-sales" data-color="primary" data-height="300" ></div>
@@ -222,7 +219,7 @@
             </div>
 
             <div class="col-12">
-                <div class="card">
+                <div class="card hover-border-primary">
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
                             <table class="table">
