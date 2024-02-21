@@ -2294,7 +2294,6 @@ menuContainer.addEventListener("click", function(event) {
             event.target.setAttribute("aria-expanded", "true");
         }
         }, 500); // 1000 milliseconds = 1 second
-      // Do whatever you want with the sub unordered list
     } 
   }
 });
