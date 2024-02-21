@@ -27,13 +27,45 @@
            data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create New Award')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
-
-
         @endcan
     </div>
 @endsection
 
 @section('content')
+    @if(\Auth::user()->type == 'company')
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="mt-2 " id="multiCollapseExample1">
+                    <div class="card">
+                        <div class="card-body filter_change">
+                            {{ Form::open(['route' => ['award.index'], 'method' => 'GET', 'id' => 'award_submit']) }}
+                            <div class="row d-flex justify-content-end ">
+            
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                    <div class="btn-box">
+                                        {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                        {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' ]) }}
+                                    </div>                               
+                                </div>
+                                <div class="col-auto float-end ms-2 mt-4">
+                                    <a href="#" class="btn btn-sm btn-primary"
+                                        onclick="document.getElementById('award_submit').submit(); return false;"
+                                        data-toggle="tooltip" data-original-title="{{ __('apply') }}">
+                                        <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                    </a>
+                                    <a href="{{ route('award.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
+                                        data-original-title="{{ __('Reset') }}">
+                                        <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off"></i></span>
+                                    </a>
+                                </div>
+                            </div>
+                            {{ Form::close() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
     <div class="row">
         <div class="col-md-12">
             <div class="card">
@@ -57,7 +89,6 @@
                             <tbody class="font-style">
                             @foreach ($awards as $award)
                                 <tr>
-
                                     @role('company')
                                     <td>{{!empty( $award->employee())? $award->employee()->name:'' }}</td>
                                     @endrole

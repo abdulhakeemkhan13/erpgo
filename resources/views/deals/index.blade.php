@@ -102,7 +102,7 @@
 
 
 @section('content')
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-sm-3">
             <div class="card">
                 <div class="card-body">
@@ -171,7 +171,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <div class="row">
         @php
                 $stages = $pipeline->stages;
@@ -182,7 +182,8 @@
             @endphp
         <div class="row kanban-wrapper horizontal-scroll-cards" data-containers='{!! json_encode($json) !!}' data-plugin="dragula">
             @foreach($stages as $stage)
-                @php($deals = $stage->deals())
+                @php($deals = $stage->new_deals())
+                
                 <div class="col">
                     <div class="card">
                         <div class="card-header">

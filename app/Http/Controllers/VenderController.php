@@ -31,13 +31,24 @@ class VenderController extends Controller
         return view('vender.dashboard', $data);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        if(\Auth::user()->can('manage vender'))
-        {
-            $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
-
-            return view('vender.index', compact('venders'));
+        if(\Auth::user()->can('manage vender')){
+            if(\Auth::user()->type == ('company')){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Vender::where('created_by', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Vender::where('owned_by', \Auth::user()->ownedId());                
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $venders = $query->get();
+            return view('vender.index', compact('venders','branches'));
         }
         else
         {
@@ -96,7 +107,8 @@ class VenderController extends Controller
                     $vender->name             = $request->name;
                     $vender->contact          = $request->contact;
                     $vender->email            = $request->email;
-                    $vender->tax_number      =$request->tax_number;
+                    $vender->tax_number       =$request->tax_number;
+                    $vender->owned_by         = \Auth::user()->ownedId();
                     $vender->created_by       = \Auth::user()->creatorId();
                     $vender->billing_name     = $request->billing_name;
                     $vender->billing_country  = $request->billing_country;
@@ -253,7 +265,11 @@ class VenderController extends Controller
 
     function venderNumber()
     {
+        if(\Auth::user()->type == ('company')){
         $latest = Vender::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }else{
+        $latest = Vender::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;
@@ -447,7 +463,6 @@ class VenderController extends Controller
     public function changeLanquage($lang)
     {
 
-
         $user       = Auth::user();
         $user->lang = $lang;
         $user->save();
@@ -524,6 +539,7 @@ class VenderController extends Controller
             $vendorData->shipping_phone     = $vendor[16];
             $vendorData->shipping_zip       = $vendor[17];
             $vendorData->shipping_address   = $vendor[18];
+            $vendorData->owned_by           = \Auth::user()->ownedId();
             $vendorData->created_by         = \Auth::user()->creatorId();
 
             if(empty($vendorData))

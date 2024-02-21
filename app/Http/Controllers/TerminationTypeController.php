@@ -3,17 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\TerminationType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TerminationTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage termination type'))
         {
-            $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = TerminationType::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = TerminationType::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $terminationtypes = $query->get();
 
-            return view('terminationtype.index', compact('terminationtypes'));
+            return view('terminationtype.index', compact('terminationtypes','branches'));
         }
         else
         {
@@ -52,6 +66,7 @@ class TerminationTypeController extends Controller
 
             $terminationtype             = new TerminationType();
             $terminationtype->name       = $request->name;
+            $terminationtype->owned_by = \Auth::user()->ownedId();
             $terminationtype->created_by = \Auth::user()->creatorId();
             $terminationtype->save();
 

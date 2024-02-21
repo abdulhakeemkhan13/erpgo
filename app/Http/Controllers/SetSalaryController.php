@@ -13,21 +13,31 @@ use App\Models\OtherPayment;
 use App\Models\Overtime;
 use App\Models\PayslipType;
 use App\Models\SaturationDeduction;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class SetSalaryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage set salary'))
         {
-            $employees = Employee::where(
-                [
-                    'created_by' => \Auth::user()->creatorId(),
-                ]
-            )->get();
+            if(\Auth::user()->type == 'company' ){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Employee::where('created_by','=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Employee::where('owned_by' ,'=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $employees = $query->get();
 
-            return view('setsalary.index', compact('employees'));
+            return view('setsalary.index', compact('employees','branches'));
         }
         else
         {
@@ -76,11 +86,18 @@ class SetSalaryController extends Controller
 
     public function show($id)
     {
-        $payslip_type      = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        if(\Auth::user()->type == 'Employee')
+        if(\Auth::user()->type == 'company' ){
+            $payslip_type      = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $payslip_type      = PayslipType::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $allowance_options = AllowanceOption::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $loan_options      = LoanOption::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $deduction_options = DeductionOption::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
+        if(\Auth::user()->type == 'Employee')            
         {
             $currentEmployee      = Employee::where('user_id', '=', \Auth::user()->id)->first();
             $allowances           = Allowance::where('employee_id', $currentEmployee->id)->get();
@@ -233,7 +250,11 @@ class SetSalaryController extends Controller
 
     public function employeeBasicSalary($id)
     {
-        $payslip_type = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'company' ){
+            $payslip_type = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $payslip_type = PayslipType::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
         $employee     = Employee::find($id);
         return view('setsalary.basic_salary', compact('employee', 'payslip_type'));
     }

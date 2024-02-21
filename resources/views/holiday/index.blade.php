@@ -28,19 +28,19 @@
             <div class="col-sm-12">
                 <div class=" mt-2 " id="multiCollapseExample1">
                     <div class="card">
-                        <div class="card-body">
-                            {{ Form::open(array('route' => array('holiday.calender'),'method'=>'get','id'=>'holiday_filter')) }}
+                        <div class="card-body filter_change">
+                            {{ Form::open(array('route' => array('holiday.index'),'method'=>'get','id'=>'holiday_filter')) }}
                             <div class="row align-items-center justify-content-end">
                                 <div class="col-xl-10">
-                                    <div class="row">
-                                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                            <div class="btn-box">
+                                    <div class="row justify-content-end">
+                                        @if(\Auth::user()->type == 'company')
+                                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                                <div class="btn-box">
+                                                    {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' , 'onchange' => 'branchtype(this.value)']) }}
+                                                </div>                               
                                             </div>
-                                        </div>
-                                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                            <div class="btn-box">
-                                            </div>
-                                        </div>
+                                        @endif
                                         <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                             <div class="btn-box">
                                                 {{Form::label('start_date',__('Start Date'),['class'=>'form-label'])}}
@@ -60,7 +60,7 @@
                                             <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('holiday_filter').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
                                                 <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                             </a>
-                                            <a href="{{route('holiday.calender')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <a href="{{route('holiday.index')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
                                                 <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
                                             </a>
                                         </div>

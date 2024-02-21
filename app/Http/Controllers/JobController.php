@@ -17,17 +17,36 @@ use Illuminate\Support\Facades\App;
 class JobController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage job'))
         {
-            $jobs = Job::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Job::where('created_by', '=', \Auth::user()->creatorId());
 
-            $data['total']     = Job::where('created_by', '=', \Auth::user()->creatorId())->count();
-            $data['active']    = Job::where('status', 'active')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $data['in_active'] = Job::where('status', 'in_active')->where('created_by', '=', \Auth::user()->creatorId())->count();
+                $data['total']     = Job::where('created_by', '=', \Auth::user()->creatorId())->count();
+                $data['active']    = Job::where('status', 'active')->where('created_by', '=', \Auth::user()->creatorId())->count();
+                $data['in_active'] = Job::where('status', 'in_active')->where('created_by', '=', \Auth::user()->creatorId())->count();
 
-            return view('job.index', compact('jobs', 'data'));
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Job::where('owned_by', '=', \Auth::user()->ownedId());
+
+                $data['total']     = Job::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                $data['active']    = Job::where('status', 'active')->where('owned_by', '=', \Auth::user()->ownedId())->count();
+                $data['in_active'] = Job::where('status', 'in_active')->where('owned_by', '=', \Auth::user()->ownedId())->count();
+
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $jobs = $query->get();
+
+            return view('job.index', compact('jobs', 'data', 'branches'));
         }
         else
         {
@@ -37,16 +56,28 @@ class JobController extends Controller
 
     public function create()
     {
+        if (\Auth::user()->type == 'company') {
+            $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();    
+        }else{
+            $categories = JobCategory::where('owned_by', \Auth::user()->ownedId())->get()->pluck('title', 'id');
+            $categories->prepend('--', '');
 
-        $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-        $categories->prepend('--', '');
+            $branches = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
 
-        $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $branches->prepend('All', 0);
+            $status = Job::$status;
 
-        $status = Job::$status;
+            $customQuestion = CustomQuestion::where('owned_by', \Auth::user()->ownedId())->get();
 
-        $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+        }
 
         return view('job.create', compact('categories', 'status', 'branches', 'customQuestion'));
     }
@@ -93,6 +124,7 @@ class JobController extends Controller
             $job->applicant       = !empty($request->applicant) ? implode(',', $request->applicant) : '';
             $job->visibility      = !empty($request->visibility) ? implode(',', $request->visibility) : '';
             $job->custom_question = !empty($request->custom_question) ? implode(',', $request->custom_question) : '';
+            $job->owned_by      = \Auth::user()->ownedId();
             $job->created_by      = \Auth::user()->creatorId();
             $job->save();
 
@@ -116,20 +148,39 @@ class JobController extends Controller
 
     public function edit(Job $job)
     {
+        if (\Auth::user()->type == 'company') {
+            $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            $categories->prepend('--', '');
 
-        $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-        $categories->prepend('--', '');
+            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
 
-        $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $branches->prepend('All', 0);
+            $status = Job::$status;
 
-        $status = Job::$status;
+            $job->applicant       = explode(',', $job->applicant);
+            $job->visibility      = explode(',', $job->visibility);
+            $job->custom_question = explode(',', $job->custom_question);
 
-        $job->applicant       = explode(',', $job->applicant);
-        $job->visibility      = explode(',', $job->visibility);
-        $job->custom_question = explode(',', $job->custom_question);
+            $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+   
+        }else{
+            $categories = JobCategory::where('owned_by', \Auth::user()->ownedId())->get()->pluck('title', 'id');
+            $categories->prepend('--', '');
 
-        $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+            $branches = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+
+            $status = Job::$status;
+
+            $job->applicant       = explode(',', $job->applicant);
+            $job->visibility      = explode(',', $job->visibility);
+            $job->custom_question = explode(',', $job->custom_question);
+
+            $customQuestion = CustomQuestion::where('owned_by', \Auth::user()->ownedId())->get();
+
+        }
+        
+       
 
         return view('job.edit', compact('categories', 'status', 'branches', 'job', 'customQuestion'));
     }

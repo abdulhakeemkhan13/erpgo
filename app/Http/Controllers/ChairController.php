@@ -44,7 +44,7 @@ class ChairController extends Controller
 
             }else{
                 $user    = \Auth::user();
-                $chair = Chair::where('owned_by', '=', $user->id)->get();
+                $chair = Chair::where('owned_by', '=', $user->ownedId())->get();
             }
             return view('chair.index', compact('chair'));
         }
@@ -110,14 +110,13 @@ class ChairController extends Controller
                 {
                     return redirect()->back()->with('error', $messages->first());
                 }
-            }
-           
+            }           
                 $chair = Chair::create(
                     [
                         'name' => $request->name,
                         'price' => $request->price,
                         'type' => $request->type,
-                        'owned_by' => $user->id,
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                     ]
                 );
@@ -161,7 +160,7 @@ class ChairController extends Controller
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->id)
+            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->ownedId())
             {
 
                 $chair->customField = CustomField::getData($chair, 'chair');
@@ -192,7 +191,7 @@ class ChairController extends Controller
         if(\Auth::user()->can('edit chair'))
         {
             $user = \Auth::user();
-            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->id)
+            if($chair->created_by == $user->creatorId() || $chair->owned_by == $user->ownedId())
             {
                 $validation = [
                     'name' => 'required',
@@ -241,7 +240,7 @@ class ChairController extends Controller
     public function destroy(Chair $chair)
     {
         $user = \Auth::user();
-        if($chair->created_by == $user->creatorId()  || $chair->owned_by == $user->id)
+        if($chair->created_by == $user->creatorId()  || $chair->owned_by == $user->ownedId())
         {
     
             $chair->delete();
@@ -259,16 +258,19 @@ class ChairController extends Controller
     {
 
         $user = \Auth::user();
-        if(\Auth::user()->type == 'branch'){
-            $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->id)->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
+        if(\Auth::user()->type == 'company'){
+            $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
+            $assignchair = Roomassign::where('space_id',$id)->where('status','assign')->pluck('chair_id')->toArray();
+            $assignchair = array_map('intval', $assignchair);
         }else{
 
-            $chair = Chair::where('space_id',$id)->where('created_by', '=', $user->creatorId())->get();
-            $assignchair = Roomassign::where('space_id',$id)->pluck('chair_id')->toArray();
+            $chair = Chair::where('space_id',$id)->where('owned_by', '=', $user->ownedId())->get();
+            $assignchair = Roomassign::where('space_id',$id)->where('status','assign')->pluck('chair_id')->toArray();
+            $assignchair = array_map('intval', $assignchair);
         }
         if($con != null){
             $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();
+            $conchair = array_map('intval', $conchair);
             return response()->json(['success' => 'true','data' => $chair, 'assignchair'=>$assignchair ,'conchair'=>$conchair ], 201);
         }
         // $conchair = Roomassign::where('space_id',$id)->where('contract_id',$con)->pluck('chair_id')->toArray();

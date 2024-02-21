@@ -35,24 +35,34 @@ class IsVisitorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        if(\Auth::user()->can('view chair'))
+        if(\Auth::user()->can('manage vistor'))
         {
             if(\Auth::user()->type == 'company'){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
                 $user    = \Auth::user();
-                $isvisitors = IsVisitor::where('created_by', '=', $user->creatorId())->get();
-
+                $query = IsVisitor::where('created_by', '=', $user->creatorId());
             }
             else if(\Auth ::user()->type == 'clientuser')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $user    = \Auth::user();
-                $isvisitors = IsVisitor::where('company_id', '=', $user->company_id)->get();
+                $query = IsVisitor::where('company_id', '=', $user->company_id);
             }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $user    = \Auth::user();
-                $isvisitors = IsVisitor::where('owned_by', '=', $user->id)->get();
+                $query = IsVisitor::where('owned_by', '=', $user->ownedId());
             }
-            return view('isvisitor.index', compact('isvisitors'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $isvisitors = $query->get();
+            return view('isvisitor.index', compact('isvisitors','branches'));
         }
         else
         {
@@ -67,7 +77,7 @@ class IsVisitorController extends Controller
      */
     public function create(Request $request)
     {
-        if(\Auth::user()->can('create chair'))
+        if(\Auth::user()->can('create vistor'))
         {
             if($request->ajax)
             {
@@ -95,15 +105,13 @@ class IsVisitorController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-        if(\Auth::user()->can('create chair'))
+        if(\Auth::user()->can('create vistor'))
         {
             $user      = \Auth::user();
             $validator = \Validator::make(
                 $request->all(), [
                     'name' => 'required',
                     'date' => 'required',
-                    // 'price' => 'required',
-                    // 'type' => 'required',
                 ]
             );
             if($validator->fails())
@@ -126,7 +134,7 @@ class IsVisitorController extends Controller
                         'cnic' => $request->cnic,
                         'date_time' => $request->date,
                         'user_id' => $user->id,
-                        'owned_by' => $user->owned_by,
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                     ]
                 );
@@ -167,14 +175,14 @@ class IsVisitorController extends Controller
      */
     public function edit(IsVisitor $isvisitor)
     {
-        if(\Auth::user()->can('edit chair'))
+        if(\Auth::user()->can('edit vistor'))
         {
             $user = \Auth::user();
-            if($isvisitor->created_by == $user->creatorId() || $isvisitor->owned_by == $user->id)
+            if($isvisitor->created_by == $user->creatorId() || $isvisitor->owned_by == $user->ownedId())
             {
 
-                $isvisitor->customField = CustomField::getData($isvisitor, 'chair');
-                $customFields        = CustomField::where('module', '=', 'chair')->get();
+                $isvisitor->customField = CustomField::getData($isvisitor, 'isvistor');
+                $customFields        = CustomField::where('module', '=', 'isvistor')->get();
 
                 return view('isvisitor.edit', compact('isvisitor', 'customFields'));
             }
@@ -198,16 +206,14 @@ class IsVisitorController extends Controller
      */
     public function update(IsVisitor $isvisitor, Request $request)
     {
-        if(\Auth::user()->can('edit chair'))
+        if(\Auth::user()->can('edit vistor'))
         {
             $user = \Auth::user();
             if($isvisitor->created_by == $user->creatorId() || $isvisitor->owned_by == $user->id)
             {
                 $validation = [
                     'name' => 'required',
-                    // 'date' => 'required',
-                    // 'price' => 'required',
-                    // 'type' => 'required',
+                    'date' => 'required',
                 ];
 
                 $post         = [];
@@ -252,17 +258,23 @@ class IsVisitorController extends Controller
      */
     public function destroy(IsVisitor $isvisitor)
     {
-        $user = \Auth::user();
-        if($isvisitor->created_by == $user->creatorId()  || $isvisitor->owned_by == $user->id)
-        {
-    
-            $isvisitor->delete();
-            return redirect()->back()->with('success', __('Visitor Deleted Successfully!'));
+        if(\Auth::user()->can('delete vistor'))
+            {
+            $user = \Auth::user();
+            if($isvisitor->created_by == $user->creatorId()  || $isvisitor->owned_by == $user->ownedId())
+            {
+                $isvisitor->delete();
+                return redirect()->back()->with('success', __('Visitor Deleted Successfully!'));
 
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Invalid Visitor.'));
+            }
         }
         else
         {
-            return redirect()->back()->with('error', __('Invalid Visitor.'));
+            return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
 }

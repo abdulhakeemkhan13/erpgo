@@ -18917,6 +18917,7 @@ body:not(.minimenu) .dash-sidebar .dash-submenu .dash-submenu .dash-submenu > .d
 
 .page-header h4, .page-header .h4 {
     margin-bottom: 0;
+    display:none;
     margin-right: 8px;
     padding-right: 8px;
     font-weight: 500;

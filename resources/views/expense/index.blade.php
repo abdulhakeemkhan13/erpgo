@@ -17,6 +17,42 @@
             show_toastr('success', 'Url copied to clipboard', 'success');
         });
     </script>
+    <script>
+        function branchcategory(id) {
+            $.ajax({
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                url: "{{ route('branch.category') }}",
+                type: "POST",
+                data: {id: id},
+                dataType: 'json',
+                success: function (result)
+                {
+                    console.log(result);
+                    if(result.status == 'success'){
+                        $('#categoryselect').empty().append($('<option>', {
+                            value: '',
+                            text: 'select Category'
+                        }));
+                        for (var i = 0; i < result.category.length; i++) {
+                            var category = result.category[i];
+                            $('#categoryselect').append($('<option>', {
+                                value: category.id,
+                                text: category.name
+                            }));
+                        }
+                    } 
+                    if(result.status == 'error'){
+                    }
+                    
+                }
+            });
+        }
+    
+        document.getElementById('branchcategory').addEventListener('change', function() {
+            var id = this.value;
+            branchcategory(id);
+        });
+    </script>
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
@@ -42,22 +78,24 @@
                     <div class="card-body">
                         {{ Form::open(array('route' => array('expense.index'),'method' => 'GET','id'=>'frm_submit')) }}
                         <div class="row align-items-center justify-content-end">
-                            <div class="col-xl-10">
-                                <div class="row">
-                                    <div class="col-3"></div>
-                                    <div class="col-3"></div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
-                                        <div class="btn-box">
-                                            {{Form::label('bill_date',__('Payment Date'),['class'=>'form-label'])}}
-                                            {{ Form::text('bill_date', isset($_GET['bill_date'])?$_GET['bill_date']:null, array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1','readonly')) }}
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box">
-                                            {{ Form::label('category', __('Category'),['class'=>'form-label'])}}
-                                            {{ Form::select('category',$category,isset($_GET['category'])?$_GET['category']:'', array('class' => 'form-control select')) }}
-                                        </div>
-                                    </div>
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
+                                <div class="btn-box">
+                                    {{Form::label('bill_date',__('Payment Date'),['class'=>'form-label'])}}
+                                    {{ Form::text('bill_date', isset($_GET['bill_date'])?$_GET['bill_date']:null, array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1','readonly')) }}
+                                </div>
+                            </div>
+                            @if(\Auth::user()->type == 'company')
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                <div class="btn-box">
+                                    {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select', 'onchange' => 'branchcategory(this.value)']) }}
+                                </div>                               
+                            </div>
+                            @endif
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                <div class="btn-box">
+                                    {{ Form::label('category', __('Category'),['class'=>'form-label'])}}
+                                    {{ Form::select('category',$category,isset($_GET['category'])?$_GET['category']:'', array('class' => 'form-control select','id'=>'categoryselect')) }}
                                 </div>
                             </div>
                             <div class="col-auto mt-4">

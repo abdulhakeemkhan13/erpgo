@@ -39,6 +39,7 @@ class CommissionController extends Controller
             $commission->title       = $request->title;
             $commission->type        = $request->type;
             $commission->amount      = $request->amount;
+            $commission->owned_by  = \Auth::user()->ownedId();
             $commission->created_by  = \Auth::user()->creatorId();
             $commission->save();
 

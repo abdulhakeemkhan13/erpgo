@@ -12,6 +12,7 @@ class Award extends Model
         'date',
         'gift',
         'description',
+        'owned_by',
         'created_by',
     ];
 

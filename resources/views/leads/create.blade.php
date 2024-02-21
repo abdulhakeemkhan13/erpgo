@@ -1,9 +1,9 @@
 {{ Form::open(array('url' => 'leads')) }}
 <div class="modal-body">
     {{-- start for ai module--}}
-    @php
+    {{-- @php
         $plan= \App\Models\Utility::getChatGPTSettings();
-    @endphp
+    @endphp --}}
     {{-- @if($plan->chatgpt == 1)
     <div class="text-end">
         <a href="#" data-size="md" class="btn  btn-primary btn-icon btn-sm" data-ajax-popup-over="true" data-url="{{ route('generate',['lead']) }}"
@@ -15,10 +15,12 @@
     {{-- end for ai module--}}
     <div class="row">
         <div class="col-6 form-group">
-            {{ Form::label('subject', __('Subject'),['class'=>'form-label']) }}
+            {{ Form::label('subject', __('Subject'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::text('subject', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
-        <div class="col-6 form-group">
+        {{ Form::hidden('user_id', \Auth::user()->id), array('class' => 'form-control','required'=>'required') }}
+
+        {{-- <div class="col-6 form-group">
             {{ Form::label('user_id', __('User'),['class'=>'form-label']) }}
             {{ Form::select('user_id', $users,null, array('class' => 'form-control select','required'=>'required')) }}
             @if(count($users) == 1)
@@ -26,17 +28,17 @@
                     {{__('Please create new users')}} <a href="{{route('users.index')}}">{{__('here')}}</a>.
                 </div>
             @endif
-        </div>
+        </div> --}}
         <div class="col-6 form-group">
-            {{ Form::label('name', __('Name'),['class'=>'form-label']) }}
+            {{ Form::label('name', __('Name'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::text('name', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
         <div class="col-6 form-group">
-            {{ Form::label('email', __('Email'),['class'=>'form-label']) }}
+            {{ Form::label('email', __('Email'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::text('email', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
         <div class="col-6 form-group">
-            {{ Form::label('phone', __('Phone'),['class'=>'form-label']) }}
+            {{ Form::label('phone', __('Phone'),['class'=>'form-label']) }}<span class="text-danger"> *</span>
             {{ Form::text('phone', null, array('class' => 'form-control','required'=>'required')) }}
         </div>
     </div>

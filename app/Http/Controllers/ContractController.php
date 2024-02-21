@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BankAccount;
 use App\Models\Chair;
+use App\Models\ChartOfAccount;
 use Auth;
 use App\Models\User;
 use App\Models\Space;
@@ -24,16 +26,23 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Contract_attachment;
 use App\Models\ProductService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 
 
 class ContractController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if (\Auth::user()->can('manage contract')) {
 
             if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $company = Company::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');       
+                $company->prepend('Select Company', '');
+                $branches->prepend('Select Branch', ''); 
+                $query = Contract::where('created_by', '=', \Auth::user()->creatorId());
 
                 $contracts   = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
                 $curr_month  = Contract::where('created_by', '=', \Auth::user()->creatorId())->whereMonth('start_date', '=', date('m'))->get();
@@ -53,18 +62,23 @@ class ContractController extends Controller
                 $cnt_contract['this_week']   = \App\Models\Contract::getContractSummary($curr_week);
                 $cnt_contract['last_30days'] = \App\Models\Contract::getContractSummary($last_30days);
 
-                return view('contract.index', compact('contracts', 'cnt_contract'));
-            } elseif (\Auth::user()->type == 'client') {
-                $contracts   = Contract::where('client_name', '=', \Auth::user()->id)->get();
-                $curr_month  = Contract::where('client_name', '=', \Auth::user()->id)->whereMonth('start_date', '=', date('m'))->get();
-                $curr_week   = Contract::where('client_name', '=', \Auth::user()->id)->whereBetween(
+                // return view('contract.index', compact('contracts', 'cnt_contract'));
+            } else {
+                $contracts   = Contract::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $company->prepend('Select Company', '');
+                $query = Contract::where('owned_by', '=', \Auth::user()->ownedId());   
+                $curr_month  = Contract::where('owned_by', '=', \Auth::user()->ownedId())->whereMonth('start_date', '=', date('m'))->get();
+                $curr_week   = Contract::where('owned_by', '=', \Auth::user()->ownedId())->whereBetween(
                     'start_date',
                     [
                         \Carbon\Carbon::now()->startOfWeek(),
                         \Carbon\Carbon::now()->endOfWeek(),
                     ]
                 )->get();
-                $last_30days = Contract::where('client_name', '=', \Auth::user()->creatorId())->whereDate('start_date', '>', \Carbon\Carbon::now()->subDays(30))->get();
+                $last_30days = Contract::where('owned_by', '=', \Auth::user()->ownedId())->whereDate('start_date', '>', \Carbon\Carbon::now()->subDays(30))->get();
 
                 // Contracts Summary
                 $cnt_contract                = [];
@@ -73,63 +87,116 @@ class ContractController extends Controller
                 $cnt_contract['this_week']   = \App\Models\Contract::getContractSummary($curr_week);
                 $cnt_contract['last_30days'] = \App\Models\Contract::getContractSummary($last_30days);
 
-                return view('contract.index', compact('contracts', 'cnt_contract'));
+                // return view('contract.index', compact('contracts', 'cnt_contract'));
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+                $company = Company::where('owned_by', '=', $request->branches)->get()->pluck('name', 'id');
+                $company->prepend('Select Company', '');
+            }
+            
+            if (!empty($request->company)) {
+                $query->where('company_id', '=', $request->company);
+            }
+            if (count(explode('to', $request->issue_date)) > 1) {
+                $date_range = explode(' to ', $request->issue_date);
+                $query->whereBetween('start_date', $date_range);
+            } elseif (!empty($request->issue_date)) {
+                $date_range = [$request->issue_date, $request->issue_date];
+                $query->whereBetween('start_date', $date_range);
+            }
+            if (!empty($request->status)) {
+                if($request->status == 'open'){
+                    $query->where('close_date', '=', null);
+                }else{
+                    $query->where('close_date', '!=', null);
+                }
+            }
+            $contracts = $query->get();
 
-            $contracts   = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
-
-            return view('contract.index', compact('contracts'));
+            return view('contract.index', compact('contracts','cnt_contract','company','branches'));
+            // return view('contract.index', compact('contracts'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 
+    
+    public function branchCompany(Request $request)
+    {
+        $company = Company::where('owned_by', '=', $request->id)->get();
+        // dd($request->id);
+        if($company == null){
+            $result = [
+                'status' => 'error',
+                'company' => 'null',   
+            ];
+            return response()->json($result);
+        }else{
+            $result = [
+                'status' => 'success',
+                'company' => $company,
+            ];
+            return response()->json($result);
+        }
+    }
 
     public function create()
     {
         $type ='office';
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-        $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
-        if (\Auth::user()->type == 'branch') {
-            $company = Company::where('owned_by', '=', \Auth::user()->id)->pluck('name', 'id');
-            // dd($company);
-            $spaces       = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        } else {
+        if (\Auth::user()->type == 'company') {
             $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
             $spaces       = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->get();
             // $space->prepend(__('Select Space'),0);
             $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
+            
+            $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
+            $security   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'security services')->first();
+        } else {
+            $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
+            // dd($company);
+            $spaces       = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->get();
+            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
+            // $space->prepend(__('Select Space'),0);
+            
+            $contractTypes = ContractType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'services')->first();
+            $security   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'security services')->first();
         }
+       
 
-        return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','type'));
+        return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','security','type'));
     }
 
     public function createvirtualoffice()
     {
         $type ='virtual';
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-        $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
-        if (\Auth::user()->type == 'branch') {
-            $company = Company::where('owned_by', '=', \Auth::user()->id)->pluck('name', 'id');
-            $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->id)->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        } else {
+       
+        if (\Auth::user()->type == 'company') {
             $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
             $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.created_by', '=', \Auth::user()->creatorId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
             // $space->prepend(__('Select Space'),0);
             $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
+            $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
+            $security   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'security services')->first();
+        } else {
+            $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
+            $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->ownedId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
+            // $space->prepend(__('Select Space'),0);
+            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
+            $contractTypes = ContractType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'services')->first();
+            $security   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'security services')->first();
         }
 
-        return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','type'));
+        return view('contract.create', compact('contractTypes', 'spaces', 'ismeeting', 'company','services','security','type'));
     }
-
 
     public function store(Request $request)
     {
@@ -146,13 +213,13 @@ class ContractController extends Controller
                     'space' => 'required',
                     'room_hours' => 'required',
                     'hourly_rate' => 'required',
+                    'security_deposit_id' => 'required',
+                    'security_deposit_price' => 'required',
                 ];
             }else{
                 $rules = [
                     'subject' => 'required',
                     'services_charges' => 'required',
-                    // 'email' => 'required',
-                    // 'phone_no' => 'required',
                     'type' => 'required',
                     'value' => 'required',
                     'start_date' => 'required',
@@ -161,6 +228,8 @@ class ContractController extends Controller
                     'chair' => 'required',
                     'room_hours' => 'required',
                     'hourly_rate' => 'required',
+                    'security_deposit_id' => 'required',
+                    'security_deposit_price' => 'required',                    
                 ];
             }
 
@@ -177,13 +246,15 @@ class ContractController extends Controller
                 $company  = new Company();
                 if ($request->has('new') && $request->input('new') == '1') {
                     $company->name      = $request->newcompany;
-                    $company->owned_by  = \Auth::user()->id;
+                    $company->owned_by  = \Auth::user()->ownedId();
                     $company->created_by  = \Auth::user()->creatorId();
                     $company->save();
                 } else {
                     $company  = Company::where('id', $request->company)->first();
                 }
+
                 $contract              = new Contract();
+                $contract->contract_id     = $this->contractNumber();
                 $contract->company_id      = $company->id;
                 $contract->subject     = $request->subject;
                 // $contract->project_id  =$request->project_id;
@@ -194,14 +265,18 @@ class ContractController extends Controller
                 $contract->description = $request->description;
                 $contract->service_id = $request->services_id;
                 $contract->service_price = $request->services_charges;
-                $contract->owned_by  = \Auth::user()->id;
+                $contract->security_deposit_id = $request->security_deposit_id;
+                $contract->security_deposit_price = $request->security_deposit_price;
+                $contract->owned_by  = \Auth::user()->ownedId();
                 $contract->created_by  = \Auth::user()->creatorId();
                 $contract->save();
+
                 if ($request->has('new') && $request->input('new') == '1') {
-                    if (\Auth::user()->type == 'branch') {
-                        $latest = Customer::where('owned_by', '=', \Auth::user()->id)->latest()->first();
-                    } else {
+                    if (\Auth::user()->type == 'company') {
+
                         $latest = Customer::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+                    } else {
+                        $latest = Customer::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
                     }
                     if (!$latest) {
                         $customer_id = 1;
@@ -209,7 +284,7 @@ class ContractController extends Controller
                         $customer_id = $latest->customer_id + 1;
                     }
 
-                    $default_language          = DB::table('settings')->select('value')->where('name', 'default_language')->first();
+                    $default_language           = DB::table('settings')->select('value')->where('name', 'default_language')->first();
                     
                     $customers                  = new Customer();
                     $customers->contact         = $request->phone_no;
@@ -217,10 +292,16 @@ class ContractController extends Controller
                     $customers->email           = $request->email;
                     $customers->ntn             = $request->ntn;
                     $customers->company_id      = $company->id;
-                    $customers->owned_by        = \Auth::user()->id;
+                    $customers->owned_by        = \Auth::user()->ownedId();
                     $customers->created_by      = \Auth::user()->creatorId();
                     $customers->name            = $company->name . ' customer';
                     $customers->lang = !empty($default_language) ? $default_language->value : '';
+                    $customers->billing_name    = $company->name . ' customer';
+                    $customers->billing_address = $request->email;
+                    $customers->billing_phone   =  $request->phone_no;
+    
+                    $customers->shipping_name    = \Auth::user()->name;
+                    $customers->shipping_address =  \Auth::user()->email;
                     $customers->save();
                 }
                 
@@ -258,34 +339,34 @@ class ContractController extends Controller
 
                 //Send Email
                 $setings = Utility::settings();
-                // if($setings['new_contract'] == 1) {
+                if($setings['new_contract'] == 1) {
 
-                //     $client = \App\Models\User::find($request->client_name);
-                //     $contractArr = [
-                //         'contract_subject' => $request->subject,
-                //         'contract_client' => $client->name,
-                //         'contract_value' => \Auth::user()->priceFormat($request->value),
-                //         'contract_start_date' => \Auth::user()->dateFormat($request->start_date),
-                //         'contract_end_date' => \Auth::user()->dateFormat($request->end_date),
-                //         'contract_description' => $request->description,
-                //     ];
+                    $customer = \App\Models\Customer::where('company_id', '=', $contract->company_id)->first();
+                    $contractArr = [
+                        'contract_subject' => $request->subject,
+                        'contract_client' => $customer->name,
+                        'contract_value' => \Auth::user()->priceFormat($request->value),
+                        'contract_start_date' => \Auth::user()->dateFormat($request->start_date),
+                        'contract_end_date' => \Auth::user()->dateFormat($request->end_date),
+                        'contract_description' => $request->description,
+                    ];
 
-                //     // Send Email
-                //     $resp = Utility::sendEmailTemplate('new_contract', [$client->id => $client->email], $contractArr);
+                    // Send Email
+                    $resp = Utility::sendEmailTemplate('new_contract', [$customer->id => $customer->email], $contractArr);
 
-                // }
+                }
 
                 //For Notification
-                // $setting  = Utility::settings(\Auth::user()->creatorId());
-                // $client = \App\Models\User::find($request->client_name);
-                // $contractNotificationArr = [
-                //     'contract_subject' => $request->subject,
-                //     'contract_client' => $client->name,
-                //     'contract_value' => \Auth::user()->priceFormat($request->value),
-                //     'contract_start_date' => \Auth::user()->dateFormat($request->start_date),
-                //     'contract_end_date' =>\Auth::user()->dateFormat($request->end_date),
-                //     'user_name' => \Auth::user()->name,
-                // ];
+                $setting  = Utility::settings(\Auth::user()->creatorId());
+                $customer = \App\Models\Customer::where('company_id', '=', $contract->company_id)->first();
+                $contractNotificationArr = [
+                    'contract_subject' => $request->subject,
+                    'contract_client' => $customer->name,
+                    'contract_value' => \Auth::user()->priceFormat($request->value),
+                    'contract_start_date' => \Auth::user()->dateFormat($request->start_date),
+                    'contract_end_date' =>\Auth::user()->dateFormat($request->end_date),
+                    'user_name' => \Auth::user()->name,
+                ];
                 //Slack Notification
                 // if(isset($setting['contract_notification']) && $setting['contract_notification'] ==1)
                 // {
@@ -323,12 +404,27 @@ class ContractController extends Controller
         }
     }
 
-    public function show($id)
+    function contractNumber()
     {
+        // if(\Auth::user()->type == ('company')){
+            // $latest = Contract::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        // }else{
+            $latest = Contract::where('owned_by', '=', \Auth::user()->ownedId())->latest()->first();
+        // }
+        if(!$latest)
+        {
+            return 1;
+        }
+
+        return $latest->contract_id + 1;
+    }
+
+    public function show($ids)
+    {
+        $id      = Crypt::decrypt($ids);
         if (\Auth::user()->can('show contract')) {
             $contract = Contract::find($id);
-
-            if ($contract->created_by == \Auth::user()->creatorId()) {
+            if ($contract->created_by == \Auth::user()->creatorId() || $contract->owned_by == \Auth::user()->ownedId()) {
                 $client   = $contract->client;
                 return view('contract.show', compact('contract', 'client'));
             } else {
@@ -342,22 +438,11 @@ class ContractController extends Controller
 
     public function edit(Contract $contract)
     {
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         $space_type = Roomassign::where('contract_id',$contract->id)->first();
-        $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
+
         // $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         // $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-        if (\Auth::user()->type == 'branch') {
-            if($space_type->chair_id == 0){
-                $type ='virtual';
-                $spaces  = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->id)->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
-            }else{
-                $type ='office';
-                $spaces      = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->get();
-            }
-            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->id)->where('meeting', 'yes')->get();
-            // $space->prepend(__('Select Space'),0);
-        } else {
+        if (\Auth::user()->type == 'company') {
             if($space_type->chair_id == 0){
                 $type ='virtual';
                 $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.created_by', '=', \Auth::user()->creatorId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
@@ -365,14 +450,29 @@ class ContractController extends Controller
                 $type ='office';
                 $spaces       = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->get();
             }
-            // $space->prepend(__('Select Space'),0);
+            $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
+            $security   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'security services')->first();
             $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
+        } else {
+            if($space_type->chair_id == 0){
+                $type ='virtual';
+                $spaces  = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->ownedId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
+            }else{
+                $type ='office';
+                $spaces      = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
+            $contractTypes = ContractType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'services')->first();
+            $security   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'security services')->first();
+            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
+
         }
-            $roomassign = Roomassign::where('contract_id',$contract->id)->get();
+        $roomassign = Roomassign::where('contract_id',$contract->id)->get();
             $chairs = Chair::where('space_id',@$roomassign[0]->space_id)->get();
             $chairget =$roomassign->pluck('chair_id')->toArray();
             $chairused =Roomassign::where('space_id',@$roomassign[0]->space_id)->pluck('chair_id')->toArray();
-        return view('contract.edit', compact('contractTypes','chairs', 'chairused','chairget','spaces', 'contract', 'ismeeting','roomassign','type','services'));
+        return view('contract.edit', compact('contractTypes','chairs', 'chairused','chairget','spaces', 'contract', 'ismeeting','roomassign','type','services','security'));
     }
 
     public function update(Request $request, Contract $contract)
@@ -426,15 +526,16 @@ class ContractController extends Controller
                     $contract->start_date  = $request->start_date;
                     $contract->end_date    = $request->end_date;
                     $contract->service_price    = $request->services_charges;
+                    $contract->security_deposit_id = $request->security_deposit_id;
+                    $contract->security_deposit_price = $request->security_deposit_price;
                     $contract->description = $request->description;
-                    // $contract->owned_by  = \Auth::user()->id;
+                    // $contract->owned_by  = \Auth::user()->ownedId();
                     // $contract->created_by  = \Auth::user()->creatorId();
                     $contract->save();
             
                     if($request->create_type == 'office'){
                         // Get the original chair IDs assigned to the contract
                         $originalChairIds = Roomassign::where('contract_id', $contract->id)->pluck('chair_id')->toArray();
-
                         // Iterate over the submitted chair IDs
                         foreach ($request->chair as $chairId) {
                             $existingRoomAssign = Roomassign::where('contract_id', $contract->id)
@@ -446,7 +547,7 @@ class ContractController extends Controller
                             } else {
                                 // Creating new record
                                 Roomassign::create([
-                                    'company_id' => $request->company_id,
+                                    'company_id' => $contract->company_id,
                                     'contract_id' => $contract->id,
                                     'space_id' => $request->space,
                                     'chair_id' => $chairId,
@@ -483,6 +584,8 @@ class ContractController extends Controller
 
                     return redirect()->route('contract.index')->with('success', __('Contract successfully updated.'));
                 } catch (\Exception $e) {
+                dd($e);
+
                     DB::rollback();
                     return redirect()->back()->with('error', $e);
                 }
@@ -513,11 +616,13 @@ class ContractController extends Controller
 
     public function grid()
     {
-        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'client') {
+        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'client' || \Auth::user()->type == 'branch') {
             if (\Auth::user()->type == 'company') {
                 $contracts = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
-            } else {
+            } elseif (\Auth::user()->type == 'client') {
                 $contracts = Contract::where('client_name', '=', \Auth::user()->id)->get();
+            }else{
+                $contracts = Contract::where('owned_by', '=', \Auth::user()->ownedId())->get();
             }
 
             /*   $defualtView         = new UserDefualtView();
@@ -535,7 +640,7 @@ class ContractController extends Controller
     {
 
 
-        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'client') {
+        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'client' || \Auth::user()->type == 'branch') {
             $contract = Contract::find($id);
             $request->validate(['file' => 'required']);
 
@@ -605,7 +710,7 @@ class ContractController extends Controller
     {
 
         $contract        = Contract::find($id);
-        if (\Auth::user()->type == 'company') {
+        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'branch') {
             $file = Contract_attachment::find($file_id);
             if ($file) {
                 $file_path = storage_path('contract_attechment/' . $file->files);
@@ -688,7 +793,7 @@ class ContractController extends Controller
 
     public function contract_descriptionStore($id, Request $request)
     {
-        if (\Auth::user()->type == 'company') {
+        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'branch') {
             $contract        = Contract::find($id);
             if ($contract->created_by == \Auth::user()->creatorId()) {
                 $contract->contract_description = $request->contract_description;
@@ -788,30 +893,83 @@ class ContractController extends Controller
 
     public function copycontract($id)
     {
-        $contract = Contract::find($id);
-        $clients       = User::where('type', '=', 'Client')->get()->pluck('name', 'id');
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $project       = Project::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-        $date         = $contract->start_date . ' to ' . $contract->end_date;
-        $contract->setAttribute('date', $date);
+        $contract = Contract::find($id);        
+        $space_type = Roomassign::where('contract_id',$contract->id)->first();
+        if (\Auth::user()->type == 'company') {
+            if($space_type->chair_id == 0){
+                $type ='virtual';
+                $spaces       = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.created_by', '=', \Auth::user()->creatorId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
+            }else{
+                $type ='office';
+                $spaces       = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->get();
+            }
+            $company = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('name', 'id');
+            $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'services')->first();
+            $security   = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', 'security services')->first();
+            $ismeeting   = Space::with('type')->where('created_by', '=', \Auth::user()->creatorId())->where('meeting', 'yes')->get();
+        } else {
+            if($space_type->chair_id == 0){
+                $type ='virtual';
+                $spaces  = Space::join('space_types', 'spaces.type_id', '=', 'space_types.id')->where('space_types.name', 'Virtual Office')->where('spaces.owned_by', '=', \Auth::user()->ownedId())->select('spaces.id','spaces.name','space_types.name as space_types_name')->get();
+            }else{
+                $type ='office';
+                $spaces      = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
+            $company = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('name', 'id');
+            $contractTypes = ContractType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $services   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'services')->first();
+            $security   = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'security services')->first();
+            $ismeeting   = Space::with('type')->where('owned_by', '=', \Auth::user()->ownedId())->where('meeting', 'yes')->get();
 
-        return view('contract.copy', compact('contract', 'contractTypes', 'clients', 'project'));
+        }
+            $date         = $contract->start_date . ' to ' . $contract->end_date;
+            $contract->setAttribute('date', $date);
+            $roomassign = Roomassign::where('contract_id',$contract->id)->get();
+            $chairs = Chair::where('space_id',@$roomassign[0]->space_id)->get();
+            $chairused =Roomassign::where('space_id',@$roomassign[0]->space_id)->pluck('chair_id')->toArray();
+        return view('contract.copy', compact('contractTypes','chairs', 'chairused','spaces', 'contract', 'ismeeting','roomassign','type','services','security','company'));
+
     }
 
     public function copycontractstore(Request $request)
     {
-
         if (\Auth::user()->type == 'company') {
-            $rules = [
-                'client' => 'required',
-                'subject' => 'required',
-                'project_id' => 'required',
-                'type' => 'required',
-                'value' => 'required',
-                'status' => 'Pending',
-                'start_date' => 'required',
-                'end_date' => 'required',
-            ];
+            if($request->create_type == 'virtual'){
+                $rules = [
+                    'subject' => 'required',
+                    'type' => 'required',
+                    'services_charges' => 'required',
+                    'value' => 'required',
+                    'start_date' => 'required',
+                    'end_date' => 'required',
+                    'space' => 'required',
+                    'room_hours' => 'required',
+                    'hourly_rate' => 'required',
+                    'services_id' => 'required',
+                    'services_charges' => 'required',
+                    'security_deposit_id' => 'required',
+                    'security_deposit_price' => 'required',
+                ];
+            }else{
+                $rules = [
+                    'subject' => 'required',
+                    'services_charges' => 'required',
+                    'type' => 'required',
+                    'value' => 'required',
+                    'start_date' => 'required',
+                    'end_date' => 'required',
+                    'space' => 'required',
+                    'chair' => 'required',
+                    'room_hours' => 'required',
+                    'hourly_rate' => 'required',
+                    'services_id' => 'required',
+                    'services_charges' => 'required',
+                    'security_deposit_id' => 'required',
+                    'security_deposit_price' => 'required',                    
+                ];
+            }
+
 
             $validator = \Validator::make($request->all(), $rules);
 
@@ -820,55 +978,98 @@ class ContractController extends Controller
 
                 return redirect()->route('contract.index')->with('error', $messages->first());
             }
-            // $date = explode(' to ', $request->date);
-            $contract              = new Contract();
-            $contract->client_name      = $request->client;
-            $contract->subject     = $request->subject;
-            $contract->project_id  = implode(',', $request->project_id);
-            $contract->type        = $request->type;
-            $contract->value       = $request->value;
-            $contract->start_date  = $request->start_date;
-            $contract->end_date    = $request->end_date;
-            $contract->description = $request->description;
-            $contract->created_by  = \Auth::user()->creatorId();
-            $contract->save();
+            DB::beginTransaction();
+            try {
+                    $company  = Company::where('id', $request->company)->first();
 
-            //Send Email
-            $setings = Utility::settings();
-            if ($setings['new_contract'] == 1) {
+                    $contract              = new Contract();
+                    $contract->contract_id     = $this->contractNumber();
+                    $contract->company_id      = $company->id;
+                    $contract->subject     = $request->subject;
+                    $contract->type        = $request->type;
+                    $contract->value       = $request->value;
+                    $contract->start_date  = $request->start_date;
+                    $contract->end_date    = $request->end_date;
+                    $contract->description = $request->description;
+                    $contract->service_id = $request->services_id;
+                    $contract->service_price = $request->services_charges;
+                    $contract->security_deposit_id = $request->security_deposit_id;
+                    $contract->security_deposit_price = $request->security_deposit_price;
+                    $contract->owned_by  = \Auth::user()->ownedId();
+                    $contract->created_by  = \Auth::user()->creatorId();
+                    $contract->save();
+                
+                if($request->create_type == 'virtual'){
+                        $assign_room   = new Roomassign();
+                        $assign_room->company_id     = $company->id;
+                        $assign_room->contract_id     = $contract->id;
+                        $assign_room->space_id        = $request->space;
+                        $assign_room->chair_id        = 0;
+                        $assign_room->save();
+                }else{
+                    for ($i = 0; $i < count($request->chair); $i++) {
+                        $assign_room   = new Roomassign();
+                        $assign_room->company_id     = $company->id;
+                        $assign_room->contract_id     = $contract->id;
+                        $assign_room->space_id        = $request->space;
+                        $assign_room->chair_id        = $request->chair[$i];
+                        $assign_room->save();
+                    }
+                }
 
-                $client = \App\Models\User::find($request->client);
-                $contractArr = [
-                    'contract_subject' => $request->subject,
-                    'contract_client' => $client->name,
-                    'contract_value' => \Auth::user()->priceFormat($request->value),
-                    'contract_start_date' => \Auth::user()->dateFormat($request->start_date),
-                    'contract_end_date' => \Auth::user()->dateFormat($request->end_date),
-                    'contract_description' => $request->description,
-                ];
+                for ($j = 0; $j < count($request->room_hours_ids); $j++) {
+                    $contract_space_hour = new ContractSpaceHoure;
+                    $contract_space_hour->contract_id   = $contract->id;
+                    $contract_space_hour->space_id      = $request->room_hours_ids[$j];
+                    $contract_space_hour->company_id    = $company->id;
+                    $contract_space_hour->assign_hour   = $request->room_hours[$j];
+                    $contract_space_hour->hourly_rate   = $request->hourly_rate[$j];
+                    $contract_space_hour->save();
+                }
 
-                // Send Email
-                $resp = Utility::sendEmailTemplate('new_contract', [$client->id => $client->email], $contractArr);
+                DB::commit();
+                
+                //Send Email
+                $setings = Utility::settings();
+                if ($setings['new_contract'] == 1) {
 
-                return redirect()->route('contract.index')->with('success', __('Contract successfully created.') . (($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
-            }
+                    $customer = Customer::where('company_id', '=', $contract->company_id)->first();
+                    $contractArr = [
+                        'contract_subject' => $request->subject,
+                        'contract_client' => $customer->name,
+                        'contract_value' => \Auth::user()->priceFormat($request->value),
+                        'contract_start_date' => \Auth::user()->dateFormat($request->start_date),
+                        'contract_end_date' => \Auth::user()->dateFormat($request->end_date),
+                        'contract_description' => $request->description,
+                    ];
+
+                    // Send Email
+                    $resp = Utility::sendEmailTemplate('new_contract', [$customer->id => $customer->email], $contractArr);
+
+                    return redirect()->route('contract.index')->with('success', __('Contract successfully created.') . (($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+                }
 
 
-            //Slack Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            if (isset($setting['contract_notification']) && $setting['contract_notification'] == 1) {
-                $msg = $request->subject . ' ' . __("created by") . ' ' . \Auth::user()->name . '.';
-                Utility::send_slack_msg($msg);
-            }
+                //Slack Notification
+                $setting  = Utility::settings(\Auth::user()->creatorId());
+                if (isset($setting['contract_notification']) && $setting['contract_notification'] == 1) {
+                    $msg = $request->subject . ' ' . __("created by") . ' ' . \Auth::user()->name . '.';
+                    Utility::send_slack_msg($msg);
+                }
 
-            //Telegram Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            if (isset($setting['telegram_contract_notification']) && $setting['telegram_contract_notification'] == 1) {
-                $msg = $request->subject . ' ' . __("created by") . ' ' . \Auth::user()->name . '.';
-                Utility::send_telegram_msg($msg);
-            }
+                //Telegram Notification
+                $setting  = Utility::settings(\Auth::user()->creatorId());
+                if (isset($setting['telegram_contract_notification']) && $setting['telegram_contract_notification'] == 1) {
+                    $msg = $request->subject . ' ' . __("created by") . ' ' . \Auth::user()->name . '.';
+                    Utility::send_telegram_msg($msg);
+                }
 
             return redirect()->route('contract.index')->with('success', __('Contract successfully created.'));
+            } catch (\Exception $e) {
+                dd($e);
+                DB::rollback();
+                return redirect()->back()->with('error', $e);
+            }
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -883,18 +1084,18 @@ class ContractController extends Controller
         ];
         $setings = Utility::settings();
         if ($setings['new_contract'] == 1) {
-
-            $client = User::find($contract->client_name);
+            
+            $customer = Customer::where('company_id', '=', $contract->company_id)->first();
 
             $estArr = [
-                'email' => $client->email,
+                'email' => $customer->email,
                 'contract_subject' => $contract->subject,
-                'contract_client' => $client->name,
+                'contract_client' => $customer->name,
                 'contract_start_date' => $contract->start_date,
                 'contract_end_date' => $contract->end_date,
             ];
-            $resp = Utility::sendEmailTemplate('new_contract', [$client->id => $client->email], $estArr);
-            return redirect()->route('contract.show', $contract->id)->with('success', __('Email Send successfully!') . (($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+            $resp = Utility::sendEmailTemplate('new_contract', [$customer->id => $customer->email], $estArr);
+            return redirect()->route('contract.show', Crypt::encrypt($contract->id))->with('success', __('Email Send successfully!') . (($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
         }
     }
 
@@ -907,7 +1108,7 @@ class ContractController extends Controller
     {
         $contract              = Contract::find($request->contract_id);
 
-        if (\Auth::user()->type == 'company') {
+        if (\Auth::user()->type == 'company' || \Auth::user()->type == 'branch') {
             $contract->company_signature       = $request->company_signature;
         }
         if (\Auth::user()->type == 'client') {
@@ -933,4 +1134,43 @@ class ContractController extends Controller
 
         return view('contract.template', compact('contract'));
     }
+    
+    public function contract_status($contract_id)
+    {
+        $id = \Illuminate\Support\Facades\Crypt::decrypt($contract_id);
+        $contract  = Contract::findOrFail($id);
+        $contract->close_date = date('Y-m-d H:i:s');
+        $contract->save();
+
+        Roomassign::where('contract_id', $id)->update(
+            [
+                'status' => 'close',
+            ]); 
+
+        return redirect()->back()->with('success', __('Contract successfully Close!'));
+        // return view('contract.template', compact('contract'));
+    }
+
+    // public function contract_clear($contract_id)
+    // {
+    //     $id = $contract_id;
+    //     if(\Auth::user()->type == ('company')){
+    //         $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+    //                 ->where('created_by', \Auth::user()->creatorId())->get()
+    //                 ->pluck('code_name', 'id');
+    //     }else{
+    //         $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+    //                 ->where('owned_by', \Auth::user()->ownedId())->get()
+    //                 ->pluck('code_name', 'id');
+    //     }
+    //     $contract  = Contract::findOrFail($id);
+    //     $Id =$id;
+    //     // $contract->cont_status = 'close';
+    //     // $contract->save();
+    //     // dd($id);
+    //     return view('contract.contract_clear', compact('chartAccounts','Id','contract'));
+
+    //     return redirect()->back()->with('success', __('Contract successfully Close!'));
+    //     // return view('contract.template', compact('contract'));
+    // }
 }

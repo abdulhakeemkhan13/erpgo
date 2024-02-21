@@ -39,8 +39,10 @@ class LeadController extends Controller
      */
     public function index()
     {
-        if(\Auth::user()->can('manage lead'))
-        {
+        if(\Auth::user()->can('manage lead')){
+            // if(\Auth::user()->type == 'company' ){
+
+            // }
             if(\Auth::user()->default_pipeline)
             {
                 $pipeline = Pipeline::where('created_by', '=', \Auth::user()->creatorId())->where('id', '=', \Auth::user()->default_pipeline)->first();
@@ -85,6 +87,7 @@ class LeadController extends Controller
 
             $pipelines = Pipeline::where('created_by', '=', $usr->creatorId())->get()->pluck('name', 'id');
             $leads     = Lead::select('leads.*')->join('user_leads', 'user_leads.lead_id', '=', 'leads.id')->where('user_leads.user_id', '=', $usr->id)->where('leads.pipeline_id', '=', $pipeline->id)->orderBy('leads.order')->get();
+            // dd($leads);
 
             return view('leads.list', compact('pipelines', 'pipeline', 'leads'));
         }
@@ -102,12 +105,17 @@ class LeadController extends Controller
     public function create()
     {
 
-        if(\Auth::user()->can('create lead'))
-        {
-            $users = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '!=', 'client')->where('type', '!=', 'company')->where('id', '!=', \Auth::user()->id)->get()->pluck('name', 'id');
-            $users->prepend(__('Select User'), '');
+        if(\Auth::user()->can('create lead')) {
+            // if(\Auth::user()->type == 'company' ){
+            //     $users = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '!=', 'client')->where('type', '!=', 'company')->where('id', '!=', \Auth::user()->id)->get()->pluck('name', 'id');
+            //     $users->prepend(__('Select User'), '');
+            // }else{
+            //     $users = User::where('owned_by', '=', \Auth::user()->ownedId())->where('type', '!=', 'client')->where('type', '!=', 'company')->where('id', '!=', \Auth::user()->id)->get()->pluck('name', 'id');
+            //     $users->prepend(__('Select User'), '');
+            // }
 
-            return view('leads.create', compact('users'));
+            // return view('leads.create', compact('users'));
+            return view('leads.create');
         }
         else
         {
@@ -130,10 +138,10 @@ class LeadController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'subject' => 'required',
-                                   'name' => 'required',
-                                   'email' => 'required|unique:leads,email',
-                               ]
+                                'subject' => 'required',
+                                'name' => 'required',
+                                'email' => 'required|unique:leads,email',
+                            ]
             );
 
             if($validator->fails())
@@ -171,13 +179,13 @@ class LeadController extends Controller
                 $lead->email       = $request->email;
                 $lead->phone       = $request->phone;
                 $lead->subject     = $request->subject;
-                $lead->user_id     = $request->user_id;
+                $lead->user_id     = 0;
                 $lead->pipeline_id = $pipeline->id;
                 $lead->stage_id    = $stage->id;
+                $lead->owned_by  = $usr->ownedId();
                 $lead->created_by  = $usr->creatorId();
                 $lead->date        = date('Y-m-d');
                 $lead->save();
-
 
                     if($request->user_id!=\Auth::user()->id){
                         $usrLeads = [
@@ -404,6 +412,7 @@ class LeadController extends Controller
                         $isTransfer = ["products", "sources", "files", "discussion", "notes", "calls", "emails"];
                         $dealdata = [];
                         $dealdata['name'] = $lead->name;
+                        $dealdata['phone'] = $lead->phone;
                         $dealdata['price'] = '0';
                         $dealdata['isTransfer'] = $isTransfer;
                         $this->autoconvertToDeal($lead->id,$dealdata);
@@ -1165,6 +1174,7 @@ class LeadController extends Controller
                     $isTransfer = ["products", "sources", "files", "discussion", "notes", "calls", "emails"];
                     $dealdata = [];
                     $dealdata['name'] = $lead_data->name;
+                    $dealdata['phone'] = $lead_data->phone;
                     $dealdata['price'] = '0';
                     $dealdata['isTransfer'] = $isTransfer;
                     $this->autoconvertToDeal($post['lead_id'],$dealdata);
@@ -1777,6 +1787,7 @@ class LeadController extends Controller
 
         $deal              = new Deal();
         $deal->name        = $request['name'];
+        $deal->phone        = $request['phone'];
         $deal->price       = empty($request['price']) ? 0 : $request['price'];
         $deal->pipeline_id = $lead->pipeline_id;
         $deal->stage_id    = $stage->id;

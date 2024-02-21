@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\DebitNote;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 
@@ -14,13 +15,26 @@ class DebitNoteController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage debit note'))
         {
-            $bills = Bill::where('created_by', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company' ){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Bill::where('created_by', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Bill::where('owned_by', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+                $bills = $query->get(); 
 
-            return view('debitNote.index', compact('bills'));
+            return view('debitNote.index', compact('bills','branches'));
         }
         else
         {
@@ -171,7 +185,12 @@ class DebitNoteController extends Controller
     {
         if(\Auth::user()->can('create debit note'))
         {
-            $bills = Bill::where('created_by', \Auth::user()->creatorId())->get()->pluck('bill_id', 'id');
+            if(\Auth::user()->type == 'company'){
+                $bills = Bill::where('created_by', \Auth::user()->creatorId())->get()->pluck('bill_id', 'id');
+            }else{
+                $bills = Bill::where('owned_by', \Auth::user()->ownedId())->get()->pluck('bill_id', 'id');
+            }
+            
 
             return view('debitNote.custom_create', compact('bills'));
         }

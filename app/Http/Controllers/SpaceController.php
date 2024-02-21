@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chair;
+use App\Models\Company;
 use App\Models\CustomField;
 use App\Models\Plan;
 use App\Models\ProductService;
+use App\Models\Roomassign;
 use App\Models\SpaceType;
 use App\Models\Space;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -33,19 +36,28 @@ class SpaceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('view space'))
         {
             if(\Auth::user()->type == 'company'){
             $user    = \Auth::user();
-            $spaces = Space::where('created_by', '=', $user->creatorId())->get();
-
+            $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+            $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+            $branches->prepend('Select Branch', '');
+            $query = Space::where('created_by', '=', \Auth::user()->creatorId());
         }else{
             $user    = \Auth::user();
-            $spaces = Space::where('owned_by', '=', $user->id)->get();
+            $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $branches->prepend('Select Branch', '');
+            $query = Space::where('owned_by', '=', \Auth::user()->ownedId());
             }
-            return view('space.index', compact('spaces'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            
+            $spaces = $query->get();
+            return view('space.index', compact('spaces','branches',));
         }
         else
         {
@@ -76,7 +88,7 @@ class SpaceController extends Controller
         
                 }else{
                     $user    = \Auth::user();
-                    $spacetype = SpaceType::where('owned_by', '=', $user->id)->pluck('name','id');
+                    $spacetype = SpaceType::where('owned_by', '=', $user->ownedId())->pluck('name','id');
                 }
 
                 return view('space.create', compact('customFields','spacetype'));
@@ -119,8 +131,7 @@ class SpaceController extends Controller
                 {
                     return redirect()->back()->with('error', $messages->first());
                 }
-            }
-           
+            }           
                 $branches = Space::create(
                     [
                         'name' => $request->name,
@@ -130,19 +141,19 @@ class SpaceController extends Controller
                         'window' => $request->window,
                         'meeting' => $request->meeting,
                         'description' => $request->description,
-                        'owned_by' => $user->id,
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                     ]
                 );
                 if($branches->capacity > 0){
                     for ($i=1; $i <=$branches->capacity ; $i++) {
-                         Chair::create(
+                        Chair::create(
                             [
                                 'name' => 'chair'.$i,
                                 'space_id' => $branches->id,
                                 'type' => 'none',
                                 'price' => '0',
-                                'owned_by' => $user->id,
+                                'owned_by' => $user->ownedId(),
                                 'created_by' => $user->creatorId(),
                             ]
                         );
@@ -164,6 +175,8 @@ class SpaceController extends Controller
                 $productService->sale_chartaccount_id       = $space_type->account_head;
                 $productService->expense_chartaccount_id    = 0;
                 $productService->category_id                = 0;
+                $productService->owned_by       = \Auth::user()->ownedId();
+
                 $productService->created_by       = \Auth::user()->creatorId();
                 $productService->save();
 
@@ -206,7 +219,7 @@ class SpaceController extends Controller
         if(\Auth::user()->can('edit space'))
         {
             $user = \Auth::user();
-            if($space->created_by == $user->creatorId() || $space->owned_by == $user->id)
+            if($space->created_by == $user->creatorId() || $space->owned_by == $user->ownedId())
             {
 
                 $space->customField = CustomField::getData($space, 'space');
@@ -218,7 +231,7 @@ class SpaceController extends Controller
         
                 }else{
                     $user    = \Auth::user();
-                    $spacetype = SpaceType::where('owned_by', '=', $user->id)->pluck('name','id');
+                    $spacetype = SpaceType::where('owned_by', '=', $user->ownedId())->pluck('name','id');
                 }
 
                 return view('space.edit', compact('space', 'customFields','spacetype'));
@@ -246,7 +259,7 @@ class SpaceController extends Controller
         if(\Auth::user()->can('edit space'))
         {
             $user = \Auth::user();
-            if($space->created_by == $user->creatorId() || $space->owned_by == $user->id)
+            if($space->created_by == $user->creatorId() || $space->owned_by == $user->ownedId())
             {
                 $validation = [
                     'name' => 'required',
@@ -281,16 +294,16 @@ class SpaceController extends Controller
                         $a=$chair;
                         for ($i=1; $i <=$diffchair; $i++) {
                             Chair::create(
-                               [
-                                   'name' => 'chair'.++$a,
-                                   'space_id' => $space->id,
-                                   'type' => 'none',
-                                   'price' => '0',
-                                   'owned_by' => $user->id,
-                                   'created_by' => $user->creatorId(),
-                               ]
-                           );
-                        }
+                                [
+                                    'name' => 'chair'.++$a,
+                                    'space_id' => $space->id,
+                                    'type' => 'none',
+                                    'price' => '0',
+                                    'owned_by' => $user->ownedId(),
+                                    'created_by' => $user->creatorId(),
+                                ]
+                            );
+                            }
                         
                     }else{
                         $diffchair = $chair - $room['capacity']; 
@@ -327,7 +340,7 @@ class SpaceController extends Controller
     public function destroy(Space $space)
     {
         $user = \Auth::user();
-        if($space->created_by == $user->creatorId()  || $space->owned_by == $user->id)
+        if($space->created_by == $user->creatorId()  || $space->owned_by == $user->ownedId())
         {
             Chair::where('space_id',$space->id)->delete();
             $space->delete();
@@ -338,6 +351,31 @@ class SpaceController extends Controller
         {
             return redirect()->back()->with('error', __('Invalid Space.'));
         }
+    }
+
+    public function space_details($type)
+    {
+        if(\Auth::user()->type == 'company'){
+            $user    = \Auth::user();
+            // $spaces = Space::where('created_by', '=', $user->creatorId())->get();
+            $a = Company::where('created_by', '=', $user->creatorId())->pluck('id');
+            $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+            if($type == 'used'){
+                $spaces = Space::where('created_by', '=', $user->creatorId())->whereIN('id',$b)->get();
+            }else{
+                $spaces = Space::where('created_by', '=', $user->creatorId())->whereNotIn('id',$b)->get();
+            }
+        }else{
+            $user    = \Auth::user();
+            $a = Company::where('owned_by', '=', $user->ownedId())->pluck('id');
+            $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+            if($type == 'used'){
+                $spaces = Space::where('owned_by', '=', $user->ownedId())->whereIN('id',$b)->get();
+            }else{
+                $spaces = Space::where('owned_by', '=', $user->ownedId())->whereNotIn('id',$b)->get();
+            }
+        }
+            return view('space.details', compact('spaces','type'));
     }
 
 

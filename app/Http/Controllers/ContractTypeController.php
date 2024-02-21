@@ -4,24 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\ContractType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ContractTypeController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage contract type'))
         {
             if(\Auth::user()->type == 'company')
             {
-                $types = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get();
-                return view('contractType.index', compact('types'));
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = ContractType::where('created_by', '=', \Auth::user()->creatorId());
+               
+            }elseif(\Auth::user()->type == 'branch'){
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = ContractType::where('owned_by', '=', \Auth::user()->ownedId());
             }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $types = $query->get();
+            return view('contractType.index', compact('types','branches'));
         }
         else
         {
@@ -54,6 +67,7 @@ class ContractTypeController extends Controller
 
             $types             = new ContractType();
             $types->name       = $request->name;
+            $types->owned_by = \Auth::user()->ownedId();
             $types->created_by = \Auth::user()->creatorId();
             $types->save();
 
@@ -95,7 +109,8 @@ class ContractTypeController extends Controller
             }
 
             $contractType->name       = $request->name;
-            $contractType->created_by = \Auth::user()->creatorId();
+            // $contractType->owned_by = \Auth::user()->ownedId();
+            // $contractType->created_by = \Auth::user()->creatorId();
             $contractType->save();
 
             return redirect()->route('contractType.index')->with('success', __('Contract Type successfully updated.'));

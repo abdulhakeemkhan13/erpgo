@@ -21,6 +21,7 @@ class Job extends Model
         'visibility',
         'code',
         'custom_question',
+        'owned_by',
         'created_by',
     ];
 

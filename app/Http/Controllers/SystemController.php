@@ -572,6 +572,31 @@ class SystemController extends Controller
             return redirect()->back()->with('error', 'Permission denied.');
         }
     }
+    
+   // In your controller method
+public function saveSettings(Request $request)
+{  
+    // dd($request->all());
+    if (isset($request->cust_darklayout)) {
+        // dd($request->all());
+        $key = "cust_darklayout" ;
+        // $cust_darklayout = (!empty($request->cust_darklayout)) ? 'on' : 'off';
+        $post['cust_darklayout'] = $request->cust_darklayout;
+        // dd($post);
+        \DB::insert(
+            'insert into settings (`value`, `name`, `created_by`) values (?, ?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`) ',
+            [
+                $request->cust_darklayout,
+                $key,
+                \Auth::user()->creatorId(),
+            ]
+        );
+    }
+
+    // Return a JSON response
+    return response()->json(['message' => 'Settings saved successfully']);
+}
+
 
     public function companyIndex(Request $request)
     {

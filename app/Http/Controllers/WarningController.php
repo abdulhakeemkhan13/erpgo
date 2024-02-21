@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\User;
 use App\Models\Utility;
 use App\Models\Warning;
 use Illuminate\Http\Request;
@@ -11,21 +12,34 @@ use Illuminate\Support\Facades\Mail;
 
 class WarningController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage warning'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Warning::where('created_by', '=', \Auth::user()->creatorId());
+            }elseif(Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $emp      = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $warnings = Warning::where('warning_by', '=', $emp->id)->get();
+                $query = Warning::where('warning_by', '=', $emp->id);
             }
             else
             {
-                $warnings = Warning::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Warning::where('created_by', '=', \Auth::user()->creatorId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $warnings = $query->get();
 
-            return view('warning.index', compact('warnings'));
+            return view('warning.index', compact('warnings','branches'));
         }
         else
         {
@@ -37,7 +51,11 @@ class WarningController extends Controller
     {
         if(\Auth::user()->can('create warning'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $user             = \Auth::user();
+                $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }elseif(Auth::user()->type == 'Employee')
             {
                 $user             = \Auth::user();
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
@@ -47,7 +65,7 @@ class WarningController extends Controller
             {
                 $user             = \Auth::user();
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
-                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees        = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
             }
 
             return view('warning.create', compact('employees', 'current_employee'));
@@ -100,6 +118,7 @@ class WarningController extends Controller
             $warning->subject      = $request->subject;
             $warning->warning_date = $request->warning_date;
             $warning->description  = $request->description;
+            $warning->owned_by   = \Auth::user()->ownedId();
             $warning->created_by   = \Auth::user()->creatorId();
             $warning->save();
 
@@ -139,7 +158,11 @@ class WarningController extends Controller
 
         if(\Auth::user()->can('edit warning'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $user             = \Auth::user();
+                $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }elseif(Auth::user()->type == 'Employee')
             {
                 $user             = \Auth::user();
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
@@ -149,7 +172,7 @@ class WarningController extends Controller
             {
                 $user             = \Auth::user();
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
-                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees        = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
             }
             if($warning->created_by == \Auth::user()->creatorId())
             {

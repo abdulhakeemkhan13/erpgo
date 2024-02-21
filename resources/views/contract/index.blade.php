@@ -3,6 +3,48 @@
     {{__('Manage Contract')}}
 @endsection
 @push('script-page')
+<script>
+    function branchcustomer(id) {
+        var company = $('#companyselect').val();
+        $.ajax({
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        url: "{{ route('branch.company') }}",
+                        type: "POST",
+                        data: {id: id},
+                        dataType: 'json',
+                        success: function (result)
+                        {
+                            console.log(result);
+                            if(result.status == 'success'){
+                                $('#companyselect').empty();
+                                $('#companyselect').append($('<option>', {
+                                    value: '',
+                                    text: 'select Company'
+                                }));
+                                // console.log(result);
+                                for (var i = 0; i < result.company.length; i++) {
+                                    var company = result.company[i];
+                                    $('#companyselect').append($('<option>', {
+                                        value: company.id,
+                                        text: company.name
+                                    }));
+                                }
+
+
+                            } 
+                            if(result.status == 'error'){
+                            }
+                            
+                        }
+                    });
+        // Add more code as needed
+    }
+
+    document.getElementById('branchcustomer').addEventListener('change', function() {
+        var id = this.value;
+        branchcustomer(id);
+    });
+</script>
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
@@ -15,16 +57,67 @@
         </a>
         @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'branch')
             <a href="#" data-size="lg" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+                New Contract<i class="ti ti-plus"></i>
             </a>
             <a href="#" data-size="lg" data-url="{{ route('createvirtualoffice') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Virtual Office Contract')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+                Virtual Contract<i class="ti ti-plus"></i>
             </a>
         @endif
     </div>
 @endsection
 
 @section('content')
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(['route' => ['contract.index'], 'method' => 'GET', 'id' => 'company_submit']) }}
+                        <div class="row d-flex justify-content-end ">
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                <div class="btn-box">
+                                    {{ Form::label('issue_date', __('Start Date'),['class'=>'form-label'])}}
+                                    {{ Form::date('issue_date', isset($_GET['issue_date'])?$_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
+                                </div>
+                            </div>
+                            @if(\Auth::user()->type == 'company')
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                    <div class="btn-box">
+                                        {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                        {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' , 'onchange' => 'branchcustomer(this.value)']) }}
+                                    </div>  
+                                </div>
+                            @endif                             
+                            <div class="col-xl-2 col-lg-3 col-md-6 col-sm-12 col-12">
+                                <div class="btn-box">
+                                    {{ Form::label('company', __('Company'),['class'=>'form-label'])}}
+                                    {{ Form::select('company', $company, isset($_GET['company']) ? $_GET['company'] : '', ['class' => 'form-control select' , 'id' => 'companyselect']) }}
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-lg-3 col-md-6 col-sm-12 col-12">
+                                <div class="btn-box">
+                                    {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+                                    {{ Form::select('status', ['' => 'Select Status', 'open' => 'Open', 'closed' => 'Closed'], isset($_GET['status']) ? $_GET['status'] : '', ['class' => 'form-control select']) }}
+                                </div>                                
+                            </div>
+                            <div class="col-auto float-end ms-2 mt-4">
+                                <a href="#" class="btn btn-sm btn-primary"
+                                    onclick="document.getElementById('company_submit').submit(); return false;"
+                                    data-toggle="tooltip" data-original-title="{{ __('apply') }}">
+                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                </a>
+                                <a href="{{ route('contract.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
+                                    data-original-title="{{ __('Reset') }}">
+                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                        {{ Form::close() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-xl-12">
             <div class="card">
@@ -53,7 +146,9 @@
 
                                 <tr class="font-style">
                                     <td>
-                                        <a href="{{route('contract.show',$contract->id)}}" class="btn btn-outline-primary">{{\Auth::user()->contractNumberFormat($contract->id)}}</a>
+                                        <a href="{{ route('contract.show', \Crypt::encrypt($contract->id)) }}" class="btn btn-outline-primary">{{ Auth::user()->contractNumberFormat($contract->id) }}</a>
+
+                                        {{-- <a href="{{route('contract.show',$contract->id)}}" class="btn btn-outline-primary">{{\Auth::user()->contractNumberFormat($contract->id)}}</a> --}}
                                     </td>
                                     <td>{{ $contract->subject}}</td>
                                     @if(\Auth::user()->type!='client')
@@ -86,11 +181,18 @@
                                         @endif
                                         @can('show contract')
                                             <div class="action-btn bg-warning ms-2">
-                                                <a href="{{ route('contract.show',$contract->id) }}"
+                                                <a href="{{ route('contract.show',\Crypt::encrypt($contract->id)) }}"
                                                    class="mx-3 btn btn-sm d-inline-flex align-items-center"
                                                    data-bs-whatever="{{__('View Budget Planner')}}" data-bs-toggle="tooltip"
                                                    data-bs-original-title="{{__('View')}}"> <span class="text-white"> <i class="ti ti-eye"></i></span></a>
                                             </div>
+                                            @if($contract->close_date == null)
+                                                <div class="action-btn bg-info ms-2">
+                                                    <a href="{{ route('contract_status',\Crypt::encrypt($contract->id)) }}" class="mx-3 btn btn-sm d-inline-flex align-items-center"   data-bs-toggle="tooltip" title="{{__('Close Contract')}}" >
+                                                        <i class="ti ti-lock text-white"></i>
+                                                    </a>
+                                                </div>
+                                            @endif
                                         @endcan
                                         @can('edit contract')
                                             <div class="action-btn bg-info ms-2">

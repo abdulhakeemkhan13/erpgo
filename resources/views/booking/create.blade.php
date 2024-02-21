@@ -7,18 +7,24 @@
 
     <div class="row">
         <input type="hidden" class="form-control" value="{{$space_id}}" name="space_id">
-        <div class="col-12 form-group">
-            {{-- {{ Form::label('start_time', __('Start Time'), ['class' => 'form-label']) }}
-            {{ Form::datetime('start_time', null, ['class' => 'form-control']) }}         --}}
+        @if(\Auth::user()->type == ('clientuser'))
+            <div class="col-12 form-group d-none">       
+                <label for="company" class="form-label">{{ __('Company') }}</label>
+                {{ Form::select('company', $comp, null, ['class' => 'form-control', 'required' => 'required']) }}
+            </div>
+        @else
+            <div class="col-12 form-group">       
+                <label for="company" class="form-label">{{ __('Company') }}</label>
+                {{ Form::select('company', $comp, null, ['class' => 'form-control', 'required' => 'required', 'placeholder' => __('Select Company'), 'id' => 'companySelect']) }}
+            </div>
+        @endif
+        <div class="col-12 form-group">       
             <label for="datetimeInput" class="form-label">{{ __('Start Time') }}</label>
-            <input type="datetime-local" class="form-control" id="datetimeInput" name="start_time">
-   
+            <input type="datetime-local" class="form-control" id="datetimeInput" required name="start_time">
         </div>
         <div class="col-12 form-group">
             <label for="datetimeInputend" class="form-label">{{__('End Time')}}</label>
-            <input type="datetime-local" class="form-control" id="datetimeInputend" name="end_time">
-            {{-- {{ Form::label('end_time', __('End Time'), ['class' => 'form-label']) }}
-            {{ Form::datetime('end_time', null, ['class' => 'form-control']) }} --}}
+            <input type="datetime-local" class="form-control" id="datetimeInputend" required name="end_time">
         </div>
         {{-- <div class="col-6 form-group">
             {{ Form::label('client_name', __('Client'), ['class' => 'form-label']) }}

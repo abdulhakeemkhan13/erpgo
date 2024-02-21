@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Holiday;
+use App\Models\User;
 use App\Models\Utility;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,18 +16,30 @@ class HolidayController extends Controller
     {
         if(\Auth::user()->can('manage holiday'))
         {
-            $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            } else {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Holiday::where('owned_by', '=', \Auth::user()->ownedId());
+            }
             if(!empty($request->start_date))
             {
-                $holidays->where('date', '>=', $request->start_date);
+                $query->where('date', '>=', $request->start_date);
             }
             if(!empty($request->end_date))
             {
-                $holidays->where('date', '<=', $request->end_date);
+                $query->where('date', '<=', $request->end_date);
             }
-            $holidays = $holidays->get();
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $holidays = $query->get();
 
-            return view('holiday.index', compact('holidays'));
+            return view('holiday.index', compact('holidays','branches'));
         }
         else
         {
@@ -71,6 +84,7 @@ class HolidayController extends Controller
             $holiday->date       = $request->date;
             $holiday->end_date     = $request->end_date;
             $holiday->occasion   = $request->occasion;
+            $holiday->owned_by = \Auth::user()->ownedId();
             $holiday->created_by = \Auth::user()->creatorId();
             $holiday->save();
 
@@ -201,12 +215,19 @@ class HolidayController extends Controller
 
     public function calender(Request $request)
     {
-
         if(\Auth::user()->can('manage holiday'))
         {
             $transdate = date('Y-m-d', time());
-
-            $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $holidays = Holiday::where('owned_by', '=', \Auth::user()->ownedId());
+            }
 
             if(!empty($request->start_date))
             {
@@ -215,6 +236,9 @@ class HolidayController extends Controller
             if(!empty($request->end_date))
             {
                 $holidays->where('date', '<=', $request->end_date);
+            }
+            if (!empty($request->branches)) {
+                $holidays->where('owned_by', '=', $request->branches);
             }
 
             $holidays = $holidays->get();
@@ -233,7 +257,7 @@ class HolidayController extends Controller
             }
             $arrHolidays = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrHolidays)));
 
-            return view('holiday.calender', compact('arrHolidays','transdate','holidays'));
+            return view('holiday.calender', compact('arrHolidays','transdate','holidays','branches'));
         }
         else
         {
@@ -246,7 +270,6 @@ class HolidayController extends Controller
     //for Google Calendar
     public function get_holiday_data(Request $request)
     {
-
         if($request->get('calender_type') == 'goggle_calender')
         {
             $type ='holiday';
@@ -254,13 +277,19 @@ class HolidayController extends Controller
         }
         else
         {
-            $data =Holiday::where('created_by', '=', \Auth::user()->creatorId())->get();
-
+            if (\Auth::user()->type == 'company') {
+                $query =Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $query =Holiday::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branch)) {
+                $query->where('owned_by', '=', $request->branch);
+            }
+            $data = $query->get();
 
             $arrayJson = [];
             foreach($data as $val)
             {
-//                dd($val);
 
                 $end_date=date_create($val->end_date);
                 date_add($end_date,date_interval_create_from_date_string("1 days"));

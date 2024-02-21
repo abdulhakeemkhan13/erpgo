@@ -3,17 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class LeaveTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage leave type'))
         {
-            $leavetypes = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = LeaveType::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = LeaveType::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $leavetypes = $query->get();
 
-            return view('leavetype.index', compact('leavetypes'));
+            return view('leavetype.index', compact('leavetypes','branches'));
         }
         else
         {
@@ -57,6 +71,7 @@ class LeaveTypeController extends Controller
             $leavetype             = new LeaveType();
             $leavetype->title      = $request->title;
             $leavetype->days       = $request->days;
+            $leavetype->owned_by = \Auth::user()->ownedId();
             $leavetype->created_by = \Auth::user()->creatorId();
             $leavetype->save();
 

@@ -11,6 +11,7 @@ use App\Models\Bill;
 use App\Models\Bug;
 use App\Models\BugStatus;
 use App\Models\Contract;
+use App\Models\ContractSpaceHoure;
 use App\Models\Deal;
 use App\Models\DealTask;
 use App\Models\Employee;
@@ -18,6 +19,8 @@ use App\Models\Event;
 use App\Models\Expense;
 use App\Models\Goal;
 use App\Models\Invoice;
+use App\Models\IsVisitor;
+use App\Models\IsMail;
 use App\Models\Job;
 use App\Models\LandingPageSection;
 use App\Models\Lead;
@@ -43,6 +46,9 @@ use App\Models\TimeTracker;
 use App\Models\Trainer;
 use App\Models\Training;
 use App\Models\User;
+use App\Models\Space;
+use App\Models\Company;
+use App\Models\Roomassign;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,12 +80,12 @@ class DashboardController extends Controller
                 return redirect()->route('client.dashboard.view');
             } else {
                 if (\Auth::user()->can('show account dashboard')) {
-                    if (Auth::user()->type == 'branch') {
-                        $data['latestIncome']  = Revenue::where('owned_by', '=', \Auth::user()->id)->orderBy('id', 'desc')->limit(5)->get();
-                        $data['latestExpense'] = Payment::where('owned_by', '=', \Auth::user()->id)->orderBy('id', 'desc')->limit(5)->get();
+                    if (Auth::user()->type == 'company') { 
+                        $data['latestIncome']  = Revenue::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
+                        $data['latestExpense'] = Payment::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
                         $currentYer           = date('Y');
 
-                        $incomeCategory = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)
+                        $incomeCategory = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())
                             ->where('type', '=', 'income')->get();
 
                         $inColor        = array();
@@ -97,7 +103,7 @@ class DashboardController extends Controller
                         $data['incomeCatAmount']     = $inAmount;
 
 
-                        $expenseCategory = ProductServiceCategory::where('owned_by', '=', \Auth::user()->id)
+                        $expenseCategory = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())
                             ->where('type', '=', 'expense')->get();
                         $exColor         = array();
                         $exCategory      = array();
@@ -119,20 +125,90 @@ class DashboardController extends Controller
                         $data['currentYear']  = date('Y');
                         $data['currentMonth'] = date('M');
 
-                        $constant['taxes']         = Tax::where('owned_by', \Auth::user()->id)->count();
-                        $constant['category']      = ProductServiceCategory::where('owned_by', \Auth::user()->id)->count();
-                        $constant['units']         = ProductServiceUnit::where('owned_by', \Auth::user()->id)->count();
-                        $constant['bankAccount']   = BankAccount::where('owned_by', \Auth::user()->id)->count();
+                        $constant['taxes']         = Tax::where('created_by', \Auth::user()->creatorId())->count();
+                        $constant['category']      = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->count();
+                        $constant['units']         = ProductServiceUnit::where('created_by', \Auth::user()->creatorId())->count();
+                        $constant['bankAccount']   = BankAccount::where('created_by', \Auth::user()->creatorId())->count();
                         $data['constant']          = $constant;
-                        $data['bankAccountDetail'] = BankAccount::where('owned_by', '=', \Auth::user()->id)->get();
-                        $data['recentInvoice']     = Invoice::where('owned_by', '=', \Auth::user()->id)->orderBy('id', 'desc')->limit(5)->get();
+                        $data['bankAccountDetail'] = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get();
+                        $data['recentInvoice']     = Invoice::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
                         $data['weeklyInvoice']     = \Auth::user()->weeklyInvoice();
                         $data['monthlyInvoice']    = \Auth::user()->monthlyInvoice();
-                        $data['recentBill']        = Bill::where('owned_by', '=', \Auth::user()->id)->orderBy('id', 'desc')->limit(5)->get();
+                        $data['recentBill']        = Bill::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
                         $data['weeklyBill']        = \Auth::user()->weeklyBill();
                         $data['monthlyBill']       = \Auth::user()->monthlyBill();
-                        $data['goals']             = Goal::where('owned_by', '=', \Auth::user()->id)->where('is_display', 1)->get();
+                        $data['goals']             = Goal::where('created_by', '=', \Auth::user()->creatorId())->where('is_display', 1)->get();
 
+
+                        //Storage limit
+                        $data['users'] = User::find(\Auth::user()->creatorId());
+                        $data['plan'] = Plan::find($data['users']->plan);
+                        if ($data['plan']->storage_limit > 0) {
+                            $data['storage_limit'] = ($data['users']->storage_limit / $data['plan']->storage_limit) * 100;
+                        } else {
+                            $data['storage_limit'] = 0;
+                        }
+                        return view('dashboard.account-dashboard', $data);
+                    }
+                    // for other user
+                
+                        $data['latestIncome']  = Revenue::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id', 'desc')->limit(5)->get();
+                        $data['latestExpense'] = Payment::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id', 'desc')->limit(5)->get();
+                        $currentYer           = date('Y');
+
+                        $incomeCategory = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())
+                            ->where('type', '=', 'income')->get();
+
+                        $inColor        = array();
+                        $inCategory     = array();
+                        $inAmount       = array();
+                        for ($i = 0; $i < count($incomeCategory); $i++) {
+                            $inColor[]    = '#' . $incomeCategory[$i]->color;
+                            $inCategory[] = $incomeCategory[$i]->name;
+                            $inAmount[]   = $incomeCategory[$i]->incomeCategoryRevenueAmount();
+                        }
+
+
+                        $data['incomeCategoryColor'] = $inColor;
+                        $data['incomeCategory']      = $inCategory;
+                        $data['incomeCatAmount']     = $inAmount;
+
+
+                        $expenseCategory = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())
+                            ->where('type', '=', 'expense')->get();
+                        $exColor         = array();
+                        $exCategory      = array();
+                        $exAmount        = array();
+                        for ($i = 0; $i < count($expenseCategory); $i++) {
+                            $exColor[]    = '#' . $expenseCategory[$i]->color;
+                            $exCategory[] = $expenseCategory[$i]->name;
+                            $exAmount[]   = $expenseCategory[$i]->expenseCategoryAmount();
+                        }
+
+                        $data['expenseCategoryColor'] = $exColor;
+                        $data['expenseCategory']      = $exCategory;
+                        $data['expenseCatAmount']     = $exAmount;
+
+                        $data['incExpBarChartData']  = \Auth::user()->getincExpBarChartData();
+                        //                dd( $data['incExpBarChartData']);
+                        $data['incExpLineChartData'] = \Auth::user()->getIncExpLineChartDate();
+
+                        $data['currentYear']  = date('Y');
+                        $data['currentMonth'] = date('M');
+
+                        $constant['taxes']         = Tax::where('owned_by', \Auth::user()->ownedId())->count();
+                        $constant['category']      = ProductServiceCategory::where('owned_by', \Auth::user()->ownedId())->count();
+                        $constant['units']         = ProductServiceUnit::where('owned_by',\Auth::user()->ownedId())->count();
+                        $constant['bankAccount']   = BankAccount::where('owned_by', \Auth::user()->ownedId())->count();
+                        $data['constant']          = $constant;
+                        $data['bankAccountDetail'] = BankAccount::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                        $data['recentInvoice']     = Invoice::where('owned_by', '=',\Auth::user()->ownedId())->orderBy('id', 'desc')->limit(5)->get();
+                        $data['weeklyInvoice']     = \Auth::user()->weeklyInvoice();
+                        $data['monthlyInvoice']    = \Auth::user()->monthlyInvoice();
+                        $data['recentBill']        = Bill::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id', 'desc')->limit(5)->get();
+                        $data['weeklyBill']        = \Auth::user()->weeklyBill();
+                        $data['monthlyBill']       = \Auth::user()->monthlyBill();
+                        $data['goals']             = Goal::where('owned_by', '=', \Auth::user()->ownedId())->where('is_display', 1)->get();
 
                         //Storage limit
                         $data['users'] = User::find(\Auth::user()->creatorId());
@@ -143,78 +219,6 @@ class DashboardController extends Controller
                         } else {
                             $data['storage_limit'] = 0;
                         }
-
-                        return view('dashboard.account-dashboard', $data);
-                    }
-                    // for other user
-                    $data['latestIncome']  = Revenue::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
-                    $data['latestExpense'] = Payment::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
-                    $currentYer           = date('Y');
-
-                    $incomeCategory = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())
-                        ->where('type', '=', 'income')->get();
-
-                    $inColor        = array();
-                    $inCategory     = array();
-                    $inAmount       = array();
-                    for ($i = 0; $i < count($incomeCategory); $i++) {
-                        $inColor[]    = '#' . $incomeCategory[$i]->color;
-                        $inCategory[] = $incomeCategory[$i]->name;
-                        $inAmount[]   = $incomeCategory[$i]->incomeCategoryRevenueAmount();
-                    }
-
-
-                    $data['incomeCategoryColor'] = $inColor;
-                    $data['incomeCategory']      = $inCategory;
-                    $data['incomeCatAmount']     = $inAmount;
-
-
-                    $expenseCategory = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())
-                        ->where('type', '=', 'expense')->get();
-                    $exColor         = array();
-                    $exCategory      = array();
-                    $exAmount        = array();
-                    for ($i = 0; $i < count($expenseCategory); $i++) {
-                        $exColor[]    = '#' . $expenseCategory[$i]->color;
-                        $exCategory[] = $expenseCategory[$i]->name;
-                        $exAmount[]   = $expenseCategory[$i]->expenseCategoryAmount();
-                    }
-
-                    $data['expenseCategoryColor'] = $exColor;
-                    $data['expenseCategory']      = $exCategory;
-                    $data['expenseCatAmount']     = $exAmount;
-
-                    $data['incExpBarChartData']  = \Auth::user()->getincExpBarChartData();
-                    //                dd( $data['incExpBarChartData']);
-                    $data['incExpLineChartData'] = \Auth::user()->getIncExpLineChartDate();
-
-                    $data['currentYear']  = date('Y');
-                    $data['currentMonth'] = date('M');
-
-                    $constant['taxes']         = Tax::where('created_by', \Auth::user()->creatorId())->count();
-                    $constant['category']      = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->count();
-                    $constant['units']         = ProductServiceUnit::where('created_by', \Auth::user()->creatorId())->count();
-                    $constant['bankAccount']   = BankAccount::where('created_by', \Auth::user()->creatorId())->count();
-                    $data['constant']          = $constant;
-                    $data['bankAccountDetail'] = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $data['recentInvoice']     = Invoice::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
-                    $data['weeklyInvoice']     = \Auth::user()->weeklyInvoice();
-                    $data['monthlyInvoice']    = \Auth::user()->monthlyInvoice();
-                    $data['recentBill']        = Bill::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
-                    $data['weeklyBill']        = \Auth::user()->weeklyBill();
-                    $data['monthlyBill']       = \Auth::user()->monthlyBill();
-                    $data['goals']             = Goal::where('created_by', '=', \Auth::user()->creatorId())->where('is_display', 1)->get();
-
-
-                    //Storage limit
-                    $data['users'] = User::find(\Auth::user()->creatorId());
-                    $data['plan'] = Plan::find($data['users']->plan);
-                    if ($data['plan']->storage_limit > 0) {
-                        $data['storage_limit'] = ($data['users']->storage_limit / $data['plan']->storage_limit) * 100;
-                    } else {
-                        $data['storage_limit'] = 0;
-                    }
-
                     return view('dashboard.account-dashboard', $data);
                 } else {
 
@@ -341,7 +345,7 @@ class DashboardController extends Controller
 
                 $user = Auth::user();
 
-                if ($user->type != 'client' && $user->type != 'company') {
+                if ($user->type != 'client' && $user->type != 'company' && $user->type != 'branch') {
                     $emp = Employee::where('user_id', '=', $user->id)->first();
 
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->leftjoin('announcement_employees', 'announcements.id', '=', 'announcement_employees.announcement_id')->where('announcement_employees.employee_id', '=', $emp->id)->orWhere(function ($q) {
@@ -466,15 +470,15 @@ class DashboardController extends Controller
             } else {
                 $crm_data = [];
 
-                if(\Auth::user()->type == 'branch' )
-                {
-                    $leads = Lead::where('owned_by', \Auth::user()->id)->get();
-                    $deals = Deal::where('owned_by', \Auth::user()->id)->get();
-                }
-                else
+                if(\Auth::user()->type == 'company' )
                 {
                     $leads = Lead::where('created_by', \Auth::user()->creatorId())->get();
                     $deals = Deal::where('created_by', \Auth::user()->creatorId())->get();
+                }
+                else
+                {
+                    $leads = Lead::where('owned_by', \Auth::user()->ownedId())->get();
+                    $deals = Deal::where('owned_by', \Auth::user()->ownedId())->get();
                 }
 
                 //count data
@@ -486,22 +490,13 @@ class DashboardController extends Controller
                 //                $user_leads   = $leads->pluck('lead_id')->toArray();
                 $total_leads  = count($leads);
                 $lead_status = [];
-                // if(\Auth::user()->type == 'branch' )
-                // {
-                //     $status = LeadStage::select('lead_stages.*', 'pipelines.name as pipeline')
-                //     ->join('pipelines', 'pipelines.id', '=', 'lead_stages.pipeline_id')
-                //     ->where('pipelines.owned_by', '=', \Auth::user()->id)
-                //     ->where('lead_stages.owned_by', '=', \Auth::user()->id)
-                //     ->orderBy('lead_stages.pipeline_id')->get();
-                // }
-                // else
-                // {
+              
                     $status = LeadStage::select('lead_stages.*', 'pipelines.name as pipeline')
                     ->join('pipelines', 'pipelines.id', '=', 'lead_stages.pipeline_id')
                     ->where('pipelines.created_by', '=', \Auth::user()->creatorId())
                     ->where('lead_stages.created_by', '=', \Auth::user()->creatorId())
                     ->orderBy('lead_stages.pipeline_id')->get();
-                // }
+                
 
                 foreach ($status as $k => $v) {
                     $lead_status[$k]['lead_stage'] = $v->name;
@@ -515,22 +510,13 @@ class DashboardController extends Controller
                 //                $user_deal   = $deals->pluck('deal_id')->toArray();
                 $total_deals  = count($deals);
                 $deal_status = [];
-                // if(\Auth::user()->type == 'branch' )
-                // {
-                //     $dealstatuss = Stage::select('stages.*', 'pipelines.name as pipeline')
-                //     ->join('pipelines', 'pipelines.id', '=', 'stages.pipeline_id')
-                //     ->where('pipelines.owned_by', '=', \Auth::user()->id)
-                //     ->where('stages.owned_by', '=', \Auth::user()->id)
-                //     ->orderBy('stages.pipeline_id')->get();
-                // }
-                // else
-                // {
+               
                     $dealstatuss = Stage::select('stages.*', 'pipelines.name as pipeline')
                     ->join('pipelines', 'pipelines.id', '=', 'stages.pipeline_id')
                     ->where('pipelines.created_by', '=', \Auth::user()->creatorId())
                     ->where('stages.created_by', '=', \Auth::user()->creatorId())
                     ->orderBy('stages.pipeline_id')->get();
-                // }
+                
                 foreach ($dealstatuss as $k => $v) {
                     $deal_status[$k]['deal_stage'] = $v->name;
                     $deal_status[$k]['deal_total']      = count($v->deals());
@@ -538,13 +524,13 @@ class DashboardController extends Controller
                 }
                 $crm_data['deal_status'] = $deal_status;
 
-                if(\Auth::user()->type == 'branch' )
+                if(\Auth::user()->type == 'company' )
                 {
-                    $crm_data['latestContract']  = Contract::where('owned_by', '=', \Auth::user()->id)->orderBy('id', 'desc')->limit(5)->get();
+                    $crm_data['latestContract']  = Contract::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
                 }
                 else
                 {
-                    $crm_data['latestContract']  = Contract::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
+                    $crm_data['latestContract']  = Contract::where('owned_by', '=', \Auth::user()->ownedId() )->orderBy('id', 'desc')->limit(5)->get();
                 }
 
                 return view('dashboard.crm-dashboard', compact('crm_data'));
@@ -605,27 +591,24 @@ class DashboardController extends Controller
                         $arrEvents[] = $arr;
                     }
 
-
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->where('created_by', '=', \Auth::user()->creatorId())->get();
 
-
-                    $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countEmployee = count($emp);
-
-                    $user      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countUser = count($user);
+                    // $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    // $countEmployee = count($emp);
 
                     $currentDate = date('Y-m-d');
 
-                    $employees   = User::where('type', '=', 'client')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countClient = count($employees);
-                    $notClockIn  = AttendanceEmployee::where('date', '=', $currentDate)->get()->pluck('employee_id');
-
-                    $notClockIns = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id', $notClockIn)->get();
+                    // $employees   = User::where('type', '=', 'client')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    // $countClient = count($employees);
 
                     $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
-
-                    return view('dashboard.client_user_dashboard', compact('arrEvents', 'announcements', 'employees', 'meetings', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    $visitors = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id','Desc')->limit(5)->get();
+                    $hours = ContractSpaceHoure::where('contract_id', '=', \Auth::user()->company_id)->sum('assign_hour');
+                    $employees = User::where('owned_by', '=', \Auth::user()->ownedId())->where('company_id',\Auth::user()->company_id)->count();
+                    $mail = IsMail::where('owned_by', '=', \Auth::user()->ownedId())->whereMonth('date',date('m'))->whereYear('date',date('Y'))->count();
+                    $visit = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->whereMonth('date_time',date('m'))->whereYear('date_time',date('Y'))->count();
+    
+                    return view('dashboard.client_user_dashboard', compact('arrEvents','user', 'announcements', 'employees', 'meetings', 'hours', 'mail', 'visitors', 'visit'));
                 }
             // } else {
 
@@ -645,6 +628,64 @@ class DashboardController extends Controller
                     return redirect('login');
                 }
             }
+        }
+    }
+
+    public function workspace_dashboard_index()
+    {
+        
+        if (Auth::check()) {
+            
+            // if (\Auth::user()->can('show hrm dashboard')) {
+                
+                $user = Auth::user();
+                
+                if ($user->type == 'company') {
+                    $space = Space::where('created_by', '=', \Auth::user()->creatorId())->count();
+                    $mail = IsMail::where('created_by', '=', \Auth::user()->creatorId())->count();
+                    $visit = IsVisitor::where('created_by', '=', \Auth::user()->creatorId())->count();
+                    $spaces = Space::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                    $a = Company::where('created_by', '=', \Auth::user()->creatorId())->pluck('id');
+                    $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+                    $use_space = Space::where('created_by', '=', \Auth::user()->creatorId())->whereIN('id',$b)->count();
+                    $free_space = Space::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id',$b)->count();
+
+
+                    $mails = IsMail::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id','Desc')->limit(12)->get();
+                    $visitors = IsVisitor::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id','Desc')->limit(12)->get();
+                    return view('dashboard.workspace_dashboard', compact('user','space','spaces','use_space','free_space', 'mail', 'mails', 'visitors', 'visit'));
+
+                } else {
+                    $space = Space::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                    $mail = IsMail::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                    $visit = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->count();
+                    $spaces = Space::where('owned_by', '=', \Auth::user()->ownedId())->get();
+
+                    $a = Company::where('owned_by', '=', \Auth::user()->ownedId())->pluck('id');
+                    $b = Roomassign::where('status','assign')->whereIN('company_id',$a)->groupBy('space_id')->pluck('space_id');
+                    $use_space = Space::where('owned_by', '=', \Auth::user()->ownedId())->whereIN('id',$b)->count();
+                    $free_space = Space::where('owned_by', '=', \Auth::user()->ownedId())->whereNotIn('id',$b)->count();
+
+
+                    $mails = IsMail::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id','Desc')->limit(12)->get();
+                    $visitors = IsVisitor::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('id','Desc')->limit(12)->get();
+                    return view('dashboard.workspace_dashboard', compact('user','space','spaces','use_space','free_space', 'mail', 'mails', 'visitors', 'visit'));
+                }
+        // } else {
+        //     if (!file_exists(storage_path() . "/installed")) {
+        //         header('location:install');
+        //         die;
+        //     } else {
+        //         $settings = Utility::settings();
+        //         if ($settings['display_landing_page'] == 'on') {
+        //             $plans = Plan::get();
+
+        //             return view('layouts.landing', compact('plans'));
+        //         } else {
+        //             return redirect('login');
+        //         }
+        //     }
         }
     }
 

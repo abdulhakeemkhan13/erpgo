@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Branch extends Model
 {
     protected $fillable = [
-        'name','created_by'
+        'name','owned_by','created_by'
     ];
 }

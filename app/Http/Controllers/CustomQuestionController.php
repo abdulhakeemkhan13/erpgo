@@ -3,18 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\CustomQuestion;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CustomQuestionController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage custom question'))
         {
-            $questions = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = CustomQuestion::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = CustomQuestion::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $questions = $query->get();
 
-            return view('customQuestion.index', compact('questions'));
+            return view('customQuestion.index', compact('questions','branches'));
         }
         else
         {
@@ -48,6 +62,7 @@ class CustomQuestionController extends Controller
             $question              = new CustomQuestion();
             $question->question    = $request->question;
             $question->is_required = $request->is_required;
+            $question->owned_by  = \Auth::user()->ownedId();
             $question->created_by  = \Auth::user()->creatorId();
             $question->save();
 

@@ -14,6 +14,7 @@ class Proposal extends Model
         'category_id',
         'is_convert',
         'converted_invoice_id',
+        'owned_by',
         'created_by',
     ];
 

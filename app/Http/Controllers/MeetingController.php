@@ -7,19 +7,27 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Meeting;
 use App\Models\MeetingEmployee;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MeetingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage meeting'))
-        {
-            $employees = Employee::get();
-            if(Auth::user()->type == 'Employee')
+        {   
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $query = Meeting::where('created_by', '=', \Auth::user()->creatorId());
+            }elseif(Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
                 $meetings         = Meeting::orderBy('meetings.id', 'desc')
                     ->leftjoin('meeting_employees', 'meetings.id', '=', 'meeting_employees.meeting_id')
@@ -27,15 +35,21 @@ class MeetingController extends Controller
                     ->orWhere(function($q) {
                         $q->where('meetings.department_id', '["0"]')
                             ->where('meetings.employee_id', '["0"]');
-                    })
-                    ->get();
+                    });
             }
             else
             {
-                $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $query = Meeting::where('owned_by', '=', \Auth::user()->ownedId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $meetings = $query->get();
 
-            return view('meeting.index', compact('meetings', 'employees'));
+            return view('meeting.index', compact('meetings', 'employees','branches'));
         }
         else
         {
@@ -47,16 +61,21 @@ class MeetingController extends Controller
     {
         if(\Auth::user()->can('create meeting'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $departments = Department::where('created_by', '=', Auth::user()->creatorId())->get();
+                $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $settings = Utility::settings();
+            }elseif(Auth::user()->type == 'Employee')
             {
                 $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', \Auth::user()->id)->get()->pluck('name', 'id');
                 $settings = Utility::settings();
             }
             else
             {
-                $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $departments = Department::where('created_by', '=', Auth::user()->creatorId())->get();
-                $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch      = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $departments = Department::where('owned_by', '=', Auth::user()->ownedId())->get();
+                $employees   = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
                 $settings = Utility::settings();
             }
 
@@ -96,6 +115,7 @@ class MeetingController extends Controller
             $meeting->date          = $request->date;
             $meeting->time          = $request->time;
             $meeting->note          = $request->note;
+            $meeting->owned_by    = \Auth::user()->ownedId();
             $meeting->created_by    = \Auth::user()->creatorId();
             $meeting->save();
 
@@ -113,6 +133,7 @@ class MeetingController extends Controller
                 $meetingEmployee              = new MeetingEmployee();
                 $meetingEmployee->meeting_id  = $meeting->id;
                 $meetingEmployee->employee_id = $employee;
+                $meetingEmployee->owned_by  = \Auth::user()->ownedId();
                 $meetingEmployee->created_by  = \Auth::user()->creatorId();
                 $meetingEmployee->save();
             }
@@ -123,7 +144,7 @@ class MeetingController extends Controller
             $branch = Branch::find($request->branch_id);
             $meetingNotificationArr = [
                 'meeting_title' =>  $request->title,
-                'branch_name' =>  $branch->name,
+                'branch_name' =>  @$branch->name,
                 'meeting_date' =>  $request->date,
                 'meeting_time' =>  $request->time,
             ];
@@ -186,13 +207,15 @@ class MeetingController extends Controller
             $meeting = Meeting::find($meeting);
             if($meeting->created_by == Auth::user()->creatorId())
             {
-                if(Auth::user()->type == 'Employee')
+                if (\Auth::user()->type == 'company') {
+                    $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                }elseif(Auth::user()->type == 'Employee')
                 {
                     $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', Auth::user()->id)->get()->pluck('name', 'id');
                 }
                 else
                 {
-                    $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                    $employees = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
                 }
 
                 return view('meeting.edit', compact('meeting', 'employees'));
@@ -271,14 +294,24 @@ class MeetingController extends Controller
 
     public function getdepartment(Request $request)
     {
-
-        if($request->branch_id == 0)
-        {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
-        }
-        else
-        {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+        if (\Auth::user()->type == 'company') {
+            if($request->branch_id == 0)
+            {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            }
+            else
+            {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+            }
+        }else{
+            if($request->branch_id == 0)
+            {
+                $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id')->toArray();
+            }
+            else
+            {
+                $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+            }
         }
 
         return response()->json($departments);
@@ -286,13 +319,24 @@ class MeetingController extends Controller
 
     public function getemployee(Request $request)
     {
-        if(in_array('0', $request->department_id))
-        {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
-        }
-        else
-        {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereIn('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
+        if (\Auth::user()->type == 'company') {
+            if(in_array('0', $request->department_id))
+            {
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            }
+            else
+            {
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereIn('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
+            }
+        }else{
+            if(in_array('0', $request->department_id))
+            {
+                $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id')->toArray();
+            }
+            else
+            {
+                $employees = Employee::where('owned_by', '=', \Auth::user()->ownedId())->whereIn('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
+            }
         }
 
         return response()->json($employees);
@@ -305,8 +349,16 @@ class MeetingController extends Controller
         {
             $transdate = date('Y-m-d', time());
 
-            $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId());
-
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $meetings = Meeting::where('owned_by', '=', \Auth::user()->ownedId());
+            }
 
             if(!empty($request->start_date))
             {
@@ -316,7 +368,9 @@ class MeetingController extends Controller
             {
                 $meetings->where('date', '<=', $request->end_date);
             }
-
+            if (!empty($request->branches)) {
+                $meetings->where('owned_by', '=', $request->branches);
+            }
             $meetings = $meetings->get();
 
             $arrMeetings = [];
@@ -333,7 +387,7 @@ class MeetingController extends Controller
             }
             $arrMeetings = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrMeetings)));
 
-            return view('meeting.calender', compact('arrMeetings','transdate','meetings'));
+            return view('meeting.calender', compact('arrMeetings','transdate','meetings','branches'));
         }
         else
         {
@@ -354,7 +408,11 @@ class MeetingController extends Controller
         }
         else
         {
-            $data =Meeting::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $data =Meeting::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }else{
+                $data =Meeting::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            }
             $arrayJson = [];
             foreach($data as $val)
             {

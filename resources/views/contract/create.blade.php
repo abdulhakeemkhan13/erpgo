@@ -2,7 +2,7 @@
 <div class="modal-body">
     <div class="row">
         <div class="form-group col-md-6">
-            {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}
+            {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::text('subject', '', ['class' => 'form-control', 'required' => 'required']) }}
         </div>
         @if($type == 'virtual')
@@ -13,18 +13,18 @@
 
         <div class="form-group col-md-6 row">
             <div class="col-md-9">
-                {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}
+                {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             </div>
             <div class="col-md-3 d-flex">
                 {{ Form::label('addpropcheck', __('New'), ['class' => 'form-check-label']) }}
                 {{ Form::checkbox('new', '1', false, ['class' => 'form-check-input', 'id' => 'addpropcheck']) }}
             </div>
-            {{ Form::text('newcompany', '', ['class' => 'form-control d-none companyText req' ]) }}
-            {{ Form::select('company', $company, null, ['class' => 'form-control', 'placeholder' => __('Select Company'), 'id' => 'companySelect']) }}
+                {{ Form::text('newcompany', '', ['class' => 'form-control d-none companyText req' ]) }}
+                {{ Form::select('company', $company, null, ['class' => 'form-control', 'placeholder' => __('Select Company'), 'id' => 'companySelect']) }}
         </div>
 
         <div class="form-group col-md-6 d-none companyText">
-            {{ Form::label('phone_no', __('Phone No'), ['class' => 'form-label']) }}
+            {{ Form::label('phone_no', __('Phone No'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::number('phone_no', '', ['class' => 'form-control req']) }}
         </div>
         <div class="form-group col-md-6 d-none companyText">
@@ -35,12 +35,12 @@
         </div>
 
         <div class="form-group col-md-12 d-none companyText">
-            {{ Form::label('email', __('Email'), ['class' => 'form-label']) }}
+            {{ Form::label('email', __('Email'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::email('email', '', ['class' => 'form-control req','placeholder' =>'123@gmail.com']) }}
         </div>
         
         <div class="form-group col-md-6">
-            {{ Form::label('space', __('Space'), ['class' => 'form-label']) }}
+            {{ Form::label('space', __('Space'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             @if($type == 'virtual')
                 <select name="space" class="form-control select space_select" id="space" required
                 onchange="getchairs(this.value)">
@@ -61,26 +61,26 @@
         </div>
         @if($type == 'virtual')@else
             <div class="form-group col-md-6" id="ch">
-                {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
+                {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
                 <select name="chair[]" class="form-control select chair_select" id="chair" multiple="multiple">
                     <option value="" disabled>Select Chairs</option>
                 </select>
             </div>
         @endif
         <div class="form-group col-md-6">
-            {{ Form::label('type', __('Contract Type'), ['class' => 'form-label']) }}
+            {{ Form::label('type', __('Contract Type'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::select('type', $contractTypes, null, ['class' => 'form-control', 'data-toggle="select"', 'required' => 'required']) }}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('value', __('Contract Value'), ['class' => 'form-label']) }}
+            {{ Form::label('value', __('Contract Value'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::number('value', '', ['class' => 'form-control', 'required' => 'required', 'stage' => '0.01']) }}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('start_date', __('Start Date'), ['class' => 'form-label']) }}
+            {{ Form::label('start_date', __('Start Date'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::date('start_date', '', ['class' => 'form-control', 'required' => 'required']) }}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}
+            {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::date('end_date', '', ['class' => 'form-control', 'required' => 'required']) }}
         </div>
     </div>
@@ -91,36 +91,49 @@
         </div>
     </div>
     <div class="row">
-        {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}
-        <div class="d-flex col-md-12">
-            <label class="form-label m-1" style="width: 25%" for="{{ $services->id }}">{{ ucfirst($services->name) }} : </label>
-            <input type="hidden" name="services_id" class="form-label" value="{{ $services->id }}">
-            <input type="number" name="services_charges" id="{{ $services->id }}" class="form-label m-1" style="width: 25%" required>
-        </div>
-    </div>
-    <div class="row">
-        {{ Form::label('meeting_hours', 'Meeting Room & Board Room Hours', ['class' => 'form-label']) }}
-        @foreach ($ismeeting as $meeting)
+        <div class=" col-md-6">
+            {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}<span style="color: red"> *</span>
             <div class="d-flex col-md-12">
+                <label class="form-label m-1" style="width:40%" for="{{ @$services->id }}">{{ ucfirst(@$services->name) }} : </label>
+                <input type="hidden" name="services_id" class="form-label" value="{{ @$services->id }}">
+                <input type="number" name="services_charges" id="{{ @$services->id }}" class="form-label m-1" style="width: 50%" required>
 
-                <label class="form-label m-1" style="width: 25%" for="{{ $meeting->id }}">{{ ucfirst($meeting->name) }} : </label>
-
-                <input type="hidden" name="room_hours_ids[]" value="{{ $meeting->id }}" class="form-label m-1"
-                    style="width: 25%">
-                <input type="number" name="room_hours[]" id="{{ $meeting->id }}" class="form-label m-1"
-                    style="width: 25%" required>
-                <label class="form-label m-1" for="{{ $meeting->id }}"> Hrs</label>
-                <input type="number" name="hourly_rate[]" id="hour{{ $meeting->id }}" class="form-label m-1"
-                    style="width: 25%" required>
-                <label class="form-label m-1" for="hour{{ $meeting->id }}"> Hourly Rate</label>
             </div>
-        @endforeach
+        </div>
+        <div class=" col-md-6">
+            {{ Form::label('security', 'Security Deposit', ['class' => 'form-label']) }}<span style="color: red"> *</span>
+            <div class="d-flex col-md-12">
+                <label class="form-label m-1" style="width:40%" for="{{ @$security->id }}">{{ ucfirst(@$security->name) }} : </label>
+                <input type="hidden" name="security_deposit_id" class="form-label" value="{{ @$security->id }}">
+                <input type="number" name="security_deposit_price" id="{{ @$security->id }}" class="form-label m-1" style="width: 50%" required>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class=" col-md-12">
+                {{ Form::label('meeting_hours', 'Meeting Room & Board Room Hours', ['class' => 'form-label']) }}<span style="color: red"> *</span>
+                @foreach ($ismeeting as $meeting)
+                    <div class="d-flex col-md-12">
+
+                        <label class="form-label m-1" style="width: 25%" for="{{ $meeting->id }}">{{ ucfirst($meeting->name) }} : </label>
+
+                        <input type="hidden" name="room_hours_ids[]" value="{{ $meeting->id }}" class="form-label m-1"
+                            style="width: 25%">
+                        <input type="number" name="room_hours[]" id="{{ $meeting->id }}" class="form-label m-1"
+                            style="width: 25%" required>
+                        <label class="form-label m-1" for="{{ $meeting->id }}"> Hrs</label>
+                        <input type="number" name="hourly_rate[]" id="hour{{ $meeting->id }}" class="form-label m-1"
+                            style="width: 25%" required>
+                        <label class="form-label m-1" for="hour{{ $meeting->id }}"> Hourly Rate</label>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    <div class="modal-footer">
+        <input type="button" value="{{ __('Cancel') }}" class="btn  btn-light" data-bs-dismiss="modal">
+        <input type="submit" id="myButton" value="{{ __('Create') }}" class="btn  btn-primary">
     </div>
-</div>
-<div class="modal-footer">
-    <input type="button" value="{{ __('Cancel') }}" class="btn  btn-light" data-bs-dismiss="modal">
-    <input type="submit" id="myButton" value="{{ __('Create') }}" class="btn  btn-primary">
-</div>
 {{ Form::close() }}
 
 <script src="{{ asset('assets/js/plugins/choices.min.js') }}"></script>
@@ -210,7 +223,7 @@
             type: 'GET',
             success: function(data) {
                 if (data.success == 'true') {
-                    var s = ` {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
+                    var s = ` {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
                 <select name="chair[]"  class="form-control select chair_select" id="chair"   multiple="multiple">
                 <option value="" disabled >Select Chairs</option> `;
                     $("#ch").empty();

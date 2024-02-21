@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Transfer;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,21 +15,35 @@ use Illuminate\Support\Facades\Mail;
 class TransferController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage transfer'))
         {
-            if(Auth::user()->type == 'Employee')
-            {
-                $emp       = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $transfers = Transfer::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Transfer::where('created_by', '=', \Auth::user()->creatorId());
+            } else {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+               
+                if(Auth::user()->type == 'Employee')
+                {
+                    $emp   = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $query = Transfer::where('owned_by', '=', \Auth::user()->ownedId())->where('employee_id', '=', $emp->id);
+                }
+                else
+                {
+                    $query = Transfer::where('owned_by', '=', \Auth::user()->ownedId());
+                }
             }
-            else
-            {
-                $transfers = Transfer::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
             }
+            $transfers = $query->get();
 
-            return view('transfer.index', compact('transfers'));
+            return view('transfer.index', compact('transfers','branches'));
         }
         else
         {
@@ -40,9 +55,18 @@ class TransferController extends Controller
     {
         if(\Auth::user()->can('create transfer'))
         {
-            $departments = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branches    = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employees   = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(Auth::user()->type == 'company')
+            {
+                $departments = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branches    = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees   = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $departments = Department::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches    = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $employees   = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
 
             return view('transfer.create', compact('employees', 'departments', 'branches'));
         }
@@ -78,6 +102,7 @@ class TransferController extends Controller
             $transfer->department_id = $request->department_id;
             $transfer->transfer_date = $request->transfer_date;
             $transfer->description   = $request->description;
+            $transfer->owned_by    = \Auth::user()->ownedId();
             $transfer->created_by    = \Auth::user()->creatorId();
             $transfer->save();
 
@@ -103,7 +128,6 @@ class TransferController extends Controller
 
                 $resp = Utility::sendEmailTemplate('transfer_sent', [$employee->id => $employee->email], $transferArr);
 
-
                 return redirect()->route('transfer.index')->with('success', __('Transfer  successfully created.') .(($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
             }
 
@@ -124,9 +148,19 @@ class TransferController extends Controller
     {
         if(\Auth::user()->can('edit transfer'))
         {
-            $departments = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branches    = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employees   = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(Auth::user()->type == 'company')
+            {
+                $departments = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branches    = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees   = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $departments = Department::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches    = Branch::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $employees   = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
+
             if($transfer->created_by == \Auth::user()->creatorId())
             {
                 return view('transfer.edit', compact('transfer', 'employees', 'departments', 'branches'));

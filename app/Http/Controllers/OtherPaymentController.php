@@ -39,6 +39,7 @@ class OtherPaymentController extends Controller
             $otherpayment->title       = $request->title;
             $otherpayment->type       = $request->type;
             $otherpayment->amount      = $request->amount;
+            $otherpayment->owned_by  = \Auth::user()->ownedId();
             $otherpayment->created_by  = \Auth::user()->creatorId();
             $otherpayment->save();
 

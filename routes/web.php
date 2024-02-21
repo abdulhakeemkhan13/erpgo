@@ -90,6 +90,7 @@ use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\DucumentUploadController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\AttendanceEmployeeController;
+use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskStageController;
@@ -145,6 +146,7 @@ use App\Http\Controllers\IsMailController;
 use App\Http\Controllers\ClientUserController;
 use App\Http\Controllers\IsVisitorController;
 use App\Http\Controllers\PaytrController;
+use App\Http\Controllers\TrainingTypeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -324,6 +326,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/hrm-dashboard', [DashboardController::class, 'hrm_dashboard_index'])->name('hrm.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/crm-dashboard', [DashboardController::class, 'crm_dashboard_index'])->name('crm.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/pos-dashboard', [DashboardController::class, 'pos_dashboard_index'])->name('pos.dashboard')->middleware(['auth','XSS', 'revalidate']);
+    Route::get('/workspace-dashboard', [DashboardController::class, 'workspace_dashboard_index'])->name('workspace.dashboard')->middleware(['auth','XSS', 'revalidate']);
     Route::get('/clientuser-dashboard', [DashboardController::class, 'clientuser_dashboard_index'])->name('clientuser.dashboard')->middleware(['auth','XSS', 'revalidate']);
 
 
@@ -390,6 +393,7 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('print-setting', [SystemController::class, 'printIndex'])->name('print.setting');
         Route::get('settings', [SystemController::class, 'companyIndex'])->name('settings');
         Route::post('business-setting', [SystemController::class, 'saveBusinessSettings'])->name('business.setting');
+        Route::post('save-setting', [SystemController::class, 'saveSettings'])->name('save.setting');
         Route::post('company-payment-setting', [SystemController::class, 'saveCompanyPaymentSettings'])->name('company.payment.settings');
 
         Route::get('test-mail', [SystemController::class, 'testMail'])->name('test.mail');
@@ -516,11 +520,16 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('invoice/create/{cid}', [InvoiceController::class, 'create'])->name('invoice.create');
         Route::post('company_contract', [InvoiceController::class, 'companycontract'])->name('company_contract');
         Route::post('company_contract_detail', [InvoiceController::class, 'companycontractdetail'])->name('company_contract_detail');
+        Route::get('invoice_next/{id}', [InvoiceController::class, 'next'])->name('invoice_next');
+        Route::get('invoice_back/{id}', [InvoiceController::class, 'back'])->name('invoice_back');
+        Route::post('branch_customer', [InvoiceController::class, 'branchCustomer'])->name('branch.customer');
     }
     );
 
     Route::get('/invoices/preview/{template}/{color}', [InvoiceController::class, 'previewInvoice'])->name('invoice.preview');
     Route::post('/invoices/template/setting', [InvoiceController::class, 'saveTemplateSettings'])->name('template.setting');
+
+    Route::get('/invoices/bulk_create', [InvoiceController::class, 'bulk_invoice'])->name('invoice.bulk_create');
 
     Route::group(
         [
@@ -570,6 +579,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('revenue/index', [RevenueController::class, 'index'])->name('revenue.index')->middleware(['auth', 'XSS', 'revalidate']);
 
     Route::resource('revenue', RevenueController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::post('branch_revenue_data', [RevenueController::class, 'branch_revenue_data'])->name('branch.revenue_data')->middleware(['auth','XSS', 'revalidate']);
 
     Route::get('bill/pdf/{id}', [BillController::class, 'bill'])->name('bill.pdf')->middleware(['XSS', 'revalidate']);
 
@@ -599,8 +609,9 @@ Route::group(['middleware' => ['verified']], function () {
     );
 
     Route::get('payment/index', [PaymentController::class, 'index'])->name('payment.index')->middleware(['auth', 'XSS', 'revalidate']);
-
+    
     Route::resource('payment', PaymentController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::post('branch_payment_data', [PaymentController::class, 'branch_payment_data'])->name('branch.payment_data')->middleware(['auth', 'XSS', 'revalidate']);
 
     Route::group(
         [
@@ -731,6 +742,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::resource('space', SpaceController::class)->middleware(['auth', 'XSS']);
     Route::resource('chair', ChairController::class)->middleware(['auth', 'XSS']);
     Route::get('space_chair/{id}/{con?}', [ChairController::class, 'space_chair'])->name('space_chair');
+    Route::get('space_details/{type}', [SpaceController::class, 'space_details'])->name('space_details');
 
     // Branch Module
     Route::resource('clientuser', ClientUserController::class)->middleware(['auth', 'XSS']);
@@ -1333,6 +1345,8 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('contract/{id}/description', [ContractController::class, 'description'])->name('contract.description');
         Route::get('contract/grid', [ContractController::class, 'grid'])->name('contract.grid');
         Route::resource('contract', ContractController::class);
+        Route::post('branch_company', [ContractController::class, 'branchCompany'])->name('branch.company');
+
     }
     );
     // for virtule office contract
@@ -1365,6 +1379,9 @@ Route::group(['middleware' => ['verified']], function () {
 
     Route::get('/contract/copy/{id}', [ContractController::class, 'copycontract'])->name('contract.copy')->middleware(['auth', 'XSS']);
     Route::post('contract/copy/store', [ContractController::class, 'copycontractstore'])->name('contract.copy.store')->middleware(['auth', 'XSS']);
+
+    Route::get('contract_status/{id}', [ContractController::class, 'contract_status'])->name('contract_status')->middleware(['auth', 'XSS']);
+    Route::get('contract_clear/{id}', [ContractController::class, 'contract_clear'])->name('contract_clear')->middleware(['auth', 'XSS']);
 
 
     // Custom Landing Page
@@ -1785,6 +1802,7 @@ Route::group(['middleware' => ['verified']], function () {
         Route::get('expense/items', [ExpenseController::class, 'items'])->name('expense.items');
 
         Route::resource('expense', ExpenseController::class);
+        Route::post('branch_category', [ExpenseController::class, 'branch_category'])->name('branch.category');
         Route::get('expense/create/{cid}', [ExpenseController::class, 'create'])->name('expense.create');
 
     }
@@ -1794,3 +1812,7 @@ Route::group(['middleware' => ['verified']], function () {
 
 Route::any('/cookie-consent', [SystemController::class,'CookieConsent'])->name('cookie-consent');
 
+Route::get('/clear', function() {
+    Artisan::call('optimize:clear');
+    return redirect()->back()->with('message', 'Caches cleared successfully.');
+});

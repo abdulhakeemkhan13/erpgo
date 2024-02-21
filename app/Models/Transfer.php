@@ -12,6 +12,7 @@ class Transfer extends Model
         'department_id',
         'transfer_date',
         'description',
+        'owned_by',
         'created_by',
     ];
 
@@ -24,7 +25,6 @@ class Transfer extends Model
     {
         return $this->hasMany('App\Models\Branch', 'id', 'branch_id')->first();
     }
-
 
     public function employee()
     {

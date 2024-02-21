@@ -33,17 +33,19 @@
         <div class="col-sm-12">
             <div class="mt-2" id="multiCollapseExample1">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body filter_change">
                         {{ Form::open(array('route' => array('meeting.calender'),'method'=>'get','id'=>'meeting_filter')) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-xl-10">
-                                <div class="row">
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box"></div>
+                                <div class="row justify-content-end">
+                                    @if(\Auth::user()->type == 'company')
+                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                        <div class="btn-box">
+                                            {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                            {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' ,'id' =>'branch']) }}
+                                        </div>                               
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box"></div>
-                                    </div>
+                                    @endif
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
                                             {{Form::label('start_date',__('Start Date'),['class'=>'form-label'])}}
@@ -170,6 +172,7 @@
         });
         function get_data()
         {
+            var branch=$('#branch').val();
             var calender_type=$('#calender_type :selected').val();
             $('#calendar').removeClass('local_calender');
             $('#calendar').removeClass('goggle_calender');
@@ -180,7 +183,7 @@
             $.ajax({
                 url: $("#meeting_calendar").val()+"/meeting/get_meeting_data" ,
                 method:"POST",
-                data: {"_token": "{{ csrf_token() }}",'calender_type':calender_type},
+                data: {"_token": "{{ csrf_token() }}",'calender_type':calender_type,'branches':branch},
                 success: function(data) {
                     (function () {
                         var etitle;

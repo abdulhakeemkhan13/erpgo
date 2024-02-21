@@ -14,6 +14,7 @@ class Meeting extends Model
         'date',
         'time',
         'note',
+        'owned_by',
         'created_by',
     ];
 }

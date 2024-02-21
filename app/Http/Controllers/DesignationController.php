@@ -4,18 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DesignationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
 
         if(\Auth::user()->can('manage designation'))
         {
-            $designations = Designation::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Designation::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Designation::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $designations = $query->get();
 
-            return view('designation.index', compact('designations'));
+            return view('designation.index', compact('designations','branches'));
         }
         else
         {
@@ -27,8 +41,13 @@ class DesignationController extends Controller
     {
         if(\Auth::user()->can('create designation'))
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $departments = $departments->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $departments = $departments->pluck('name', 'id');
+            }else{
+                $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $departments = $departments->pluck('name', 'id');
+            }
 
             return view('designation.create', compact('departments'));
         }
@@ -59,6 +78,7 @@ class DesignationController extends Controller
             $designation                = new Designation();
             $designation->department_id = $request->department_id;
             $designation->name          = $request->name;
+            $designation->owned_by    = \Auth::user()->ownedId();
             $designation->created_by    = \Auth::user()->creatorId();
 
             $designation->save();

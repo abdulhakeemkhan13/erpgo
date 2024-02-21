@@ -182,6 +182,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
 
+
     public function invoiceNumberFormat($number)
     {
         $settings = Utility::settings();
@@ -256,7 +257,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 $user_id= \Auth::user()->creatorId();
             }
 
-            $users     = User::where('created_by', '=', $user_id)->where('type', '!=', 'super admin')->where('type', '!=', 'company')->where('type', '!=', 'client')->get();
+            $users     = User::where('created_by', '=', $user_id)->where('type', '!=', 'super admin')->where('type', '!=', 'company')->where('type', '!=', 'branch')->where('type', '!=', 'client')->get();
             $clients   = User::where('created_by', '=', $user_id)->where('type', 'client')->get();
             $customers = Customer::where('created_by', '=', $user_id)->get();
             $venders   = Vender::where('created_by', '=', $user_id)->get();
@@ -3537,7 +3538,25 @@ class User extends Authenticatable implements MustVerifyEmail
                 'opening_balance' => '0.00',
                 'contact_number' => '-',
                 'bank_address' => '-',
+                'owned_by' => $user_id,
                 'created_by' => $user_id,
+            ]
+        );
+
+    }
+
+    //default bank account for new company
+    public function branchDefaultBankAccount($user_id,$created_by){
+        BankAccount::create(
+            [
+                'holder_name' => 'cash',
+                'bank_name' => '',
+                'account_number' => '-',
+                'opening_balance' => '0.00',
+                'contact_number' => '-',
+                'bank_address' => '-',
+                'owned_by' => $user_id,
+                'created_by' => $created_by,
             ]
         );
 

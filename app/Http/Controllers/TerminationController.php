@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Termination;
 use App\Models\TerminationType;
+use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,21 +13,34 @@ use Illuminate\Support\Facades\Mail;
 
 class TerminationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage termination'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Termination::where('created_by', '=', \Auth::user()->creatorId());
+            }elseif(Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $emp          = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $terminations = Termination::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+                $query = Termination::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id);
             }
             else
             {
-                $terminations = Termination::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Termination::where('created_by', '=', \Auth::user()->creatorId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $terminations = $query->get();
 
-            return view('termination.index', compact('terminations'));
+            return view('termination.index', compact('terminations','branches'));
         }
         else
         {
@@ -38,9 +52,13 @@ class TerminationController extends Controller
     {
         if(\Auth::user()->can('create termination'))
         {
-            $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if (\Auth::user()->type == 'company') {
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees        = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             return view('termination.create', compact('employees', 'terminationtypes'));
         }
         else
@@ -76,6 +94,7 @@ class TerminationController extends Controller
             $termination->notice_date      = $request->notice_date;
             $termination->termination_date = $request->termination_date;
             $termination->description      = $request->description;
+            $termination->owned_by       = \Auth::user()->ownedId();
             $termination->created_by       = \Auth::user()->creatorId();
             $termination->save();
 
@@ -120,8 +139,13 @@ class TerminationController extends Controller
     {
         if(\Auth::user()->can('edit termination'))
         {
-            $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees        = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             if($termination->created_by == \Auth::user()->creatorId())
             {
 

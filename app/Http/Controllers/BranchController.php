@@ -4,17 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class BranchController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage branch'))
         {
-            $branches = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
-
-            return view('branch.index', compact('branches'));
+            if (\Auth::user()->type == 'company') {
+                $branches_comp = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches_comp->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches_comp->prepend('Select Branch', '');
+                $query = Branch::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches_comp = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches_comp->prepend('Select Branch', '');
+                $query = Branch::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches_comp)) {
+                $query->where('owned_by', '=', $request->branches_comp);
+            }
+            $branches = $query->get();
+            return view('branch.index', compact('branches','branches_comp'));
         }
         else
         {
@@ -53,6 +66,7 @@ class BranchController extends Controller
 
             $branch             = new Branch();
             $branch->name       = $request->name;
+            $branch->owned_by = \Auth::user()->ownedId();
             $branch->created_by = \Auth::user()->creatorId();
             $branch->save();
 

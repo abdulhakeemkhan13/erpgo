@@ -340,7 +340,7 @@
         <div class="col-sm-12">
             <div class="row">
                 <div class="col-xl-3">
-                    <div class="card sticky-top" style="top:30px">
+                    <div class="card" style="top:30px">
                         <div class="list-group list-group-flush" id="useradd-sidenav">
                             <a href="#brand-settings"
                                 class="list-group-item list-group-item-action border-0">{{ __('Brand Settings') }}
@@ -528,7 +528,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-4">
                                     {{ Form::label('title_text', __('Title Text'), ['class' => 'form-label']) }}
                                     {{ Form::text('title_text', null, ['class' => 'form-control', 'placeholder' => __('Title Text')]) }}
                                     @error('title_text')
@@ -537,7 +537,7 @@
                                         </span>
                                     @enderror
                                 </div>
-                                <div class="col-md-3 form-group">
+                                <div class="col-md-4 form-group">
                                     {{ Form::label('footer_text', __('Footer Text'), ['class' => 'form-label']) }}
                                     {{ Form::text('footer_text', Utility::getValByName('footer_text'), ['class' => 'form-control', 'placeholder' => __('Enter Footer Text')]) }}
                                     @error('footer_text')
@@ -546,7 +546,7 @@
                                         </span>
                                     @enderror
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         {{ Form::label('default_language', __('Default Language'), ['class' => 'form-label text-dark']) }}
                                         <div class="changeLanguage">
@@ -566,7 +566,7 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="form-group col-md-3">
+                                {{-- <div class="form-group col-md-3">
                                     <div class="custom-control custom-switch">
                                         <label class="text-dark mb-1 mt-1" for="SITE_RTL">{{ __('Enable RTL') }}</label>
                                         <div class="">
@@ -576,7 +576,7 @@
                                             <label class="custom-control-label" for="SITE_RTL"></label>
                                         </div>
                                     </div>
-                                </div>
+                                </div> --}}
                                 <h5 class="small-title mt-2">{{ __('Theme Customizer') }}</h5>
                                 <div class="setting-card setting-logo-box ">
                                     <div class="row">
@@ -654,7 +654,7 @@
                                                     for="cust-theme-bg">{{ __('Transparent layout') }}</label>
                                             </div>
                                         </div>
-                                        <div class="col-lg-4 col-xl-4 col-md-4">
+                                        {{-- <div class="col-lg-4 col-xl-4 col-md-4">
                                             <h6 class="mt-1">
                                                 <i data-feather="sun" class="me-2"></i>{{ __('Layout settings') }}
                                             </h6>
@@ -666,7 +666,7 @@
                                                 <label class="form-check-label f-w-600 pl-1"
                                                     for="cust-darklayout">{{ __('Dark Layout') }}</label>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
                             </div>

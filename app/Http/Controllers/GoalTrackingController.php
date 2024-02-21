@@ -6,27 +6,50 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\GoalTracking;
 use App\Models\GoalType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class GoalTrackingController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage goal tracking'))
         {
             $user = \Auth::user();
-            if($user->type == 'Employee')
+            if($user->type == 'company')
             {
-                $employee      = Employee::where('user_id', $user->id)->first();
-                $goalTrackings = GoalTracking::where('created_by', '=', \Auth::user()->creatorId())->where('branch', $employee->branch_id)->get();
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                if($user->type == 'Employee')
+                {
+                    $employee      = Employee::where('user_id', $user->id)->first();
+                    $query = GoalTracking::where('created_by', '=', \Auth::user()->creatorId())->where('branch', $employee->branch_id);
+                }
+                else
+                {
+                    $query = GoalTracking::where('created_by', '=', \Auth::user()->creatorId());
+                }
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                if($user->type == 'Employee')
+                {
+                    $employee      = Employee::where('user_id', $user->id)->first();
+                    $query = GoalTracking::where('owned_by', '=', \Auth::user()->ownedId())->where('branch', $employee->branch_id);
+                }
+                else
+                {
+                    $query = GoalTracking::where('owned_by', '=', \Auth::user()->ownedId());
+                }
             }
-            else
-            {
-                $goalTrackings = GoalTracking::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
             }
+            $goalTrackings = $query->get();
 
-            return view('goaltracking.index', compact('goalTrackings'));
+            return view('goaltracking.index', compact('goalTrackings','branches'));
         }
         else
         {
@@ -39,12 +62,21 @@ class GoalTrackingController extends Controller
     {
         if(\Auth::user()->can('create goal tracking'))
         {
+            if(\Auth::user()->type == 'company')
+            {
+                $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $goalTypes = GoalType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $goalTypes->prepend('Select Goal Type', '');
 
-            $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $brances->prepend('Select Branch', '');
-            $goalTypes = GoalType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $goalTypes->prepend('Select Goal Type', '');
-            $status = GoalTracking::$status;
+            }else{
+
+                $brances = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $goalTypes = GoalType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $goalTypes->prepend('Select Goal Type', '');
+            }
+                $status = GoalTracking::$status;
 
             return view('goaltracking.create', compact('brances', 'goalTypes','status'));
         }
@@ -84,6 +116,7 @@ class GoalTrackingController extends Controller
             $goalTracking->subject            = $request->subject;
             $goalTracking->target_achievement = $request->target_achievement;
             $goalTracking->description        = $request->description;
+            $goalTracking->owned_by           = \Auth::user()->ownedId();
             $goalTracking->created_by         = \Auth::user()->creatorId();
             $goalTracking->save();
 
@@ -107,13 +140,21 @@ class GoalTrackingController extends Controller
 
         if(\Auth::user()->can('edit goal tracking'))
         {
-            $goalTracking = GoalTracking::find($id);
-            $brances      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $brances->prepend('Select Branch', '');
-            $goalTypes = GoalType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $goalTypes->prepend('Select Goal Type', '');
+            if(\Auth::user()->type == 'company')
+            {
+                $goalTracking = GoalTracking::find($id);
+                $brances      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $goalTypes = GoalType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $goalTypes->prepend('Select Goal Type', '');
+            }else{
+                $goalTracking = GoalTracking::find($id);
+                $brances      = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $goalTypes = GoalType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $goalTypes->prepend('Select Goal Type', '');
+            }
             $status = GoalTracking::$status;
-
             $ratings = json_decode($goalTracking->rating,true);
 
             return view('goaltracking.edit', compact('brances', 'goalTypes', 'goalTracking', 'ratings','status'));

@@ -8,6 +8,7 @@ class JobCategory extends Model
 {
     protected $fillable = [
         'title',
+        'owned_by',
         'created_by',
     ];
 }

@@ -34,10 +34,26 @@ class JobApplicationController extends Controller
 
         if(\Auth::user()->can('manage job application'))
         {
-            $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
+            if (\Auth::user()->type == 'company') {
+                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
 
-            $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-            $jobs->prepend('All', '');
+                $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+                $jobs->prepend('All', '');
+            }else{
+                $stages = JobStage::where('owned_by', '=', \Auth::user()->ownedId())->orderBy('order', 'asc')->get();
+
+                $jobs = Job::where('owned_by', \Auth::user()->ownedId())->get()->pluck('title', 'id');
+                $jobs->prepend('All', '');
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+                $company = Company::where('owned_by', '=', $request->branches)->get()->pluck('name', 'id');
+                $company->prepend('Select Company', '');
+            }
+            // $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
+
+            // $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            // $jobs->prepend('All', '');
 
             if(isset($request->start_date) && !empty($request->start_date))
             {

@@ -84,7 +84,8 @@ class BranchesController extends Controller
         if(\Auth::user()->can('create companybranch'))
         {
             $default_language = DB::table('settings')->select('value')->where('name', 'default_language')->where('created_by', '=', \Auth::user()->creatorId())->first();
-
+            DB::beginTransaction();
+            try {
             $user      = \Auth::user();
             $validator = \Validator::make(
                 $request->all(), [
@@ -107,12 +108,11 @@ class BranchesController extends Controller
             }
             $objCustomer    = \Auth::user();
             $creator        = User::find($objCustomer->creatorId());
-            $total_branches = User::where('created_by', '=', \Auth::user()->creatorId())->where('type','breach')->count();
-//             dd($total_client);
+            $total_branches = User::where('created_by', '=', \Auth::user()->creatorId())->where('type','branch')->count();
             $plan           = Plan::find($creator->plan);
+           
             if($total_branches < $plan->max_branch || $plan->max_branch == -1)
             {
-                $role = Role::findByName('branch');
                 $branches = User::create(
                     [
                         'name' => $request->name,
@@ -121,6 +121,7 @@ class BranchesController extends Controller
                         'password' => Hash::make($request->password),
                         'type' => 'branch',
                         'lang' => !empty($default_language) ? $default_language->value : 'en',
+                        'owned_by' => $user->ownedId(),
                         'created_by' => $user->creatorId(),
                         'email_verified_at' => date('Y-m-d H:i:s'),
                     ]
@@ -128,7 +129,17 @@ class BranchesController extends Controller
 
                 $role_r = Role::findByName('branch');
                 $branches->assignRole($role_r);
-                $branches->password = $request->password;
+                // $branches->password = $request->password;
+
+                $user->branchDefaultBankAccount($branches->id,$branches->created_by);
+
+                Utility::chartOfAccountTypeDataBranch($branches->id,$branches->created_by);
+                // Utility::chartOfAccountData($user);
+                // default chart of account for new company
+                Utility::chartOfAccountData1Branch($branches->id,$branches->created_by);
+                Utility::virtual_office_branch($branches->id,$branches->created_by);
+                Utility::services_branch($branches->id,$branches->created_by);
+                Utility::security_services_branch($branches->id,$branches->created_by);
 
                 // //Send Email
                 // $setings = Utility::settings();
@@ -144,12 +155,20 @@ class BranchesController extends Controller
                 //     $resp = Utility::sendEmailTemplate('new_client', [$client->email], $clientArr);
                 //     return redirect()->route('clients.index')->with('success', __('Client successfully added.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
                 // }
+                DB::commit();
                 return redirect()->route('branches.index')->with('success', __('Branch successfully created.'));
             }
             else
             {
                 return redirect()->back()->with('error', __('Your user limit is over, Please upgrade plan.'));
             }
+            
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            dd($e);
+            return redirect()->back()->with('error', $e);
+        }
         }
         else
         {

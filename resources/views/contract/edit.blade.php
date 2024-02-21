@@ -56,13 +56,13 @@
     @endif
 
         <div class="form-group col-md-6">
-            {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}
+            {{ Form::label('subject', __('Subject'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::text('subject', null, ['class' => 'form-control', 'required' => 'required']) }}
         </div>
       <input type="hidden" id="con_id" value="{{$contract->id}}">
         <div class="form-group col-md-6 row">
             <div class="col-md-9">
-                {{ Form::label('company_id', __('Company'), ['class' => 'form-label']) }}
+                {{ Form::label('company_id', __('Company'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             </div>
             {{-- <div class="col-md-3 d-flex">
                 {{ Form::label('addpropcheck', __('New'), ['class' => 'form-check-label']) }}
@@ -93,16 +93,18 @@
         </div> --}}
 
         <div class="form-group col-md-6">
-            {{ Form::label('space', __('Space'), ['class' => 'form-label']) }}
+            {{ Form::label('space', __('Space'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             @if($type == 'virtual')
-            <select name="space" class="form-control select space_select" id="space" required>
+            <select name="space" class="form-control select space_select" id="space" required onchange="getchairs(this.value)">
+
                 <option value="" disabled selected>Select a Space</option>
                 @foreach ($spaces as $space)
                     <option value="{{ $space->id }}" @if($space->id == @$roomassign[0]->space_id) selected @endif>{{ $space->name }} ( {{ @$space->space_types_name }} )</option>
                 @endforeach
             </select>
             @else
-                <select name="space" class="form-control select space_select" id="space" required>
+                <select name="space" class="form-control select space_select" id="space" required onchange="getchairs(this.value)">
+
                     <option value="" disabled selected>Select a Space</option>
                     @foreach ($spaces as $space)
                         <option value="{{ $space->id }}" @if($space->id == @$roomassign[0]->space_id) selected @endif>{{ $space->name }} ( {{ @$space->type->name }} )</option>
@@ -112,7 +114,7 @@
         </div>
         @if($type == 'virtual')@else
         <div class="form-group col-md-6" id="ch">
-            {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
+            {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             <select name="chair[]" class="form-control select chair_select" id="chair" multiple="multiple">
                 <option value="" disabled>Select Chairs</option>
                 @foreach ($chairs as $chair)
@@ -122,19 +124,19 @@
         </div>
         @endif
         <div class="form-group col-md-6">
-            {{ Form::label('type', __('Contract Type'), ['class' => 'form-label']) }}
+            {{ Form::label('type', __('Contract Type'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::select('type', $contractTypes, null, ['class' => 'form-control', 'data-toggle="select"', 'required' => 'required']) }}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('value', __('Contract Value'), ['class' => 'form-label']) }}
+            {{ Form::label('value', __('Contract Value'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::number('value', null, ['class' => 'form-control', 'required' => 'required', 'stage' => '0.01']) }}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('start_date', __('Start Date'), ['class' => 'form-label']) }}
+            {{ Form::label('start_date', __('Start Date'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::date('start_date', null, ['class' => 'form-control', 'required' => 'required']) }}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}
+            {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
             {{ Form::date('end_date', null  , ['class' => 'form-control', 'required' => 'required']) }}
         </div>
     </div>
@@ -145,36 +147,48 @@
         </div>
     </div>
     <div class="row">
-        {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}
-        <div class="d-flex col-md-12">
-            <label class="form-label m-1" style="width: 25%" for="{{ $services->id }}">{{ ucfirst($services->name) }} : </label>
-            <input type="hidden" name="services_id" class="form-label" value="{{ $services->id }}">
-            <input type="number" name="services_charges" id="{{ $services->id }}" value="{{$contract->service_price}}" class="form-label m-1" style="width: 25%" required>
+        <div class=" col-md-6">
+            {{ Form::label('servic', 'Services Charges', ['class' => 'form-label']) }}<span style="color: red"> *</span>
+            <div class="d-flex col-md-12">
+                <label class="form-label m-1" style="width: 40%" for="{{ $services->id }}">{{ ucfirst($services->name) }} : </label>
+                <input type="hidden" name="services_id" class="form-label" value="{{ $services->id }}">
+                <input type="number" name="services_charges" id="{{ $services->id }}" @if($contract->service_id == $services->id) value="{{$contract->service_price}}"@endif class="form-label m-1" style="width: 50%" required>
+            </div>
         </div>
+        {{-- @dd($contract->security_deposit_id , $security->id); --}}
+        <div class=" col-md-6">
+            {{ Form::label('security', 'Security Deposit', ['class' => 'form-label']) }}<span style="color: red"> *</span>
+            <div class="d-flex col-md-12">
+                <label class="form-label m-1" style="width:40%" for="{{ @$security->id }}">{{ ucfirst(@$security->name) }} : </label>
+                <input type="hidden" name="security_deposit_id" class="form-label" value="{{ @$security->id }}">
+                <input type="number" name="security_deposit_price" id="{{ @$security->id }}" @if($contract->security_deposit_id == $security->id)value="{{$contract->security_deposit_price}}" @endif class="form-label m-1" style="width: 50%" required>
+            </div>
     </div>
     <div class="row">
-        {{ Form::label('meeting_hours', 'Meeting Room & Board Room Hours', ['class' => 'form-label']) }}
-        @foreach ($ismeeting as $meeting)
-        <?php
-        $space_houre = App\Models\Contract::spaceContract($contract->id,$meeting->id);
-        ?>
-            <div class="d-flex col-md-12">
-                <label class="form-label m-1"  style="width: 25%" for="{{ $meeting->id }}">{{ ucfirst($meeting->name) }} : </label>
-                <input type="hidden" name="room_hours_ids[]" value="{{ $meeting->id }}"  class="form-label m-1"
-                    style="width: 25%">
-                <input type="number" name="room_hours[]" value="{{@$space_houre->assign_hour}}" id="{{ $meeting->id }}" class="form-label m-1"
-                    style="width: 25%" required>
-                <label class="form-label m-1" for="{{ $meeting->id }}"> Hrs</label>
-                <input type="number" name="hourly_rate[]" value="{{@$space_houre->hourly_rate}}" id="hour{{ $meeting->id }}" class="form-label m-1"
-                    style="width: 25%" required>
-                <label class="form-label m-1" for="hour{{ $meeting->id }}"> Hourly Rate</label>
+        <div class=" col-md-12">
+            {{ Form::label('meeting_hours', 'Meeting Room & Board Room Hours', ['class' => 'form-label']) }}<span style="color: red"> *</span>
+            @foreach ($ismeeting as $meeting)
+            <?php
+            $space_houre = App\Models\Contract::spaceContract($contract->id,$meeting->id);
+            ?>
+                <div class="d-flex col-md-12">
+                    <label class="form-label m-1"  style="width: 25%" for="{{ $meeting->id }}">{{ ucfirst($meeting->name) }} : </label>
+                    <input type="hidden" name="room_hours_ids[]" value="{{ $meeting->id }}"  class="form-label m-1"
+                        style="width: 25%">
+                    <input type="number" name="room_hours[]" value="{{@$space_houre->assign_hour}}" id="{{ $meeting->id }}" class="form-label m-1"
+                        style="width: 25%" required>
+                    <label class="form-label m-1" for="{{ $meeting->id }}"> Hrs</label>
+                    <input type="number" name="hourly_rate[]" value="{{@$space_houre->hourly_rate}}" id="hour{{ $meeting->id }}" class="form-label m-1"
+                        style="width: 25%" required>
+                    <label class="form-label m-1" for="hour{{ $meeting->id }}"> Hourly Rate</label>
+                </div>
+                @endforeach
             </div>
-        @endforeach
     </div>
 </div>
 <div class="modal-footer">
     <input type="button" value="{{ __('Cancel') }}" class="btn  btn-light" data-bs-dismiss="modal">
-    <input type="submit" id="myButton" value="{{ __('Create') }}" class="btn  btn-primary">
+    <input type="submit" id="myButton" value="{{ __('Update') }}" class="btn  btn-primary">
 </div>
 {{ Form::close() }}
 
@@ -267,7 +281,7 @@
             success: function(data) {
                 console.log(data);
                 if (data.success == 'true') {
-                    var s = ` {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}
+                    var s = ` {{ Form::label('chair', __('Chair'), ['class' => 'form-label']) }}<span style="color: red"> *</span>
                 <select name="chair[]"  class="form-control select chair_select" id="chair"   multiple="multiple">
                 <option value="" disabled >Select Chairs</option> `;
                     $("#ch").empty();

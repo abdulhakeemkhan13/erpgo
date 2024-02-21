@@ -14,10 +14,12 @@ class CustomFieldController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->can('manage constant custom field'))
-        {
+        if(\Auth::user()->can('manage constant custom field')){
+            // if (\Auth::user()->type == 'company') {
             $custom_fields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->get();
-
+            // }else{
+            // $custom_fields = CustomField::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            // }
             return view('customFields.index', compact('custom_fields'));
         }
         else
@@ -50,10 +52,10 @@ class CustomFieldController extends Controller
 
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required|max:40',
-                                   'type' => 'required',
-                                   'module' => 'required',
-                               ]
+                                'name' => 'required|max:40',
+                                'type' => 'required',
+                                'module' => 'required',
+                            ]
             );
 
             if($validator->fails())

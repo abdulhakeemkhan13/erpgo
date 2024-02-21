@@ -4,18 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Competencies;
 use App\Models\PerformanceType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CompetenciesController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('Manage Competencies'))
         {
-            $competencies = Competencies::where('created_by', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Competencies::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Competencies::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $competencies = $query->get();
 
-            return view('competencies.index', compact('competencies'));
+            return view('competencies.index', compact('competencies','branches'));
         }
         else
         {
@@ -26,8 +40,12 @@ class CompetenciesController extends Controller
 
     public function create()
     {
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            return view('competencies.create', compact('performance'));
+        if (\Auth::user()->type == 'company') {
+            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $performance     = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
+        return view('competencies.create', compact('performance'));
 
     }
 
@@ -53,6 +71,7 @@ class CompetenciesController extends Controller
             $competencies             = new Competencies();
             $competencies->name       = $request->name;
             $competencies->type       = $request->type;
+            $competencies->owned_by = \Auth::user()->ownedId();
             $competencies->created_by = \Auth::user()->creatorId();
             $competencies->save();
 
@@ -74,7 +93,11 @@ class CompetenciesController extends Controller
     public function edit($id)
     {
         $competencies = Competencies::find($id);
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if (\Auth::user()->type == 'company') {
+            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }else{
+            $performance     = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+        }
         return view('competencies.edit', compact('performance', 'competencies'));
 
     }

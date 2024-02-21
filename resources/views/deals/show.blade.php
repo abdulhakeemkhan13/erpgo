@@ -227,9 +227,9 @@
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div>
                             </a>
 
-                            <a href="#users_products" class="list-group-item list-group-item-action border-0">{{__('Users').' | '.__('Products')}}
+                            {{-- <a href="#users_products" class="list-group-item list-group-item-action border-0">{{__('Users').' | '.__('Products')}}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div>
-                            </a>
+                            </a> --}}
 
                             <a href="#sources_emails" class="list-group-item list-group-item-action border-0">{{__('Sources').' | '.__('Emails')}}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div>
@@ -455,7 +455,7 @@
                             @endif
                         </div>
                     </div>
-                    <div id="users_products">
+                    {{-- <div id="users_products">
                         <div class="row">
                             <div class="col-6">
                                 <div class="card">
@@ -562,7 +562,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     <div id="sources_emails">
                         <div class="row">
                             <div class="col-6">
@@ -710,7 +710,7 @@
                                     <div class="card-header">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h5>{{__('Notes')}}</h5>
-                                            @php
+                                            {{-- @php
                                                 $plan= \App\Models\Utility::getChatGPTSettings();
                                             @endphp
                                             @if($plan->chatgpt == 1)
@@ -726,7 +726,7 @@
                                                     <i class="fas fa-robot"></i> <span>{{__('Generate with AI')}}</span>
                                                 </a>
                                             </div>
-                                            @endif
+                                            @endif --}}
                                         </div>
                                     </div>
                                     <div class="card-body">

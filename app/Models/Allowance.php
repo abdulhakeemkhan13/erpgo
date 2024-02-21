@@ -11,6 +11,7 @@ class Allowance extends Model
         'allowance_option',
         'title',
         'amount',
+        'owned_by',
         'created_by',
     ];
 

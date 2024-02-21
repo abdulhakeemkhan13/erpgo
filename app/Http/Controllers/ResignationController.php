@@ -12,21 +12,33 @@ use Illuminate\Support\Facades\Mail;
 
 class ResignationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage resignation'))
         {
-            if(Auth::user()->type == 'Employee')
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', ''); 
+                $query = Resignation::where('created_by', '=', \Auth::user()->creatorId());
+            }elseif(Auth::user()->type == 'Employee')
             {
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
                 $emp          = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $resignations = Resignation::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+                $query = Resignation::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id);
             }
             else
             {
-                $resignations = Resignation::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Resignation::where('owned_by', '=', \Auth::user()->ownedId());
             }
-
-            return view('resignation.index', compact('resignations'));
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $resignations = $query->get();
+            return view('resignation.index', compact('resignations','branches'));
         }
         else
         {
@@ -38,8 +50,11 @@ class ResignationController extends Controller
     {
         if(\Auth::user()->can('create resignation'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if (\Auth::user()->type == 'company') {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             return view('resignation.create', compact('employees'));
         }
         else
@@ -82,6 +97,7 @@ class ResignationController extends Controller
             $resignation->notice_date      = $request->notice_date;
             $resignation->resignation_date = $request->resignation_date;
             $resignation->description      = $request->description;
+            $resignation->owned_by       = \Auth::user()->ownedId();
             $resignation->created_by       = \Auth::user()->creatorId();
 
             $resignation->save();
@@ -126,7 +142,11 @@ class ResignationController extends Controller
     {
         if(\Auth::user()->can('edit resignation'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $employees = Employee::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            }
             if($resignation->created_by == \Auth::user()->creatorId())
             {
 

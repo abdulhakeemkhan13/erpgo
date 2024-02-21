@@ -31,7 +31,7 @@
 
 @section('content')
     @if($pipeline)
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-sm-3">
                 <div class="card">
                     <div class="card-body">
@@ -100,7 +100,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -147,7 +147,7 @@
                                                         @endcan
                                                         @can('edit deal')
                                                             <div class="action-btn bg-info ms-2">
-                                                                <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ URL::to('deals/'.$deal->id.'/edit') }}" data-ajax-popup="true" data-size="xl" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-title="{{__('Lead Edit')}}">
+                                                                <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ URL::to('deals/'.$deal->id.'/edit') }}" data-ajax-popup="true" data-size="lg" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-title="{{__('Lead Edit')}}">
                                                                     <i class="ti ti-pencil text-white"></i>
                                                                 </a>
                                                             </div>

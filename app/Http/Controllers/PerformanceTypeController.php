@@ -3,18 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\PerformanceType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PerformanceTypeController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage performance type'))
         {
             if(\Auth::user()->type == 'company')
             {
-                $types = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = PerformanceType::where('created_by', '=', \Auth::user()->creatorId());
+                if (!empty($request->branches)) {
+                    $query->where('owned_by', '=', $request->branches);
+                }
+                $types = $query->get();
+                return view('performanceType.index', compact('types','branches'));
+            }elseif(\Auth::user()->type == 'branch')
+            {
+                $types = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get();
                 return view('performanceType.index', compact('types'));
             }
             else
@@ -34,7 +46,7 @@ class PerformanceTypeController extends Controller
     {
         if(\Auth::user()->can('create performance type'))
         {
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' ||  \Auth::user()->type == 'branch')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -50,6 +62,7 @@ class PerformanceTypeController extends Controller
 
                 $types             = new PerformanceType();
                 $types->name       = $request->name;
+                $types->owned_by = \Auth::user()->ownedId();
                 $types->created_by = \Auth::user()->creatorId();
                 $types->save();
 
@@ -59,6 +72,9 @@ class PerformanceTypeController extends Controller
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
+        } else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
         }
 
     }
@@ -81,7 +97,7 @@ class PerformanceTypeController extends Controller
 
         if(\Auth::user()->can('edit performance type'))
         {
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' ||  \Auth::user()->type == 'branch')
             {
                 $validator = \Validator::make(
                     $request->all(), [

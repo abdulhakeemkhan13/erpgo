@@ -30,15 +30,28 @@ class BillController extends Controller
 
     public function index(Request $request)
     {
-        if(\Auth::user()->can('manage bill'))
-        {
-
-            $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $vender->prepend('Select Vendor', '');
+        if(\Auth::user()->can('manage bill')){
+            if(\Auth::user()->type == ('company')){
+                $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = Bill::where('type', '=', 'Bill')->where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $vender = Vender::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+                $query = Bill::where('type', '=', 'Bill')->where('owned_by', '=', \Auth::user()->ownedId());
+            }
 
             $status = Bill::$statues;
 
-            $query = Bill::where('type', '=', 'Bill')->where('created_by', '=', \Auth::user()->creatorId());
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+
             if(!empty($request->vender))
             {
                 $query->where('vender_id', '=', $request->vender);
@@ -66,7 +79,7 @@ class BillController extends Controller
             }
             $bills = $query->get();
 
-            return view('bill.index', compact('bills', 'vender', 'status'));
+            return view('bill.index', compact('bills', 'vender', 'status','branches'));
         }
         else
         {
@@ -80,22 +93,41 @@ class BillController extends Controller
         if(\Auth::user()->can('create bill'))
         {
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'bill')->get();
-            $category     = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())
-                ->whereNotIn('type', ['product & service', 'income',])
-                ->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
+            if(\Auth::user()->type == ('company')){
+                $category     = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())
+                    ->whereNotIn('type', ['product & service', 'income',])
+                    ->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
 
-            $bill_number = \Auth::user()->billNumberFormat($this->billNumber());
-            $venders     = Vender::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $venders->prepend('Select Vender', '');
+                $bill_number = \Auth::user()->billNumberFormat($this->billNumber());
+                $venders     = Vender::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $venders->prepend('Select Vender', '');
 
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $product_services->prepend('Select Item', '');
+                $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $product_services->prepend('Select Item', '');
 
-            $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('created_by', \Auth::user()->creatorId())->get()
-                ->pluck('code_name', 'id');
-            $chartAccounts->prepend('Select Account', '');
+                $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('created_by', \Auth::user()->creatorId())->get()
+                    ->pluck('code_name', 'id');
+                $chartAccounts->prepend('Select Account', '');
+            }else{
+                $category     = ProductServiceCategory::where('owned_by', \Auth::user()->ownedId())
+                    ->whereNotIn('type', ['product & service', 'income',])
+                    ->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+
+                $bill_number = \Auth::user()->billNumberFormat($this->billNumber());
+                $venders     = Vender::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $venders->prepend('Select Vender', '');
+
+                $product_services = ProductService::where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $product_services->prepend('Select Item', '');
+
+                $chartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('owned_by', \Auth::user()->ownedId())->get()
+                    ->pluck('code_name', 'id');
+                $chartAccounts->prepend('Select Account', '');
+            }
 
             return view('bill.create', compact('venders', 'bill_number', 'product_services', 'category', 'customFields', 'vendorId','chartAccounts'));
         }
@@ -160,6 +192,7 @@ class BillController extends Controller
             $bill->due_date       = $request->due_date;
             $bill->category_id    = !empty($request->category_id) ? $request->category_id :0;
             $bill->order_number   = !empty($request->order_number) ? $request->order_number : 0;
+            $bill->owned_by     = \Auth::user()->ownedId();
             $bill->created_by     = \Auth::user()->creatorId();
             $bill->save();
 
@@ -285,7 +318,9 @@ class BillController extends Controller
 
     function venderNumber()
     {
-        $latest = Vender::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        if(\Auth::user()->type == ('company')){
+            $latest = Vender::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;

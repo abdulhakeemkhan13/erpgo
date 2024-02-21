@@ -13,12 +13,16 @@ class BankTransferController extends Controller
     public function index(Request $request)
     {
 
-        if(\Auth::user()->can('manage bank transfer'))
-        {
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-            $account->prepend('Select Account', '');
-
-            $query = BankTransfer::where('created_by', '=', \Auth::user()->creatorId());
+        if(\Auth::user()->can('manage bank transfer')){
+            if (\Auth::user()->type == 'company') {
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $query = BankTransfer::where('created_by', '=', \Auth::user()->creatorId());
+            }else{ 
+                $account = BankAccount::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $query = BankTransfer::where('owned_by', '=', \Auth::user()->ownedId());
+            }
 
 //            if(!empty($request->date))
 //            {
@@ -58,9 +62,12 @@ class BankTransferController extends Controller
 
     public function create()
     {
-        if(\Auth::user()->can('create bank transfer'))
-        {
-            $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->can('create bank transfer')){
+            if (\Auth::user()->type == 'company') {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');                
+            }
 
             return view('bank-transfer.create', compact('bankAccount'));
         }
@@ -76,11 +83,11 @@ class BankTransferController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'from_account' => 'required|numeric',
-                                   'to_account' => 'required|numeric',
-                                   'amount' => 'required|numeric',
-                                   'date' => 'required',
-                               ]
+                                'from_account' => 'required|numeric',
+                                'to_account' => 'required|numeric',
+                                'amount' => 'required|numeric',
+                                'date' => 'required',
+                            ]
             );
             if($validator->fails())
             {
@@ -97,6 +104,7 @@ class BankTransferController extends Controller
             $transfer->payment_method = 0;
             $transfer->reference      = $request->reference;
             $transfer->description    = $request->description;
+            $transfer->owned_by     = \Auth::user()->ownedId();
             $transfer->created_by     = \Auth::user()->creatorId();
             $transfer->save();
 
@@ -122,7 +130,11 @@ class BankTransferController extends Controller
         if(\Auth::user()->can('edit bank transfer'))
         {
             $transfer = BankTransfer::where('id',$id)->first();
-            $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if (\Auth::user()->type == 'company') {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }else{
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' (',holder_name,')') AS name"))->where('owned_by', \Auth::user()->ownedId())->get()->pluck('name', 'id');                
+            }
 
             return view('bank-transfer.edit', compact('bankAccount', 'transfer'));
         }

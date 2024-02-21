@@ -17,7 +17,11 @@ class TaxController extends Controller
     {
         if(\Auth::user()->can('manage constant tax'))
         {
+            if(\Auth::user()->type == 'company'){
             $taxes = Tax::where('created_by', '=', \Auth::user()->creatorId())->get();
+        }else{
+            $taxes = Tax::where('owned_by', '=', \Auth::user()->ownedId())->get();
+        }
 
             return view('taxes.index')->with('taxes', $taxes);
         }
@@ -46,9 +50,9 @@ class TaxController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required|max:20',
-                                   'rate' => 'required|numeric',
-                               ]
+                                    'name' => 'required|max:20',
+                                    'rate' => 'required|numeric',
+                                ]
             );
             if($validator->fails())
             {
@@ -60,6 +64,7 @@ class TaxController extends Controller
             $tax             = new Tax();
             $tax->name       = $request->name;
             $tax->rate       = $request->rate;
+            $tax->owned_by = \Auth::user()->ownedId();
             $tax->created_by = \Auth::user()->creatorId();
             $tax->save();
 

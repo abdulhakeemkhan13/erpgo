@@ -7,11 +7,12 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Indicator;
 use App\Models\PerformanceType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class IndicatorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage indicator'))
         {
@@ -19,14 +20,26 @@ class IndicatorController extends Controller
             if($user->type == 'Employee')
             {
                 $employee = Employee::where('user_id', $user->id)->first();
-                $indicators = Indicator::where('created_by', '=', $user->creatorId())->where('branch', $employee->branch_id)->where('department', $employee->department_id)->where('designation', $employee->designation_id)->get();
-            }
-            else
+                $query = Indicator::where('owned_by', '=', $user->ownedId())->where('branch', $employee->branch_id)->where('department', $employee->department_id)->where('designation', $employee->designation_id);
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+            } else if(\Auth::user()->type == 'company'){
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query  = Indicator::where('created_by', '=', $user->creatorId());
+            }else
             {
-                $indicators = Indicator::where('created_by', '=', $user->creatorId())->get();
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = Indicator::where('owned_by', '=', $user->ownedId());
             }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $indicators = $query->get();
 
-            return view('indicator.index', compact('indicators'));
+            return view('indicator.index', compact('indicators','branches'));
         }
         else
         {
@@ -37,10 +50,17 @@ class IndicatorController extends Controller
 
     public function create()
     {
-        $brances     = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-        $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $departments->prepend('Select Department', '');
+        if(\Auth::user()->type == 'company'){
+            $brances     = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
+        }else{
+            $brances     = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $performance     = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get();
+            $departments = Department::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
+        }
         return view('indicator.create', compact( 'brances', 'departments','performance'));
     }
 
@@ -80,6 +100,7 @@ class IndicatorController extends Controller
                 $indicator->created_user = \Auth::user()->id;
             }
 
+            $indicator->owned_by = \Auth::user()->ownedId();
             $indicator->created_by = \Auth::user()->creatorId();
             $indicator->save();
 
@@ -105,11 +126,17 @@ class IndicatorController extends Controller
     {
         if(\Auth::user()->can('edit indicator'))
         {
-
-            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $brances        = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $departments    = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $departments->prepend('Select Department', '');
+            if(\Auth::user()->type == 'company'){
+                $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $brances        = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $departments    = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $departments->prepend('Select Department', '');
+            }else{
+                $performance     = PerformanceType::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                $brances        = Branch::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $departments    = Department::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $departments->prepend('Select Department', '');
+            }
 
             $ratings = json_decode($indicator->rating,true);
 

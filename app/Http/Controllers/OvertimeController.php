@@ -41,6 +41,7 @@ class OvertimeController extends Controller
             $overtime->number_of_days = $request->number_of_days;
             $overtime->hours          = $request->hours;
             $overtime->rate           = $request->rate;
+            $overtime->owned_by     = \Auth::user()->ownedId();
             $overtime->created_by     = \Auth::user()->creatorId();
             $overtime->save();
 

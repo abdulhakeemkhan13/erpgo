@@ -157,12 +157,16 @@ class DealController extends Controller
      */
     public function create()
     {
-        if(\Auth::user()->can('create deal'))
-        {
-            $clients      = User::where('created_by', '=', \Auth::user()->ownerId())->where('type', 'client')->get()->pluck('name', 'id');
-            $customFields = CustomField::where('module', '=', 'deal')->get();
+        if(\Auth::user()->can('create deal')){
+            // if(\Auth::user()->type == 'company' ){
+            //     $clients      = User::where('created_by', '=', \Auth::user()->ownerId())->where('type', 'client')->get()->pluck('name', 'id');
+            // }else{
+            //     $clients      = User::where('owned_by', '=', \Auth::user()->ownedId())->where('type', 'client')->get()->pluck('name', 'id');
+            // }
+            $customFields = CustomField::where('module', '=', 'deal')->get();  
 
-            return view('deals.create', compact('clients', 'customFields'));
+            // return view('deals.create', compact('clients', 'customFields'));
+            return view('deals.create', compact('customFields'));
         }
         else
         {
@@ -185,8 +189,9 @@ class DealController extends Controller
             $countDeal = Deal::where('created_by', '=', $usr->ownerId())->count();
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required',
-                               ]
+                                'name' => 'required',
+                                'phone' => 'required',
+                            ]
             );
 
             if($validator->fails())
@@ -234,33 +239,34 @@ class DealController extends Controller
                 $deal->pipeline_id = $pipeline->id;
                 $deal->stage_id    = $stage->id;
                 $deal->status      = 'Active';
+                $deal->owned_by  = $usr->ownedId();
                 $deal->created_by  = $usr->ownerId();
                 $deal->save();
 
-                //send email
-                $clients = User::whereIN('id', array_filter($request->clients))->get()->pluck('email', 'id')->toArray();
-                $dealArr = [
-                    'deal_id' => $deal->id,
-                    'name' => $deal->name,
-                    'updated_by' => $usr->id,
-                ];
-                $dArr = [
-                    'deal_name' => $deal->name,
-                    'deal_pipeline' => $pipeline->name,
-                    'deal_stage' => $stage->name,
-                    'deal_status' => $deal->status,
-                    'deal_price' => $usr->priceFormat($deal->price),
-                ];
+                // //send email
+                // $clients = User::whereIN('id', array_filter($request->clients))->get()->pluck('email', 'id')->toArray();
+                // $dealArr = [
+                //     'deal_id' => $deal->id,
+                //     'name' => $deal->name,
+                //     'updated_by' => $usr->id,
+                // ];
+                // $dArr = [
+                //     'deal_name' => $deal->name,
+                //     'deal_pipeline' => $pipeline->name,
+                //     'deal_stage' => $stage->name,
+                //     'deal_status' => $deal->status,
+                //     'deal_price' => $usr->priceFormat($deal->price),
+                // ];
 
-                foreach(array_keys($clients) as $client)
-                {
-                    ClientDeal::create(
-                        [
-                            'deal_id' => $deal->id,
-                            'client_id' => $client,
-                        ]
-                    );
-                }
+                // foreach(array_keys($clients) as $client)
+                // {
+                //     ClientDeal::create(
+                //         [
+                //             'deal_id' => $deal->id,
+                //             'client_id' => $client,
+                //         ]
+                //     );
+                // }
 
                 if($usr->type=='company'){
                     $usrDeals = [
@@ -289,20 +295,20 @@ class DealController extends Controller
                 // Send Email
                 $setings = Utility::settings();
 
-                if($setings['deal_assigned'] == 1)
-                {
-                    $clients = User::whereIN('id', array_filter($request->clients))->get()->pluck('email', 'id')->toArray();
-                    $dealAssignArr = [
-                        'deal_name' => $deal->name,
-                        'deal_pipeline' => $pipeline->name,
-                        'deal_stage' => $stage->name,
-                        'deal_status' => $deal->status,
-                        'deal_price' => $usr->priceFormat($deal->price),
-                    ];
-                    $resp = Utility::sendEmailTemplate('deal_assigned',  $clients, $dealAssignArr);
-//                    return redirect()->back()->with('success', __('Deal successfully created!')  .(($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+//                 if($setings['deal_assigned'] == 1)
+//                 {
+//                     $clients = User::whereIN('id', array_filter($request->clients))->get()->pluck('email', 'id')->toArray();
+//                     $dealAssignArr = [
+//                         'deal_name' => $deal->name,
+//                         'deal_pipeline' => $pipeline->name,
+//                         'deal_stage' => $stage->name,
+//                         'deal_status' => $deal->status,
+//                         'deal_price' => $usr->priceFormat($deal->price),
+//                     ];
+//                     $resp = Utility::sendEmailTemplate('deal_assigned',  $clients, $dealAssignArr);
+// //                    return redirect()->back()->with('success', __('Deal successfully created!')  .(($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
 
-                }
+//                 }
 
                 //For Notification
                 $setting  = Utility::settings(\Auth::user()->creatorId());

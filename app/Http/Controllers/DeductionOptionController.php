@@ -3,17 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\DeductionOption;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DeductionOptionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if(\Auth::user()->can('manage deduction option'))
         {
-            $deductionoptions = DeductionOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if (\Auth::user()->type == 'company') {
+                $branches = User::where('type', '=', 'branch')->get()->pluck('name', 'id');
+                $branches->prepend(\Auth::user()->name, \Auth::user()->id);               
+                $branches->prepend('Select Branch', '');
+                $query = DeductionOption::where('created_by', '=', \Auth::user()->creatorId());
+            }else{
+                $branches = User::where('id', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $branches->prepend('Select Branch', '');
+                $query = DeductionOption::where('owned_by', '=', \Auth::user()->ownedId());
+            }
+            if (!empty($request->branches)) {
+                $query->where('owned_by', '=', $request->branches);
+            }
+            $deductionoptions = $query->get();
 
-            return view('deductionoption.index', compact('deductionoptions'));
+            return view('deductionoption.index', compact('deductionoptions','branches'));
         }
         else
         {
@@ -52,6 +66,7 @@ class DeductionOptionController extends Controller
 
             $deductionoption             = new DeductionOption();
             $deductionoption->name       = $request->name;
+            $deductionoption->owned_by = \Auth::user()->ownedId();
             $deductionoption->created_by = \Auth::user()->creatorId();
             $deductionoption->save();
 

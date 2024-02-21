@@ -22,6 +22,41 @@
 @endsection
 
 @section('content')
+    @if(\Auth::user()->type == 'company')
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(['route' => ['account-assets.index'], 'method' => 'GET', 'id' => 'account-assets_submit']) }}
+                        <div class="row d-flex justify-content-end ">
+        
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                <div class="btn-box">
+                                    {{ Form::label('branches', __('Branches'),['class'=>'form-label'])}}
+                                    {{ Form::select('branches', $branches, isset($_GET['branches']) ? $_GET['branches'] : '', ['class' => 'form-control select' ]) }}
+                                </div>                               
+                            </div>
+
+                            <div class="col-auto float-end ms-2 mt-4">
+                                <a href="#" class="btn btn-sm btn-primary"
+                                    onclick="document.getElementById('account-assets_submit').submit(); return false;"
+                                    data-toggle="tooltip" data-original-title="{{ __('apply') }}">
+                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                </a>
+                                <a href="{{ route('account-assets.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
+                                    data-original-title="{{ __('Reset') }}">
+                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                        {{ Form::close() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
     <div class="row">
         <div class="col-md-12">
             <div class="card">
@@ -30,11 +65,11 @@
                         <table class="table datatable">
                             <thead>
                             <tr>
-                                <th>{{__('Name')}}</th>
-                                <th>{{__('Users')}}</th>
-                                <th>{{__('Purchase Date')}}</th>
-                                <th>{{__('Supported Date')}}</th>
-                                <th>{{__('Amount')}}</th>
+                                {{-- <th>{{__('Name')}}</th> --}}
+                                <th>{{__('Company')}}</th>
+                                <th>{{__('Issue Date')}}</th>
+                                <th>{{__('End Date')}}</th>
+                                {{-- <th>{{__('Amount')}}</th> --}}
                                 <th>{{__('Description')}}</th>
                                 <th>{{__('Action')}}</th>
                             </tr>
@@ -42,8 +77,9 @@
                             <tbody>
                             @foreach ($assets as $asset)
                                 <tr>
-                                    <td class="font-style">{{ $asset->name }}</td>
-                                    <td>
+                                    {{-- <td class="font-style">{{ $asset->name }}</td> --}}
+                                    <td class="font-style">{{ @$asset->company->name }}</td>
+                                    {{-- <td>
                                         <div class="avatar-group">
                                             @foreach($asset->users($asset->employee_id) as $user)
                                                 <a href="#" class="avatar rounded-circle avatar-sm avatar-group">
@@ -55,11 +91,11 @@
                                             @endforeach
                                         </div>
 
-                                    </td>
+                                    </td> --}}
 
                                     <td class="font-style">{{ \Auth::user()->dateFormat($asset->purchase_date) }}</td>
                                     <td class="font-style">{{ \Auth::user()->dateFormat($asset->supported_date) }}</td>
-                                    <td class="font-style">{{ \Auth::user()->priceFormat($asset->amount) }}</td>
+                                    {{-- <td class="font-style">{{ \Auth::user()->priceFormat($asset->amount) }}</td> --}}
                                     <td class="font-style">{{ !empty($asset->description)?$asset->description:'-' }}</td>
                                     <td class="Action">
                                         <span>

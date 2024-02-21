@@ -12,6 +12,7 @@ class Warning extends Model
         'subject',
         'warning_date',
         'description',
+        'owned_by',
         'created_by',
     ];
 

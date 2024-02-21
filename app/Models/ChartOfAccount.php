@@ -13,6 +13,7 @@ class ChartOfAccount extends Model
         'sub_type',
         'is_enabled',
         'description',
+        'owned_by',
         'created_by',
     ];
 

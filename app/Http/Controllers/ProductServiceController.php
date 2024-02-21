@@ -31,19 +31,33 @@ class ProductServiceController extends Controller
     public function index(Request $request)
     {
 
-        if(\Auth::user()->can('manage product & service'))
-        {
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product & service')->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
+        if(\Auth::user()->can('manage product & service')){
+            if(\Auth::user()->type == 'company' ){
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product & service')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
 
-            if(!empty($request->category))
-            {
+                if(!empty($request->category))
+                {
 
-                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('category_id', $request->category)->get();
-            }
-            else
-            {
-                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('category_id', $request->category)->get();
+                }
+                else
+                {
+                    $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->get();
+                }
+            }else{
+                $category = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())->where('type', '=', 'product & service')->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+
+                if(!empty($request->category))
+                {
+
+                    $productServices = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->where('category_id', $request->category)->get();
+                }
+                else
+                {
+                    $productServices = ProductService::where('owned_by', '=', \Auth::user()->ownedId())->get();
+                }
             }
 
             return view('productservice.index', compact('productServices', 'category'));
@@ -57,23 +71,40 @@ class ProductServiceController extends Controller
 
     public function create()
     {
-        if(\Auth::user()->can('create product & service'))
-        {
+        if(\Auth::user()->can('create product & service')) {
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'product')->get();
-            $category     = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product & service')->get()->pluck('name', 'id');
-            $unit         = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $tax          = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $incomeChartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 4)
-                ->where('created_by', \Auth::user()->creatorId())->get()
-                ->pluck('code_name', 'id');
-            $incomeChartAccounts->prepend('Select Account', '');
-            $expenseChartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
-                ->where('type', 5)
-                ->orWhere('type', 6)
-                ->where('created_by', \Auth::user()->creatorId())->get()
-                ->pluck('code_name', 'id');
-            $expenseChartAccounts->prepend('Select Account', '');
+            if(\Auth::user()->type == 'company' ){
+                $category     = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product & service')->get()->pluck('name', 'id');
+                $unit         = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $tax          = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $incomeChartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('type', 4)
+                    ->where('created_by', \Auth::user()->creatorId())->get()
+                    ->pluck('code_name', 'id');
+                $incomeChartAccounts->prepend('Select Account', '');
+                $expenseChartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('type', 5)
+                    ->orWhere('type', 6)
+                    ->where('created_by', \Auth::user()->creatorId())->get()
+                    ->pluck('code_name', 'id');
+                $expenseChartAccounts->prepend('Select Account', '');
+            }else{
+                // $customFields = CustomField::where('owned_by', '=', \Auth::user()->ownedId())->where('module', '=', 'product')->get();
+                $category     = ProductServiceCategory::where('owned_by', '=', \Auth::user()->ownedId())->where('type', '=', 'product & service')->get()->pluck('name', 'id');
+                $unit         = ProductServiceUnit::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $tax          = Tax::where('owned_by', '=', \Auth::user()->ownedId())->get()->pluck('name', 'id');
+                $incomeChartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('type', 4)
+                    ->where('owned_by', \Auth::user()->ownedId())->get()
+                    ->pluck('code_name', 'id');
+                $incomeChartAccounts->prepend('Select Account', '');
+                $expenseChartAccounts = ChartOfAccount::select(\DB::raw('CONCAT(code, " - ", name) AS code_name, id'))
+                    ->where('type', 5)
+                    ->orWhere('type', 6)
+                    ->where('owned_by', \Auth::user()->ownedId())->get()
+                    ->pluck('code_name', 'id');
+                $expenseChartAccounts->prepend('Select Account', '');
+            }
 
             return view('productservice.create', compact('category', 'unit', 'tax', 'customFields','incomeChartAccounts','expenseChartAccounts'));
         }
@@ -92,8 +123,8 @@ class ProductServiceController extends Controller
             $rules = [
                 'name' => 'required',
                 'sku' => ['required', Rule::unique('product_services')->where(function ($query) {
-                   return $query->where('created_by', \Auth::user()->id);
-                 })
+                return $query->where('created_by', \Auth::user()->id);
+                })
                 ],
                 'sale_price' => 'required|numeric',
                 'purchase_price' => 'required|numeric',
@@ -149,6 +180,7 @@ class ProductServiceController extends Controller
                 }
             }
 
+            $productService->owned_by       = \Auth::user()->ownedId();
             $productService->created_by       = \Auth::user()->creatorId();
             $productService->save();
             CustomField::saveData($productService, $request->customField);
