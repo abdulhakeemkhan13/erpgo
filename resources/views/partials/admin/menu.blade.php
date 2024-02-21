@@ -17,7 +17,7 @@
 
 {{-- new theam code --}}
 <nav class="dash-sidebar light-sidebar ">
-    <div id="nav" class="nav-container d-flex">
+    <div id="nav" class="nav-container navbar-wrapper d-flex">
         <div class="nav-content d-flex">
             <!-- Logo Start -->
             <div class="logo position-relative" style ="">
@@ -224,7 +224,7 @@
             <!-- Icons Menu End -->
 
             <!-- Menu Start -->
-            <div class="menu-container flex-grow-1" style="display: block;">
+            <div class="menu-container navbar-content flex-grow-1" style="display: block;">
                 @if (\Auth::user()->type != 'client')
 
                     <ul id="menu" class="menu">
@@ -270,7 +270,7 @@
                                         ? 'active'
                                         : '' }}">
                                     <span class="dash-micon">
-                                        <svg width="50px" height="50px" viewBox="-64.47 -64.47 201.38 201.38"
+                                        <svg width="55px" height="50px" viewBox="-64.47 -64.47 201.38 201.38"
                                             xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
                                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                             <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
@@ -324,7 +324,7 @@
                                         </svg> </span>
                                     <span class="dash-mtext">{{ __('Dashboard') }}</span>
                                 </a>
-                                <ul id="tent" class="dash-submenu menu collapse">
+                                <ul id="tent" class="dash-submenu">
                                     @if (\Auth::user()->show_account() == 1 && Gate::check('show account dashboard'))
                                         <li class="dash-item dash-hasmenu ">
                                             <a class="dash-link {{ Request::segment(1) == null || Request::segment(1) == 'account-dashboard' || Request::segment(1) == 'report' || Request::segment(1) == 'reports-monthly-cashflow' || Request::segment(1) == 'reports-quarterly-cashflow' ? ' active' : '' }}"
@@ -2214,52 +2214,90 @@
 {{-- new theam code --}}
 
 <script>
-    // Wait for the DOM to be fully loaded
-    document.addEventListener("DOMContentLoaded", function() {
-        // Get all elements with the class 'dash-link'
-        var dashLinks = document.querySelectorAll('.dash-link');
+    // // Wait for the DOM to be fully loaded
+    // document.addEventListener("DOMContentLoaded", function() {
+    //     // Get all elements with the class 'dash-link'
+    //     var dashLinks = document.querySelectorAll('.dash-link');
 
-        // Loop through each dash link
-        dashLinks.forEach(function(link) {
-            // Add click event listener
-            link.addEventListener('click', function(event) {
-                // Prevent the default action of the link
-                event.preventDefault();
+    //     // Loop through each dash link
+    //     dashLinks.forEach(function(link) {
+    //         // Add click event listener
+    //         link.addEventListener('click', function(event) {
+    //             // Prevent the default action of the link
+    //             event.preventDefault();
 
-                // Toggle the active class for the clicked link
-                link.classList.toggle('active');
+    //             // Toggle the active class for the clicked link
+    //             link.classList.toggle('active');
 
-                // Check if the link has a submenu
-                if (link.nextElementSibling && link.nextElementSibling.classList.contains(
-                        'dash-submenu')) {
-                    // Toggle the 'show' class for the submenu
-                    link.nextElementSibling.classList.toggle('show');
-                } else {
-                    // If the link doesn't have a submenu, check if its parent has one
-                    var parentSubmenu = link.closest('.dash-submenu');
-                    if (parentSubmenu) {
-                        // Toggle the 'show' class for the parent submenu
-                        parentSubmenu.classList.toggle('show');
-                    }
-                }
-            });
+    //             // Check if the link has a submenu
+    //             if (link.nextElementSibling && link.nextElementSibling.classList.contains(
+    //                     'dash-submenu')) {
+    //                 // Toggle the 'show' class for the submenu
+    //                 link.nextElementSibling.classList.toggle('show');
+    //             } else {
+    //                 // If the link doesn't have a submenu, check if its parent has one
+    //                 var parentSubmenu = link.closest('.dash-submenu');
+    //                 if (parentSubmenu) {
+    //                     // Toggle the 'show' class for the parent submenu
+    //                     parentSubmenu.classList.toggle('show');
+    //                 }
+    //             }
+    //         });
 
-            // Add click event listener to the SVG icon
-            var svgIcon = link.querySelector('.dash-micon');
-            if (svgIcon) {
-                svgIcon.addEventListener('click', function(event) {
-                    // Prevent the default action of the SVG icon
-                    event.preventDefault();
+    //         // Add click event listener to the SVG icon
+    //         var svgIcon = link.querySelector('.dash-micon');
+    //         if (svgIcon) {
+    //             svgIcon.addEventListener('click', function(event) {
+    //                 // Prevent the default action of the SVG icon
+    //                 event.preventDefault();
 
-                    // Find the parent menu item
-                    var parentMenuItem = link.closest('.dash-item');
+    //                 // Find the parent menu item
+    //                 var parentMenuItem = link.closest('.dash-item');
 
-                    // Toggle the 'show' class for the parent menu item
-                    if (parentMenuItem) {
-                        parentMenuItem.classList.toggle('show');
-                    }
-                });
-            }
-        });
-    });
+    //                 // Toggle the 'show' class for the parent menu item
+    //                 if (parentMenuItem) {
+    //                     parentMenuItem.classList.toggle('show');
+    //                 }
+    //             });
+    //         }
+    //     });
+    // });
+
+var menuContainer = document.querySelector(".menu-container");
+
+// Add click event listener to the menu container
+menuContainer.addEventListener("click", function(event) {
+  // Check if the clicked element is an li
+//   console.log("event:", event);
+  if (event.target.tagName === "A" && event.target.classList.contains("dash-link")) {
+  console.log("dash:", event.target.classList.contains("dash-link"));
+    // Find the parent list item
+    var listItem = event.target.closest("li");
+    console.log("Sub LI:", listItem);
+    
+    // Check if the parent list item exists and contains a sub unordered list
+    if (listItem && listItem.querySelector("ul")) {
+      // Find the immediate child unordered list
+      var subUL = listItem.querySelector("ul");
+       // Remove "show" class if it exists, otherwise add it
+
+        // Delay the execution of toggling the "show" class by 1 second
+            setTimeout(function() {                
+                
+        if (subUL.classList.contains("show") && subUL.classList.contains("open")) {
+            subUL.classList.remove("open");
+            subUL.classList.remove("show");
+            event.target.setAttribute("aria-expanded", "false");
+        } else {
+            subUL.classList.add("show");
+            subUL.classList.add("open");
+            event.target.setAttribute("aria-expanded", "true");
+        }
+        }, 500); // 1000 milliseconds = 1 second
+      // Do whatever you want with the sub unordered list
+    } 
+  }
+});
+
+  
 </script>

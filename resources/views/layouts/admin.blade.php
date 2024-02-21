@@ -24,11 +24,11 @@
 @endphp
     <!DOCTYPE html>
 {{-- <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{$SITE_RTL == 'on' ? 'rtl' : '' }}"> --}}
-<html lang="' . str_replace('_', '-', app()->getLocale()) . '" dir="' . ($SITE_RTL == 'on' ? 'rtl' : '') . '" data-footer="true" data-placement="vertical" data-behaviour="pinned" data-layout="fluid" data-radius="rounded" data-color="light-teal" data-navcolor="default" data-show="true" data-dimension="desktop" >
+<html lang="' . str_replace('_', '-', app()->getLocale()) . '" dir="' . ($SITE_RTL == 'on' ? 'rtl' : '') . '" data-footer="true" data-placement="vertical" data-behaviour="pinned" data-layout="fluid" data-radius="rounded" data-color="light-blue" data-navcolor="default" data-show="true" data-dimension="desktop" >
 
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
 <head>
-    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'ERPGO')}} - @yield('page-title')</title>
+    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'Workspace')}} - @yield('page-title')</title>
 
     <meta name="title" content="{{$metatitle}}">
     <meta name="description" content="{{$metsdesc}}">

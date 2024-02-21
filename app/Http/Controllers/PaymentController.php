@@ -14,6 +14,7 @@ use App\Models\Utility;
 use App\Models\Vender;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {

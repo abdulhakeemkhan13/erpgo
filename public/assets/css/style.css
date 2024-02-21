@@ -29242,7 +29242,7 @@ html[data-placement=vertical] .dash-sidebar.mobile-side-ready .navbar-wrapper  .
   display: flex !important;
   align-self: flex-start;
   order: 3;
-  margin-top: 2rem;
+  margin-top: 1rem;
   margin-bottom: 1rem;
   width: 16rem;
   margin-left: 1rem;

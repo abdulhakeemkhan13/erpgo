@@ -18062,7 +18062,7 @@ body.theme-10 .card .card-header h5:after, body.theme-10 .card .card-header .h5:
     .dash-sidebar.light-sidebar:not(.transprent-bg) {
         top: 20px;
         bottom: 20px;
-        left: 20px;
+        left: 0px;
         border-radius: 20px;
         box-shadow: -2.61824px 26px 49px rgba(182, 186, 203, 0.3);
     }
